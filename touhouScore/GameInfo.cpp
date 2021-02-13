@@ -5,16 +5,17 @@
 #include <sstream>
 #include <filesystem>
 #include <vector>
+#include <array>
+#include <memory>
 #include <exception>
 #include "logger.h"
 #include "spdlog/sinks/rotating_file_sink.h"
-//auto GIlogger = spdlog::rotating_logger_mt("GameInfo.cpp", "logs/log.txt", 1024 * 1024 * 5, 5);
 
-StageInfo::StageInfo(int stage, int score, int faith)
+StageInfo::StageInfo(int stage, int score, int special)
 {
 	this->stage = stage;
 	this->score = score;
-	this->faith = faith;
+	this->special1 = special;
 
 }
 
@@ -22,16 +23,6 @@ StageInfo::~StageInfo()
 {
 }
 
-void StageInfo::SetData(int score, int faith)
-{
-	this->score = score;
-	this->faith = faith;
-}
-
-void StageInfo::Reset()
-{
-	*this = StageInfo();
-}
 
 void GameInfo::SetPattern(patternHeader header)
 {
@@ -40,26 +31,35 @@ void GameInfo::SetPattern(patternHeader header)
 	CSVReader reader(filename);
 	reader.ReadRow();
 	reader.ReadRow();//skip header
-	vector<string> rowinfo;
+	vector<int> rowinfo;
 	for (int i = 0; i < 6; i++)
 	{
-		rowinfo = reader.ReadRow();
-		stringstream ssStage, ssScore, ssFaith;
-		ssStage << rowinfo[0];
-		ssScore << rowinfo[1];
-		ssFaith << rowinfo[2];
-		ssStage >> PatternInfo[i].stage;
-		ssScore >> PatternInfo[i].score;
-		ssFaith >> PatternInfo[i].faith;
+		rowinfo = reader.ReadIntRow();
+		PatternInfo[i]->stage = rowinfo[0];
+		PatternInfo[i]->score = rowinfo[1];
+		PatternInfo[i]->special1 = rowinfo[2];
 	}
 }
 
-GameInfo::GameInfo(std::string gameName)
+GameInfo::GameInfo(game gameName)
 {
-	this->gameName = gameName;
-	for (size_t i = 0; i < 6; i++)
+	difficulty = -1;
+	shotType = -1;
+	switch (gameName)
 	{
-		stageInfo[i].stage = i+1;
+	case GameInfo::game::th10:
+		this->gameName = game::th10;
+		shotTypeList = shotTypeMap.at(10);
+		for (size_t i = 0; i < 6; i++)
+		{
+			stageInfo[i].reset(new TH10Info(i));
+			PatternInfo[i].reset(new TH10Info(i));
+			delta[i].reset(new TH10Info(i));
+		}
+		break;
+	default:
+		logger->warn("{0} is not supported yet!", gameName);
+		break;
 	}
 }
 
@@ -84,35 +84,42 @@ void GameInfo::SetInfo(int diff, int shot)
 	}
 }
 
-void GameInfo::SetData(int stage, int score, int faith)
+void GameInfo::SetData(int stage, int score, int special)
 {
-	stageInfo[stage-1].SetData(score, faith);
-	if (stageInfo[stage].score != 0)
+	stageInfo[stage-1]->SetData(score, special);
+	if (stage < 6) 
 	{
-		for (size_t i = stage; i < 6; i++)
+		if (stageInfo[stage]->score != 0)
 		{
-			stageInfo[i].Reset();
+			for (size_t i = stage; i < 6; i++)
+			{
+				stageInfo[i]->Reset();
+			}
 		}
 	}
+
 		
 }
 
 void GameInfo::UpdateDelta()
 {
-	for (size_t i = 0; i < 5; i++)
+	for (size_t i = 0; i < 6; i++)
 	{
-		if (stageInfo[i+1].score == 0)
-			continue;
-		int dScore = stageInfo[i].score - PatternInfo[i].score;
-		int dFaith = stageInfo[i].faith - PatternInfo[i].faith;
+		if (i < 5)
+		{
+			if (stageInfo[i+1]->score == 0)
+				continue;
+		}
+		int dScore = stageInfo[i]->score - PatternInfo[i]->score;
+		int dSpecial = stageInfo[i]->special1 - PatternInfo[i]->special1;
 
-		delta[i].SetData(dScore, dFaith);
+		delta[i]->SetData(dScore, dSpecial);
 	}
 }
 
 GameInfo::patternHeader GameInfo::GetHeader()
 {
-	return patternHeader{gameName,difficulty,shotType};
+	return patternHeader{static_cast<int>(gameName),difficulty,shotType};
 }
 
 void GameInfo::ScanCSV()
@@ -140,26 +147,19 @@ void GameInfo::DisplayInfo()
 	using namespace std;
 	cout << setfill('-') << setw(80) << " " << endl;
 
-	cout << setfill(' ') << setw(15) << "Game: " << gameName
-		<< setw(15) << "ShotType: " << Difficulty()
-		<< setw(15) << "ShotType: " << ShotType()
+	cout << setfill(' ') 
+		<< setw(20) <<  GameName()
+		<< setw(20) <<  Difficulty()
+		<< setw(20) <<  ShotType()
 		<< endl;
 	cout << setfill('-') << setw(80) << " " << endl;
-	cout << setfill(' ') << setw(20) << "Stage" << setw(20) << "Score" << setw(20) << "Faith\n";
+	cout << setfill(' ') << setw(20) << "Stage" << setw(20) << "Score";
+	stageInfo[0]->DisplaySpecials();
 	for (size_t i = 0; i < 6; i++)
 	{
-		cout << setw(20) << stageInfo[i].stage
-			 << setw(20) << stageInfo[i].score
-			 << setw(20) << stageInfo[i].faith
-			 << endl;
-		cout << setw(20) << "Pattern"
-			 << setw(20) << PatternInfo[i].score
-			 << setw(20) << PatternInfo[i].faith
-			 << endl;
-		cout << setw(20) << "Delta"
-			 << setw(20) << delta[i].score
-			 << setw(20) << delta[i].faith
-			 << endl;
+		stageInfo[i]->Display(0);
+		PatternInfo[i]->Display(1);
+		delta[i]->Display(2);
 	}
 }
 
@@ -173,7 +173,26 @@ std::string GameInfo::Difficulty()
 	return DiffList[difficulty];
 }
 
-std::string GameInfo::shotTypeList[6] = { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" };
+std::string GameInfo::GameName()
+{
+	switch (gameName)
+	{
+	case GameInfo::game::th10:
+		return std::string("–|·½ïLÉñåh");
+		break;
+	default:
+		break;
+	}
+	return std::string();
+}
+
+void GameInfo::InitShotTypes()
+{
+	shotTypeMap.insert(std::make_pair<int, std::vector<std::string>>(10, { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" }));
+	shotTypeMap.insert(std::make_pair<int, std::vector<std::string>>(11, { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" }));
+}
+
+std::unordered_map<int, std::vector<std::string>> GameInfo::shotTypeMap;
 std::string GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
 std::unordered_map<GameInfo::patternHeader, std::string> GameInfo::patternFilenameMap;
 
@@ -190,18 +209,13 @@ GameInfo::CSVReader::CSVReader(std::string filename)
 GameInfo::patternHeader GameInfo::CSVReader::GetHeader()
 {
 	using namespace std;
-	string game;
-	int diff, shot;
-	vector<string> headerStrings = ReadRow();
-	game = headerStrings[0];
-	stringstream ss;
-	ss << headerStrings[1];
-	ss >> diff;
-	ss.clear();
-	ss.str("");
-	ss << headerStrings[2];
-	ss >> shot;
-	patternHeader header = { game,diff,shot };
+	vector<int> headerData = ReadIntRow();
+	patternHeader header = 
+	{ 
+		headerData[0],
+		headerData[1],
+		headerData[2],
+	};
 	return header;
 }
 
@@ -218,10 +232,80 @@ std::vector<std::string> GameInfo::CSVReader::ReadRow()
 	return strings;
 }
 
+std::vector<int> GameInfo::CSVReader::ReadIntRow()
+{
+	using namespace std;
+	vector<string> strings = ReadRow();
+	vector<int> ints;
+	stringstream ss;
+	for (auto iter=strings.begin();iter!=strings.end();iter++)
+	{
+		int temp;
+		ss << *iter;
+		ss >> temp;
+		ints.push_back(temp);
+		ss.clear();
+		ss.str("");
+	}
+	return ints;
+}
+
 bool GameInfo::patternHeader::operator==(const patternHeader& other)const
 {
-	if (this->gameName == other.gameName && this->difficulty == other.difficulty && this->shotType == other.shotType)
+	if (this->game == other.game && this->difficulty == other.difficulty && this->shotType == other.shotType)
 		return true;
 	else return false;
 }
 
+TH10Info::TH10Info(const TH10Info& other)
+{
+	stage = other.stage;
+	score = other.score;
+	special1 = other.special1;
+}
+
+TH10Info::TH10Info(int stage, int score, int faith) :StageInfo(stage, score, faith)
+{
+	
+}
+
+TH10Info& TH10Info::operator=(const TH10Info& other)
+{
+	stage = other.stage;
+	score = other.score;
+	special1 = other.special1;
+	return *this;
+}
+
+void TH10Info::SetData(int score, int faith)
+{
+	this->score = score;
+	this->special1 = faith;
+}
+
+void TH10Info::Reset()
+{
+	*this = TH10Info();
+}
+
+void TH10Info::DisplaySpecials()
+{
+	std::cout<< std::setw(20) << "Faith\n";
+}
+
+void TH10Info::Display(int mode)
+{
+	if(mode==0)
+		std::cout << std::setw(20) << stage;
+	else if (mode == 1)
+		std::cout << std::setw(20) << "Pattern";
+	else if (mode==2)
+		std::cout << std::setw(20) << "Delta";
+	else {
+		logger->error("Display mode error: {0}", mode);
+		return;
+	}
+	std::cout << std::setw(20) << score
+		<< std::setw(20) << special1
+		<< std::endl;
+}

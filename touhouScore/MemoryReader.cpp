@@ -12,22 +12,41 @@ MemoryReader::~MemoryReader()
     CloseHandle(gameProcessHandle);
 }
 
-int MemoryReader::GetScore()
+
+int MemoryReader::ReadInt(DWORD address)
+{
+    byte buffer[4];
+    if (!ReadProcessMemory(gameProcessHandle, (LPCVOID)address, &buffer, 4, 0))
+        logger->error("read failed, error code {0}", GetLastError());
+    unsigned int value;
+    memcpy(&value, buffer, sizeof(int));
+    return value;
+}
+
+TH10Reader::TH10Reader(DWORD processID):MemoryReader(processID)
+{
+}
+
+TH10Reader::~TH10Reader()
+{
+}
+
+int TH10Reader::GetScore()
 {
     return ReadInt(ScoreAddr);
 }
 
-int MemoryReader::GetStage()
+int TH10Reader::GetStage()
 {
     return ReadInt(StageAddr);
 }
 
-int MemoryReader::GetFaith()
+int TH10Reader::GetSpecial1()
 {
     return ReadInt(FaithAddr);
 }
 
-int MemoryReader::GetShotType()
+int TH10Reader::GetShotType()
 {
     switch (ReadInt(ShotTypeAddr1))
     {
@@ -69,17 +88,7 @@ int MemoryReader::GetShotType()
     }
 }
 
-int MemoryReader::GetDiff()
+int TH10Reader::GetDiff()
 {
     return ReadInt(DifficultyAddr);
-}
-
-int MemoryReader::ReadInt(DWORD address)
-{
-    byte buffer[4];
-    if (!ReadProcessMemory(gameProcessHandle, (LPCVOID)address, &buffer, 4, 0))
-        logger->error("read failed, error code {0}", GetLastError());
-    unsigned int value;
-    memcpy(&value, buffer, sizeof(int));
-    return value;
 }

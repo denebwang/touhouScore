@@ -96,3 +96,8 @@
 [2021-02-13 14:49:00.735] [main] [info] Found ProcessID 20360 of th10.exe
 [2021-02-13 14:49:01.239] [main] [info] Opening process, status code 0
 [2021-02-13 14:49:01.241] [main] [error] can't find csv file: invalid unordered_map<K, T> key
+[2021-02-13 21:40:16.110] [main] [info] Started!
+[2021-02-13 21:40:16.116] [main] [info] SetPrivilage sucessful
+[2021-02-13 21:40:16.116] [main] [info] Found a csv file 1.csv
+[2021-02-13 21:40:16.122] [main] [info] Found ProcessID 23368 of th10.exe
+[2021-02-13 21:40:16.122] [main] [info] Opening process, status code 0

@@ -30,10 +30,11 @@ int main(void)
     CursorInfo.bVisible = false;
     SetConsoleCursorInfo(HOutput, &CursorInfo);
     SetConsoleCursorInfo(HOutbuffer, &CursorInfo);
-
-
-    GameInfo::ScanCSV();
+    //调整privilage
     SetPrivilage();
+
+    GameInfo::InitShotTypes();
+    GameInfo::ScanCSV();
     bool isFound=false;
     DWORD procId;
     while (!isFound)
@@ -44,15 +45,15 @@ int main(void)
         Sleep(1000);
     }
     
-    MemoryReader mr = MemoryReader(procId);
-    GameInfo gameInfo = GameInfo("th10");
+    MemoryReader* mr = new TH10Reader(procId);
+    GameInfo gameInfo = GameInfo(GameInfo::game::th10);
     while (true)
     {
-        int diff = mr.GetDiff();
-        int shotType = mr.GetShotType();
-        int stage = mr.GetStage();
-        int score = mr.GetScore()*10;
-        int faith = mr.GetFaith()*10;
+        int diff = mr->GetDiff();
+        int shotType = mr->GetShotType();
+        int stage = mr->GetStage();
+        int score = mr->GetScore()*10;
+        int faith = mr->GetSpecial1()*10;
         gameInfo.SetInfo(diff, shotType);
         gameInfo.SetData(stage, score, faith);
         gameInfo.UpdateDelta();
@@ -65,6 +66,7 @@ int main(void)
         WriteConsoleOutputCharacterA(HOutbuffer, chars, 10000, { 0,0 }, &bytes);
         Sleep(50);
     }
+    delete mr;
     CloseHandle(HOutput);
     CloseHandle(HOutbuffer);
     return 0;
