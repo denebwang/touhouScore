@@ -36,4 +36,17 @@ private:
 	const static DWORD ShotTypeAddr2 = 0x00474C6C;
 };
 
+class TH11Reader : public MemoryReader
+{
+public:
+	TH11Reader();
+	~TH11Reader();
+	int GetScore()override;
+	int GetStage()override;
+	int GetSpecial1()override;
+	int GetShotType()override;
+	int GetDiff()override;
+private:
+
+};
 

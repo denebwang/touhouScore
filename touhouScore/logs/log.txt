@@ -101,3 +101,18 @@
 [2021-02-13 21:40:16.116] [main] [info] Found a csv file 1.csv
 [2021-02-13 21:40:16.122] [main] [info] Found ProcessID 23368 of th10.exe
 [2021-02-13 21:40:16.122] [main] [info] Opening process, status code 0
+[2021-02-14 23:11:39.232] [main] [info] Started!
+[2021-02-14 23:11:39.238] [main] [info] SetPrivilage sucessful
+[2021-02-14 23:11:39.238] [main] [info] Found a csv file 1.csv
+[2021-02-14 23:11:39.244] [main] [info] Found ProcessID 19824 of th10.exe
+[2021-02-14 23:11:39.244] [main] [info] Opening process, status code 0
+[2021-02-14 23:19:52.529] [main] [info] Started!
+[2021-02-14 23:19:52.534] [main] [info] SetPrivilage sucessful
+[2021-02-14 23:19:52.534] [main] [info] Found a csv file 1.csv
+[2021-02-14 23:19:52.541] [main] [info] Found ProcessID 19824 of th10.exe
+[2021-02-14 23:19:52.541] [main] [info] Opening process, status code 0
+[2021-02-14 23:20:31.310] [main] [info] Started!
+[2021-02-14 23:20:31.315] [main] [info] SetPrivilage sucessful
+[2021-02-14 23:20:31.316] [main] [info] Found a csv file 1.csv
+[2021-02-14 23:20:31.322] [main] [info] Found ProcessID 19824 of th10.exe
+[2021-02-14 23:20:31.322] [main] [info] Opening process, status code 0

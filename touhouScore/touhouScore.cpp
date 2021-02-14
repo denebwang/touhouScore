@@ -55,8 +55,8 @@ int main(void)
         int score = mr->GetScore()*10;
         int faith = mr->GetSpecial1()*10;
         gameInfo.SetInfo(diff, shotType);
-        gameInfo.SetData(stage, score, faith);
-        gameInfo.UpdateDelta();
+        gameInfo.SetData(stage, score, { faith });
+        //gameInfo.UpdateDelta();
         ClearScreen(HOutput);
 
         DWORD bytes = 0;

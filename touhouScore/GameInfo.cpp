@@ -11,19 +11,6 @@
 #include "logger.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 
-StageInfo::StageInfo(int stage, int score, int special)
-{
-	this->stage = stage;
-	this->score = score;
-	this->special1 = special;
-
-}
-
-StageInfo::~StageInfo()
-{
-}
-
-
 void GameInfo::SetPattern(patternHeader header)
 {
 	using namespace std;
@@ -37,7 +24,12 @@ void GameInfo::SetPattern(patternHeader header)
 		rowinfo = reader.ReadIntRow();
 		PatternInfo[i]->stage = rowinfo[0];
 		PatternInfo[i]->score = rowinfo[1];
-		PatternInfo[i]->special1 = rowinfo[2];
+		PatternInfo[i]->specials.clear();
+		for (auto iter = next(rowinfo.begin(),2); iter !=rowinfo.end(); iter++)
+		{
+			PatternInfo[i]->specials.push_back(*iter);
+		}
+		
 	}
 }
 
@@ -52,9 +44,9 @@ GameInfo::GameInfo(game gameName)
 		shotTypeList = shotTypeMap.at(10);
 		for (size_t i = 0; i < 6; i++)
 		{
-			stageInfo[i].reset(new TH10Info(i));
-			PatternInfo[i].reset(new TH10Info(i));
-			delta[i].reset(new TH10Info(i));
+			stageInfo[i].reset(new TH10Info(i+1));
+			PatternInfo[i].reset(new TH10Info(i + 1));
+			delta[i].reset(new TH10Info(i + 1));
 		}
 		break;
 	default:
@@ -84,9 +76,11 @@ void GameInfo::SetInfo(int diff, int shot)
 	}
 }
 
-void GameInfo::SetData(int stage, int score, int special)
+void GameInfo::SetData(int stage, int score, std::vector<int> specials)
 {
-	stageInfo[stage-1]->SetData(score, special);
+	if (stage == 0)return;
+	
+	stageInfo[stage-1]->SetData(score, specials);
 	if (stage < 6) 
 	{
 		if (stageInfo[stage]->score != 0)
@@ -97,24 +91,30 @@ void GameInfo::SetData(int stage, int score, int special)
 			}
 		}
 	}
+	UpdateDelta(stage);
 
 		
 }
 
-void GameInfo::UpdateDelta()
+void GameInfo::UpdateDelta(int stage)
 {
-	for (size_t i = 0; i < 6; i++)
+	if (stage == 1)
+		return;
+	int index = stage - 2;//更新前一面的差值
+	if (stageInfo[index]->score == 0)//练习模式前一面不更新
+		return;
+	int dScore = stageInfo[index]->score - PatternInfo[index]->score;
+	std::vector<int> dSpecial;
+	for (auto iter1 = stageInfo[index]->specials.begin(), iter2 = PatternInfo[index]->specials.begin();
+		iter1 != stageInfo[index]->specials.end() && iter2 != PatternInfo[index]->specials.end();
+		iter1++, iter2++)
 	{
-		if (i < 5)
-		{
-			if (stageInfo[i+1]->score == 0)
-				continue;
-		}
-		int dScore = stageInfo[i]->score - PatternInfo[i]->score;
-		int dSpecial = stageInfo[i]->special1 - PatternInfo[i]->special1;
-
-		delta[i]->SetData(dScore, dSpecial);
+		dSpecial.push_back(*iter1 - *iter2);
 	}
+
+	delta[index]->SetData(dScore, dSpecial);
+	if (stage == 6)//6面一起更新
+		UpdateDelta(7);
 }
 
 GameInfo::patternHeader GameInfo::GetHeader()
@@ -255,57 +255,4 @@ bool GameInfo::patternHeader::operator==(const patternHeader& other)const
 	if (this->game == other.game && this->difficulty == other.difficulty && this->shotType == other.shotType)
 		return true;
 	else return false;
-}
-
-TH10Info::TH10Info(const TH10Info& other)
-{
-	stage = other.stage;
-	score = other.score;
-	special1 = other.special1;
-}
-
-TH10Info::TH10Info(int stage, int score, int faith) :StageInfo(stage, score, faith)
-{
-	
-}
-
-TH10Info& TH10Info::operator=(const TH10Info& other)
-{
-	stage = other.stage;
-	score = other.score;
-	special1 = other.special1;
-	return *this;
-}
-
-void TH10Info::SetData(int score, int faith)
-{
-	this->score = score;
-	this->special1 = faith;
-}
-
-void TH10Info::Reset()
-{
-	*this = TH10Info();
-}
-
-void TH10Info::DisplaySpecials()
-{
-	std::cout<< std::setw(20) << "Faith\n";
-}
-
-void TH10Info::Display(int mode)
-{
-	if(mode==0)
-		std::cout << std::setw(20) << stage;
-	else if (mode == 1)
-		std::cout << std::setw(20) << "Pattern";
-	else if (mode==2)
-		std::cout << std::setw(20) << "Delta";
-	else {
-		logger->error("Display mode error: {0}", mode);
-		return;
-	}
-	std::cout << std::setw(20) << score
-		<< std::setw(20) << special1
-		<< std::endl;
 }
