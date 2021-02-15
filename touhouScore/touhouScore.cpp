@@ -8,7 +8,7 @@
 
 using namespace std;
 namespace fs = filesystem;  
-DWORD GetProcessIDByName(const char* processName, bool& found);
+bool GetProcessIDByName(const char* processName, DWORD& processId);
 BOOL SetPrivilage();
 void ClearScreen(HANDLE HOutput);
 int main(void)
@@ -33,29 +33,48 @@ int main(void)
     //调整privilage
     SetPrivilage();
 
-    GameInfo::InitShotTypes();
+
+    GameInfo::Init();
     GameInfo::ScanCSV();
-    bool isFound=false;
-    DWORD procId;
-    while (!isFound)
+    DWORD procId = 0;
+    string gameName;
+    //while (!isFound)
+    //{
+    //    procId = GetProcessIDByName("th10.exe", isFound);
+    //    if (isFound)
+    //        break;
+    //    Sleep(1000);
+    //}
+    
+    for (auto iter = GameInfo::exeMap.begin(); iter != GameInfo::exeMap.end(); iter++)
     {
-        procId = GetProcessIDByName("th10.exe", isFound);
+        bool isFound = false;
+        for (auto stringIter = iter->second.begin(); stringIter != iter->second.end(); stringIter++) 
+        {
+            if (GetProcessIDByName(stringIter->c_str(), procId))
+            {
+                gameName = iter->first;
+                isFound = true;
+                break;
+            }
+        }
         if (isFound)
             break;
-        Sleep(1000);
     }
-    
-    MemoryReader* mr = new TH10Reader(procId);
-    GameInfo gameInfo = GameInfo(GameInfo::game::th10);
+
+    MemoryReader* mr = nullptr;
+    GameInfo gameInfo = GameInfo::Create(gameName, procId, mr);
+
+
     while (true)
     {
         int diff = mr->GetDiff();
         int shotType = mr->GetShotType();
         int stage = mr->GetStage();
-        int score = mr->GetScore()*10;
-        int faith = mr->GetSpecial1()*10;
+        int score = mr->GetScore();
+        vector<int> specials = mr->GetSpecials();
         gameInfo.SetInfo(diff, shotType);
-        gameInfo.SetData(stage, score, { faith });
+        gameInfo.SetData(stage, score, specials);
         //gameInfo.UpdateDelta();
         ClearScreen(HOutput);
 
@@ -72,7 +91,7 @@ int main(void)
     return 0;
 }
 
-DWORD GetProcessIDByName(const char* processName,bool& found)
+bool GetProcessIDByName(const char* processName,DWORD& processID)
 {
     HANDLE hProcessSnap;
     //HANDLE hProcess;
@@ -97,9 +116,8 @@ DWORD GetProcessIDByName(const char* processName,bool& found)
         CloseHandle(hProcessSnap);          // clean the snapshot object
         return(FALSE);
     }
-
+    bool found = false;
     // Now walk the snapshot of processes
-    found = false;
     do
     {
         if (strcmp(processName, pe32.szExeFile) == 0)
@@ -109,10 +127,10 @@ DWORD GetProcessIDByName(const char* processName,bool& found)
         }
     } while (Process32Next(hProcessSnap, &pe32));
 
-    DWORD ProcessID = pe32.th32ProcessID;
-    logger->info("Found ProcessID {0} of {1}", ProcessID, processName);
+    processID = pe32.th32ProcessID;
+    logger->info("Found ProcessID {0} of {1}", processID, processName);
     CloseHandle(hProcessSnap);
-    return ProcessID;
+    return found;
 }
 
 BOOL SetPrivilage()

@@ -7,6 +7,7 @@
 #include <memory>
 #include <array>
 #include "StageInfo.h"
+#include "MemoryReader.h"
 
 class GameInfo
 {
@@ -20,6 +21,7 @@ public:
 	};
 	enum class game :int
 	{
+		invalid=0,
 		th10 = 10,
 		th11 = 11
 	};
@@ -39,6 +41,8 @@ private:
 	static std::unordered_map<patternHeader,std::string> patternFilenameMap;
 	static std::string DiffList[4];
 	static std::unordered_map<int,std::vector<std::string>> shotTypeMap;
+	
+	
 
 	std::vector<std::string> shotTypeList;
 	//StageInfo stageInfo[6];
@@ -62,15 +66,17 @@ public:
 	void SetData(int stage, int score, std::vector<int> speical);
 	void UpdateDelta(int stage);
 	patternHeader GetHeader();
+	static GameInfo Create(std::string gameName, DWORD processID, MemoryReader*& mr);
 	static void ScanCSV();
-	static void InitShotTypes();
+	static void Init();
 	void DisplayInfo();
 	std::string ShotType();
 	std::string Difficulty();
 	std::string GameName();
 
+
 	game gameName;
-	
+	static std::unordered_map<std::string, std::vector<std::string>> exeMap;//游戏文件名
 	
 };
 

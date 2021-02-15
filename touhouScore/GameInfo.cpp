@@ -49,6 +49,16 @@ GameInfo::GameInfo(game gameName)
 			delta[i].reset(new TH10Info(i + 1));
 		}
 		break;
+	case GameInfo::game::th11:
+		this->gameName = game::th11;
+		shotTypeList = shotTypeMap.at(11);
+		for (size_t i = 0; i < 6; i++)
+		{
+			stageInfo[i].reset(new TH11Info(i + 1));
+			PatternInfo[i].reset(new TH11Info(i + 1));
+			delta[i].reset(new TH11Info(i + 1));
+		}
+		break;
 	default:
 		logger->warn("{0} is not supported yet!", gameName);
 		break;
@@ -98,6 +108,14 @@ void GameInfo::SetData(int stage, int score, std::vector<int> specials)
 
 void GameInfo::UpdateDelta(int stage)
 {
+	if (stage < 6) 
+	{
+		for (size_t i = stage; i < 6; i++)
+		{
+			if(delta[i-1]->score!=0)
+				delta[i-1]->Reset();
+		}
+	}
 	if (stage == 1)
 		return;
 	int index = stage - 2;//更新前一面的差值
@@ -120,6 +138,23 @@ void GameInfo::UpdateDelta(int stage)
 GameInfo::patternHeader GameInfo::GetHeader()
 {
 	return patternHeader{static_cast<int>(gameName),difficulty,shotType};
+}
+
+GameInfo GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*& mr)
+{
+	if (gameName == "th10")
+	{
+		mr = new TH10Reader(processID);
+		return GameInfo(GameInfo::game::th10);
+	}
+	else if (gameName == "th11")
+	{
+		mr = new TH11Reader(processID);
+		return GameInfo(GameInfo::game::th11);
+	}
+	else {
+		logger->error("Game Not supported: {0}", gameName);
+	}
 }
 
 void GameInfo::ScanCSV()
@@ -180,21 +215,31 @@ std::string GameInfo::GameName()
 	case GameInfo::game::th10:
 		return std::string("東方風神録");
 		break;
+	case GameInfo::game::th11:
+		return std::string("東方地霊殿");
+		break;
 	default:
 		break;
 	}
 	return std::string();
 }
 
-void GameInfo::InitShotTypes()
+
+
+void GameInfo::Init()
 {
+	//机体列表
 	shotTypeMap.insert(std::make_pair<int, std::vector<std::string>>(10, { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" }));
 	shotTypeMap.insert(std::make_pair<int, std::vector<std::string>>(11, { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" }));
+
+	exeMap.insert(std::make_pair< std::string, std::vector<std::string >>("th10", { "th10.exe","th10chs.exe","th10cht.exe" }));
+	exeMap.insert(std::make_pair< std::string, std::vector<std::string >>("th11", { "th11.exe","th11c" }));
 }
 
 std::unordered_map<int, std::vector<std::string>> GameInfo::shotTypeMap;
 std::string GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
 std::unordered_map<GameInfo::patternHeader, std::string> GameInfo::patternFilenameMap;
+std::unordered_map<std::string, std::vector<std::string>> GameInfo::exeMap;
 
 
 
