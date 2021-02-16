@@ -62,6 +62,7 @@ int main(void)
     //        break;
     //    Sleep(1000);
     //}
+    cout << "Scanning for Games...\n";
     bool isFound = false;
     do
     {
@@ -85,7 +86,7 @@ int main(void)
 
     MemoryReader* mr = nullptr;
     GameInfo gameInfo = GameInfo::Create(gameName, procId, mr);
-
+    //逗号分隔数字
     std::locale comma_locale(std::locale(), new comma_numpunct());
     cout.imbue(comma_locale);
     

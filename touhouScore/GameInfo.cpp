@@ -18,7 +18,7 @@ void GameInfo::SetPattern(patternHeader header)
 	CSVReader reader(filename);
 	reader.ReadRow();
 	reader.ReadRow();//skip header
-	vector<unsigned int> rowinfo;
+	vector<long long> rowinfo;//只有score会超过21亿，直接转回来没问题
 	for (int i = 0; i < 6; i++)
 	{
 		rowinfo = reader.ReadIntRow();
@@ -40,7 +40,7 @@ GameInfo::GameInfo(game gameName)
 	switch (gameName)
 	{
 	case GameInfo::game::th10:
-		this->gameName = game::th10;
+		this->gameName = gameName;
 		shotTypeList = shotTypeMap.at(10);
 		for (size_t i = 0; i < 6; i++)
 		{
@@ -50,7 +50,7 @@ GameInfo::GameInfo(game gameName)
 		}
 		break;
 	case GameInfo::game::th11:
-		this->gameName = game::th11;
+		this->gameName = gameName;
 		shotTypeList = shotTypeMap.at(11);
 		for (size_t i = 0; i < 6; i++)
 		{
@@ -61,6 +61,7 @@ GameInfo::GameInfo(game gameName)
 		break;
 	default:
 		logger->warn("{0} is not supported yet!", gameName);
+		this->gameName = game::invalid;
 		break;
 	}
 }
@@ -86,11 +87,12 @@ void GameInfo::SetInfo(int diff, int shot)
 	}
 }
 
-void GameInfo::SetData(int stage,unsigned  int score, std::vector<int> specials)
+void GameInfo::SetData(int stage, long long score, std::vector<int>& specials)
 {
 	if (stage == 0)return;
 	
 	stageInfo[stage-1]->SetData(score, specials);
+	//清空没到的面
 	if (stage < 6) 
 	{
 		if (stageInfo[stage]->score != 0)
@@ -108,6 +110,7 @@ void GameInfo::SetData(int stage,unsigned  int score, std::vector<int> specials)
 
 void GameInfo::UpdateDelta(int stage)
 {
+	//清空本面和没到的面
 	if (stage < 6) 
 	{
 		for (size_t i = stage; i < 6; i++)
@@ -131,7 +134,7 @@ void GameInfo::UpdateDelta(int stage)
 	}
 
 	delta[index]->SetData(dScore, dSpecial);
-	if (stage == 6)//6面一起更新
+	if (stage == 6)//6面直接更新
 		UpdateDelta(7);
 }
 
@@ -254,7 +257,7 @@ GameInfo::CSVReader::CSVReader(std::string filename)
 GameInfo::patternHeader GameInfo::CSVReader::GetHeader()
 {
 	using namespace std;
-	vector<unsigned int> headerData = ReadIntRow();
+	vector<long long> headerData = ReadIntRow();
 	patternHeader header = 
 	{ 
 		headerData[0],
@@ -277,15 +280,15 @@ std::vector<std::string> GameInfo::CSVReader::ReadRow()
 	return strings;
 }
 
-std::vector<unsigned int> GameInfo::CSVReader::ReadIntRow()
+std::vector<long long> GameInfo::CSVReader::ReadIntRow()
 {
 	using namespace std;
 	vector<string> strings = ReadRow();
-	vector<unsigned int> ints;
+	vector<long long> ints;
 	stringstream ss;
 	for (auto iter=strings.begin();iter!=strings.end();iter++)
 	{
-		unsigned int temp;
+		long long temp;
 		ss << *iter;
 		ss >> temp;
 		ints.push_back(temp);

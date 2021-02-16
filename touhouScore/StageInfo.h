@@ -12,7 +12,7 @@ public:
 	virtual void DisplaySpecials() = 0;
 	virtual void Display(int mode) = 0;
 	int stage;
-	unsigned int score;//防止21亿溢出
+	long long score;//防止21亿溢出
 	std::vector<int> specials;
 };
 
