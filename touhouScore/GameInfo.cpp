@@ -183,12 +183,12 @@ void GameInfo::DisplayInfo()
 	cout << setfill('-') << setw(80) << " " << endl;
 
 	cout << setfill(' ') 
-		<< setw(20) <<  GameName()
-		<< setw(20) <<  Difficulty()
-		<< setw(20) <<  ShotType()
+		<< setw(15) <<  GameName()
+		<< setw(15) <<  Difficulty()
+		<< setw(15) <<  ShotType()
 		<< endl;
 	cout << setfill('-') << setw(80) << " " << endl;
-	cout << setfill(' ') << setw(20) << "Stage" << setw(20) << "Score";
+	cout << setfill(' ') << setw(10) << "Stage" << setw(15) << "Score";
 	stageInfo[0]->DisplaySpecials();
 	for (size_t i = 0; i < 6; i++)
 	{

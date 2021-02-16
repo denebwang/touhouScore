@@ -1,6 +1,8 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
+
+
 #include "logger.h"
 #include "StageInfo.h"
 StageInfo::StageInfo(int stage, int score, std::vector<int> specials)
@@ -46,28 +48,28 @@ void TH10Info::SetData(int score, std::vector<int>& specials)
 void TH10Info::Reset()
 {
 	this->score = 0;
-	this->specials = {};
+	this->specials = { 0 };
 }
 
 void TH10Info::DisplaySpecials()
 {
-	std::cout << std::setw(20) << "Faith\n";
+	std::cout << std::setw(15) << "Faith\n";
 }
 
 void TH10Info::Display(int mode)
 {
 	if (mode == 0)
-		std::cout << std::setw(20) << stage;
+		std::cout << std::setw(10) << stage;
 	else if (mode == 1)
-		std::cout << std::setw(20) << "Pattern";
+		std::cout << std::setw(10) << "Pattern";
 	else if (mode == 2)
-		std::cout << std::setw(20) << "Delta";
+		std::cout << std::setw(10) << "Delta";
 	else {
 		logger->error("Display mode error: {0}", mode);
 		return;
 	}
-	std::cout << std::setw(20) << score
-		<< std::setw(20) << specials[0]
+	std::cout << std::setw(15) << score
+		<< std::setw(15) << specials[0]
 		<< std::endl;
 }
 
@@ -92,24 +94,34 @@ void TH11Info::Reset()
 
 void TH11Info::DisplaySpecials()
 {
-	std::cout << std::setw(20) << "Faith"
-		<< std::setw(20) << "Graze\n";
+	std::cout << std::setw(15) << "Faith"
+		<< std::setw(15) << "Graze\n";
 }
 
 void TH11Info::Display(int mode)
 {
+	
 	if (mode == 0)
-		std::cout << std::setw(20) << stage;
+	{
+		
+		std::cout << std::setw(10) << stage;
+	}
 	else if (mode == 1)
-		std::cout << std::setw(20) << "Pattern";
+	{
+		
+		std::cout << std::setw(10) << "Pattern";
+	}
 	else if (mode == 2)
-		std::cout << std::setw(20) << "Delta";
+	{
+		
+		std::cout << std::setw(10) << "Delta";
+	}
 	else {
 		logger->error("Display mode error: {0}", mode);
 		return;
 	}
-	std::cout << std::setw(20) << score
-		<< std::setw(20) << specials[0]
-		<< std::setw(20) << specials[1]
+	std::cout << std::setw(15) << score
+		<< std::setw(15) << specials[0]
+		<< std::setw(15) << specials[1]
 		<< std::endl;
 }

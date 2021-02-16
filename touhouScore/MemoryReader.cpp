@@ -1,5 +1,6 @@
 #include "MemoryReader.h"
 #include <iostream>
+#include <exception>
 #include "logger.h"
 MemoryReader::MemoryReader(DWORD processID)
 {
@@ -17,7 +18,10 @@ int MemoryReader::ReadInt(DWORD address)
 {
     byte buffer[4];
     if (!ReadProcessMemory(gameProcessHandle, (LPCVOID)address, &buffer, 4, 0))
+    {
         logger->error("read failed, error code {0}", GetLastError());
+        throw std::exception("ReadProcessMemory failed");
+    }
     unsigned int value;
     memcpy(&value, buffer, sizeof(int));
     return value;

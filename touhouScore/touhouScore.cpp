@@ -10,7 +10,22 @@ using namespace std;
 namespace fs = filesystem;  
 bool GetProcessIDByName(const char* processName, DWORD& processId);
 BOOL SetPrivilage();
-void ClearScreen(HANDLE HOutput);
+void ClearScreen(HANDLE HOutput); 
+
+class comma_numpunct : public std::numpunct<char>
+{
+protected:
+    virtual char do_thousands_sep() const
+    {
+        return ',';
+    }
+
+    virtual std::string do_grouping() const
+    {
+        return "\03";
+    }
+};
+
 int main(void)
 {
     logger->info("Started!");
@@ -30,6 +45,8 @@ int main(void)
     CursorInfo.bVisible = false;
     SetConsoleCursorInfo(HOutput, &CursorInfo);
     SetConsoleCursorInfo(HOutbuffer, &CursorInfo);
+
+    //SetConsoleTextAttribute(HOutput, FOREGROUND_INTENSITY | FOREGROUND_BLUE);
     //调整privilage
     SetPrivilage();
 
@@ -45,46 +62,67 @@ int main(void)
     //        break;
     //    Sleep(1000);
     //}
-    
-    for (auto iter = GameInfo::exeMap.begin(); iter != GameInfo::exeMap.end(); iter++)
+    bool isFound = false;
+    do
     {
-        bool isFound = false;
-        for (auto stringIter = iter->second.begin(); stringIter != iter->second.end(); stringIter++) 
+        for (auto iter = GameInfo::exeMap.begin(); iter != GameInfo::exeMap.end(); iter++)
         {
-            if (GetProcessIDByName(stringIter->c_str(), procId))
+
+            for (auto stringIter = iter->second.begin(); stringIter != iter->second.end(); stringIter++)
             {
-                gameName = iter->first;
-                isFound = true;
-                break;
+                if (GetProcessIDByName(stringIter->c_str(), procId))
+                {
+                    gameName = iter->first;
+                    isFound = true;
+                    break;
+                }
             }
+            if (isFound)
+                break;
         }
-        if (isFound)
-            break;
-    }
+        Sleep(1000);
+    } while (!isFound);
 
     MemoryReader* mr = nullptr;
     GameInfo gameInfo = GameInfo::Create(gameName, procId, mr);
 
+    std::locale comma_locale(std::locale(), new comma_numpunct());
+    cout.imbue(comma_locale);
+    
+        while (true)
+        {
+            try 
+            {
+                int diff = mr->GetDiff();
+                int shotType = mr->GetShotType();
+                int stage = mr->GetStage();
+                int score = mr->GetScore();
+                vector<int> specials = mr->GetSpecials();
+                gameInfo.SetInfo(diff, shotType);
+                gameInfo.SetData(stage, score, specials);
+            }
+            catch (...)
+            {
+                auto exptr = std::current_exception();
+                try {
+                    rethrow_exception(exptr);
+                }
+                catch (exception& e)
+                {
+                    logger->error("Caught an exception: {0}, quitting", e.what());
+                    break;
+                }
+            }
+            //gameInfo.UpdateDelta();
+            ClearScreen(HOutput);
 
-    while (true)
-    {
-        int diff = mr->GetDiff();
-        int shotType = mr->GetShotType();
-        int stage = mr->GetStage();
-        int score = mr->GetScore();
-        vector<int> specials = mr->GetSpecials();
-        gameInfo.SetInfo(diff, shotType);
-        gameInfo.SetData(stage, score, specials);
-        //gameInfo.UpdateDelta();
-        ClearScreen(HOutput);
-
-        DWORD bytes = 0;
-        char chars[10000];
-        gameInfo.DisplayInfo();
-        ReadConsoleOutputCharacterA(HOutput, chars, 10000, { 0,0 }, &bytes);
-        WriteConsoleOutputCharacterA(HOutbuffer, chars, 10000, { 0,0 }, &bytes);
-        Sleep(50);
-    }
+            DWORD bytes = 0;
+            char chars[10000];
+            gameInfo.DisplayInfo();
+            ReadConsoleOutputCharacterA(HOutput, chars, 10000, { 0,0 }, &bytes);
+            WriteConsoleOutputCharacterA(HOutbuffer, chars, 10000, { 0,0 }, &bytes);
+            Sleep(50);
+        }
     delete mr;
     CloseHandle(HOutput);
     CloseHandle(HOutbuffer);
@@ -204,3 +242,4 @@ void ClearScreen(HANDLE HOutput)
     // Move the cursor back to the top left for the next sequence of writes
     SetConsoleCursorPosition(HOutput, topLeft);
 }
+
