@@ -5,33 +5,11 @@
 #include <sstream>
 #include <filesystem>
 #include <vector>
+#include <array>
+#include <memory>
 #include <exception>
 #include "logger.h"
 #include "spdlog/sinks/rotating_file_sink.h"
-//auto GIlogger = spdlog::rotating_logger_mt("GameInfo.cpp", "logs/log.txt", 1024 * 1024 * 5, 5);
-
-StageInfo::StageInfo(int stage, int score, int faith)
-{
-	this->stage = stage;
-	this->score = score;
-	this->faith = faith;
-
-}
-
-StageInfo::~StageInfo()
-{
-}
-
-void StageInfo::SetData(int score, int faith)
-{
-	this->score = score;
-	this->faith = faith;
-}
-
-void StageInfo::Reset()
-{
-	*this = StageInfo();
-}
 
 void GameInfo::SetPattern(patternHeader header)
 {
@@ -40,26 +18,50 @@ void GameInfo::SetPattern(patternHeader header)
 	CSVReader reader(filename);
 	reader.ReadRow();
 	reader.ReadRow();//skip header
-	vector<string> rowinfo;
+	vector<int> rowinfo;
 	for (int i = 0; i < 6; i++)
 	{
-		rowinfo = reader.ReadRow();
-		stringstream ssStage, ssScore, ssFaith;
-		ssStage << rowinfo[0];
-		ssScore << rowinfo[1];
-		ssFaith << rowinfo[2];
-		ssStage >> PatternInfo[i].stage;
-		ssScore >> PatternInfo[i].score;
-		ssFaith >> PatternInfo[i].faith;
+		rowinfo = reader.ReadIntRow();
+		PatternInfo[i]->stage = rowinfo[0];
+		PatternInfo[i]->score = rowinfo[1];
+		PatternInfo[i]->specials.clear();
+		for (auto iter = next(rowinfo.begin(),2); iter !=rowinfo.end(); iter++)
+		{
+			PatternInfo[i]->specials.push_back(*iter);
+		}
+		
 	}
 }
 
-GameInfo::GameInfo(std::string gameName)
+GameInfo::GameInfo(game gameName)
 {
-	this->gameName = gameName;
-	for (size_t i = 0; i < 6; i++)
+	difficulty = -1;
+	shotType = -1;
+	switch (gameName)
 	{
-		stageInfo[i].stage = i+1;
+	case GameInfo::game::th10:
+		this->gameName = game::th10;
+		shotTypeList = shotTypeMap.at(10);
+		for (size_t i = 0; i < 6; i++)
+		{
+			stageInfo[i].reset(new TH10Info(i+1));
+			PatternInfo[i].reset(new TH10Info(i + 1));
+			delta[i].reset(new TH10Info(i + 1));
+		}
+		break;
+	case GameInfo::game::th11:
+		this->gameName = game::th11;
+		shotTypeList = shotTypeMap.at(11);
+		for (size_t i = 0; i < 6; i++)
+		{
+			stageInfo[i].reset(new TH11Info(i + 1));
+			PatternInfo[i].reset(new TH11Info(i + 1));
+			delta[i].reset(new TH11Info(i + 1));
+		}
+		break;
+	default:
+		logger->warn("{0} is not supported yet!", gameName);
+		break;
 	}
 }
 
@@ -84,35 +86,75 @@ void GameInfo::SetInfo(int diff, int shot)
 	}
 }
 
-void GameInfo::SetData(int stage, int score, int faith)
+void GameInfo::SetData(int stage, int score, std::vector<int> specials)
 {
-	stageInfo[stage-1].SetData(score, faith);
-	if (stageInfo[stage].score != 0)
+	if (stage == 0)return;
+	
+	stageInfo[stage-1]->SetData(score, specials);
+	if (stage < 6) 
 	{
-		for (size_t i = stage; i < 6; i++)
+		if (stageInfo[stage]->score != 0)
 		{
-			stageInfo[i].Reset();
+			for (size_t i = stage; i < 6; i++)
+			{
+				stageInfo[i]->Reset();
+			}
 		}
 	}
+	UpdateDelta(stage);
+
 		
 }
 
-void GameInfo::UpdateDelta()
+void GameInfo::UpdateDelta(int stage)
 {
-	for (size_t i = 0; i < 5; i++)
+	if (stage < 6) 
 	{
-		if (stageInfo[i+1].score == 0)
-			continue;
-		int dScore = stageInfo[i].score - PatternInfo[i].score;
-		int dFaith = stageInfo[i].faith - PatternInfo[i].faith;
-
-		delta[i].SetData(dScore, dFaith);
+		for (size_t i = stage; i < 6; i++)
+		{
+			if(delta[i-1]->score!=0)
+				delta[i-1]->Reset();
+		}
 	}
+	if (stage == 1)
+		return;
+	int index = stage - 2;//更新前一面的差值
+	if (stageInfo[index]->score == 0)//练习模式前一面不更新
+		return;
+	int dScore = stageInfo[index]->score - PatternInfo[index]->score;
+	std::vector<int> dSpecial;
+	for (auto iter1 = stageInfo[index]->specials.begin(), iter2 = PatternInfo[index]->specials.begin();
+		iter1 != stageInfo[index]->specials.end() && iter2 != PatternInfo[index]->specials.end();
+		iter1++, iter2++)
+	{
+		dSpecial.push_back(*iter1 - *iter2);
+	}
+
+	delta[index]->SetData(dScore, dSpecial);
+	if (stage == 6)//6面一起更新
+		UpdateDelta(7);
 }
 
 GameInfo::patternHeader GameInfo::GetHeader()
 {
-	return patternHeader{gameName,difficulty,shotType};
+	return patternHeader{static_cast<int>(gameName),difficulty,shotType};
+}
+
+GameInfo GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*& mr)
+{
+	if (gameName == "th10")
+	{
+		mr = new TH10Reader(processID);
+		return GameInfo(GameInfo::game::th10);
+	}
+	else if (gameName == "th11")
+	{
+		mr = new TH11Reader(processID);
+		return GameInfo(GameInfo::game::th11);
+	}
+	else {
+		logger->error("Game Not supported: {0}", gameName);
+	}
 }
 
 void GameInfo::ScanCSV()
@@ -140,26 +182,19 @@ void GameInfo::DisplayInfo()
 	using namespace std;
 	cout << setfill('-') << setw(80) << " " << endl;
 
-	cout << setfill(' ') << setw(15) << "Game: " << gameName
-		<< setw(15) << "ShotType: " << Difficulty()
-		<< setw(15) << "ShotType: " << ShotType()
+	cout << setfill(' ') 
+		<< setw(15) <<  GameName()
+		<< setw(15) <<  Difficulty()
+		<< setw(15) <<  ShotType()
 		<< endl;
 	cout << setfill('-') << setw(80) << " " << endl;
-	cout << setfill(' ') << setw(20) << "Stage" << setw(20) << "Score" << setw(20) << "Faith\n";
+	cout << setfill(' ') << setw(10) << "Stage" << setw(15) << "Score";
+	stageInfo[0]->DisplaySpecials();
 	for (size_t i = 0; i < 6; i++)
 	{
-		cout << setw(20) << stageInfo[i].stage
-			 << setw(20) << stageInfo[i].score
-			 << setw(20) << stageInfo[i].faith
-			 << endl;
-		cout << setw(20) << "Pattern"
-			 << setw(20) << PatternInfo[i].score
-			 << setw(20) << PatternInfo[i].faith
-			 << endl;
-		cout << setw(20) << "Delta"
-			 << setw(20) << delta[i].score
-			 << setw(20) << delta[i].faith
-			 << endl;
+		stageInfo[i]->Display(0);
+		PatternInfo[i]->Display(1);
+		delta[i]->Display(2);
 	}
 }
 
@@ -173,9 +208,38 @@ std::string GameInfo::Difficulty()
 	return DiffList[difficulty];
 }
 
-std::string GameInfo::shotTypeList[6] = { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" };
+std::string GameInfo::GameName()
+{
+	switch (gameName)
+	{
+	case GameInfo::game::th10:
+		return std::string("東方風神録");
+		break;
+	case GameInfo::game::th11:
+		return std::string("東方地霊殿");
+		break;
+	default:
+		break;
+	}
+	return std::string();
+}
+
+
+
+void GameInfo::Init()
+{
+	//机体列表
+	shotTypeMap.insert(std::make_pair<int, std::vector<std::string>>(10, { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" }));
+	shotTypeMap.insert(std::make_pair<int, std::vector<std::string>>(11, { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" }));
+
+	exeMap.insert(std::make_pair< std::string, std::vector<std::string >>("th10", { "th10.exe","th10chs.exe","th10cht.exe" }));
+	exeMap.insert(std::make_pair< std::string, std::vector<std::string >>("th11", { "th11.exe","th11c" }));
+}
+
+std::unordered_map<int, std::vector<std::string>> GameInfo::shotTypeMap;
 std::string GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
 std::unordered_map<GameInfo::patternHeader, std::string> GameInfo::patternFilenameMap;
+std::unordered_map<std::string, std::vector<std::string>> GameInfo::exeMap;
 
 
 
@@ -190,18 +254,13 @@ GameInfo::CSVReader::CSVReader(std::string filename)
 GameInfo::patternHeader GameInfo::CSVReader::GetHeader()
 {
 	using namespace std;
-	string game;
-	int diff, shot;
-	vector<string> headerStrings = ReadRow();
-	game = headerStrings[0];
-	stringstream ss;
-	ss << headerStrings[1];
-	ss >> diff;
-	ss.clear();
-	ss.str("");
-	ss << headerStrings[2];
-	ss >> shot;
-	patternHeader header = { game,diff,shot };
+	vector<int> headerData = ReadIntRow();
+	patternHeader header = 
+	{ 
+		headerData[0],
+		headerData[1],
+		headerData[2],
+	};
 	return header;
 }
 
@@ -218,10 +277,27 @@ std::vector<std::string> GameInfo::CSVReader::ReadRow()
 	return strings;
 }
 
+std::vector<int> GameInfo::CSVReader::ReadIntRow()
+{
+	using namespace std;
+	vector<string> strings = ReadRow();
+	vector<int> ints;
+	stringstream ss;
+	for (auto iter=strings.begin();iter!=strings.end();iter++)
+	{
+		int temp;
+		ss << *iter;
+		ss >> temp;
+		ints.push_back(temp);
+		ss.clear();
+		ss.str("");
+	}
+	return ints;
+}
+
 bool GameInfo::patternHeader::operator==(const patternHeader& other)const
 {
-	if (this->gameName == other.gameName && this->difficulty == other.difficulty && this->shotType == other.shotType)
+	if (this->game == other.game && this->difficulty == other.difficulty && this->shotType == other.shotType)
 		return true;
 	else return false;
 }
-

@@ -8,9 +8,24 @@
 
 using namespace std;
 namespace fs = filesystem;  
-DWORD GetProcessIDByName(const char* processName, bool& found);
+bool GetProcessIDByName(const char* processName, DWORD& processId);
 BOOL SetPrivilage();
-void ClearScreen(HANDLE HOutput);
+void ClearScreen(HANDLE HOutput); 
+
+class comma_numpunct : public std::numpunct<char>
+{
+protected:
+    virtual char do_thousands_sep() const
+    {
+        return ',';
+    }
+
+    virtual std::string do_grouping() const
+    {
+        return "\03";
+    }
+};
+
 int main(void)
 {
     logger->info("Started!");
@@ -31,46 +46,90 @@ int main(void)
     SetConsoleCursorInfo(HOutput, &CursorInfo);
     SetConsoleCursorInfo(HOutbuffer, &CursorInfo);
 
-
-    GameInfo::ScanCSV();
+    //SetConsoleTextAttribute(HOutput, FOREGROUND_INTENSITY | FOREGROUND_BLUE);
+    //调整privilage
     SetPrivilage();
-    bool isFound=false;
-    DWORD procId;
-    while (!isFound)
-    {
-        procId = GetProcessIDByName("th10.exe", isFound);
-        if (isFound)
-            break;
-        Sleep(1000);
-    }
-    
-    MemoryReader mr = MemoryReader(procId);
-    GameInfo gameInfo = GameInfo("th10");
-    while (true)
-    {
-        int diff = mr.GetDiff();
-        int shotType = mr.GetShotType();
-        int stage = mr.GetStage();
-        int score = mr.GetScore()*10;
-        int faith = mr.GetFaith()*10;
-        gameInfo.SetInfo(diff, shotType);
-        gameInfo.SetData(stage, score, faith);
-        gameInfo.UpdateDelta();
-        ClearScreen(HOutput);
 
-        DWORD bytes = 0;
-        char chars[10000];
-        gameInfo.DisplayInfo();
-        ReadConsoleOutputCharacterA(HOutput, chars, 10000, { 0,0 }, &bytes);
-        WriteConsoleOutputCharacterA(HOutbuffer, chars, 10000, { 0,0 }, &bytes);
-        Sleep(50);
-    }
+
+    GameInfo::Init();
+    GameInfo::ScanCSV();
+    DWORD procId = 0;
+    string gameName;
+    //while (!isFound)
+    //{
+    //    procId = GetProcessIDByName("th10.exe", isFound);
+    //    if (isFound)
+    //        break;
+    //    Sleep(1000);
+    //}
+    bool isFound = false;
+    do
+    {
+        for (auto iter = GameInfo::exeMap.begin(); iter != GameInfo::exeMap.end(); iter++)
+        {
+
+            for (auto stringIter = iter->second.begin(); stringIter != iter->second.end(); stringIter++)
+            {
+                if (GetProcessIDByName(stringIter->c_str(), procId))
+                {
+                    gameName = iter->first;
+                    isFound = true;
+                    break;
+                }
+            }
+            if (isFound)
+                break;
+        }
+        Sleep(1000);
+    } while (!isFound);
+
+    MemoryReader* mr = nullptr;
+    GameInfo gameInfo = GameInfo::Create(gameName, procId, mr);
+
+    std::locale comma_locale(std::locale(), new comma_numpunct());
+    cout.imbue(comma_locale);
+    
+        while (true)
+        {
+            try 
+            {
+                int diff = mr->GetDiff();
+                int shotType = mr->GetShotType();
+                int stage = mr->GetStage();
+                int score = mr->GetScore();
+                vector<int> specials = mr->GetSpecials();
+                gameInfo.SetInfo(diff, shotType);
+                gameInfo.SetData(stage, score, specials);
+            }
+            catch (...)
+            {
+                auto exptr = std::current_exception();
+                try {
+                    rethrow_exception(exptr);
+                }
+                catch (exception& e)
+                {
+                    logger->error("Caught an exception: {0}, quitting", e.what());
+                    break;
+                }
+            }
+            //gameInfo.UpdateDelta();
+            ClearScreen(HOutput);
+
+            DWORD bytes = 0;
+            char chars[10000];
+            gameInfo.DisplayInfo();
+            ReadConsoleOutputCharacterA(HOutput, chars, 10000, { 0,0 }, &bytes);
+            WriteConsoleOutputCharacterA(HOutbuffer, chars, 10000, { 0,0 }, &bytes);
+            Sleep(50);
+        }
+    delete mr;
     CloseHandle(HOutput);
     CloseHandle(HOutbuffer);
     return 0;
 }
 
-DWORD GetProcessIDByName(const char* processName,bool& found)
+bool GetProcessIDByName(const char* processName,DWORD& processID)
 {
     HANDLE hProcessSnap;
     //HANDLE hProcess;
@@ -95,9 +154,8 @@ DWORD GetProcessIDByName(const char* processName,bool& found)
         CloseHandle(hProcessSnap);          // clean the snapshot object
         return(FALSE);
     }
-
+    bool found = false;
     // Now walk the snapshot of processes
-    found = false;
     do
     {
         if (strcmp(processName, pe32.szExeFile) == 0)
@@ -107,10 +165,10 @@ DWORD GetProcessIDByName(const char* processName,bool& found)
         }
     } while (Process32Next(hProcessSnap, &pe32));
 
-    DWORD ProcessID = pe32.th32ProcessID;
-    logger->info("Found ProcessID {0} of {1}", ProcessID, processName);
+    processID = pe32.th32ProcessID;
+    logger->info("Found ProcessID {0} of {1}", processID, processName);
     CloseHandle(hProcessSnap);
-    return ProcessID;
+    return found;
 }
 
 BOOL SetPrivilage()
@@ -184,3 +242,4 @@ void ClearScreen(HANDLE HOutput)
     // Move the cursor back to the top left for the next sequence of writes
     SetConsoleCursorPosition(HOutput, topLeft);
 }
+

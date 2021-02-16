@@ -96,3 +96,62 @@
 [2021-02-13 14:49:00.735] [main] [info] Found ProcessID 20360 of th10.exe
 [2021-02-13 14:49:01.239] [main] [info] Opening process, status code 0
 [2021-02-13 14:49:01.241] [main] [error] can't find csv file: invalid unordered_map<K, T> key
+[2021-02-13 21:40:16.110] [main] [info] Started!
+[2021-02-13 21:40:16.116] [main] [info] SetPrivilage sucessful
+[2021-02-13 21:40:16.116] [main] [info] Found a csv file 1.csv
+[2021-02-13 21:40:16.122] [main] [info] Found ProcessID 23368 of th10.exe
+[2021-02-13 21:40:16.122] [main] [info] Opening process, status code 0
+[2021-02-14 23:11:39.232] [main] [info] Started!
+[2021-02-14 23:11:39.238] [main] [info] SetPrivilage sucessful
+[2021-02-14 23:11:39.238] [main] [info] Found a csv file 1.csv
+[2021-02-14 23:11:39.244] [main] [info] Found ProcessID 19824 of th10.exe
+[2021-02-14 23:11:39.244] [main] [info] Opening process, status code 0
+[2021-02-14 23:19:52.529] [main] [info] Started!
+[2021-02-14 23:19:52.534] [main] [info] SetPrivilage sucessful
+[2021-02-14 23:19:52.534] [main] [info] Found a csv file 1.csv
+[2021-02-14 23:19:52.541] [main] [info] Found ProcessID 19824 of th10.exe
+[2021-02-14 23:19:52.541] [main] [info] Opening process, status code 0
+[2021-02-14 23:20:31.310] [main] [info] Started!
+[2021-02-14 23:20:31.315] [main] [info] SetPrivilage sucessful
+[2021-02-14 23:20:31.316] [main] [info] Found a csv file 1.csv
+[2021-02-14 23:20:31.322] [main] [info] Found ProcessID 19824 of th10.exe
+[2021-02-14 23:20:31.322] [main] [info] Opening process, status code 0
+[2021-02-15 11:55:32.519] [main] [info] Started!
+[2021-02-15 11:55:32.524] [main] [info] SetPrivilage sucessful
+[2021-02-15 11:55:32.525] [main] [info] Found a csv file 1.csv
+[2021-02-15 11:55:32.529] [main] [info] Found ProcessID 8504 of th10.exe
+[2021-02-15 11:55:32.530] [main] [info] Opening process, status code 0
+[2021-02-15 12:40:04.386] [main] [info] Started!
+[2021-02-15 12:40:04.390] [main] [info] SetPrivilage sucessful
+[2021-02-15 12:40:04.391] [main] [info] Found a csv file 1.csv
+[2021-02-15 12:40:04.397] [main] [info] Found ProcessID 8504 of th10.exe
+[2021-02-15 12:40:04.397] [main] [info] Opening process, status code 0
+[2021-02-16 14:18:18.854] [main] [info] Started!
+[2021-02-16 14:18:18.861] [main] [info] SetPrivilage sucessful
+[2021-02-16 14:18:18.862] [main] [info] Found a csv file 1.csv
+[2021-02-16 14:18:18.867] [main] [info] Found ProcessID 19224 of th10.exe
+[2021-02-16 14:18:18.872] [main] [info] Found ProcessID 19224 of th10chs.exe
+[2021-02-16 14:18:18.878] [main] [info] Found ProcessID 19224 of th10cht.exe
+[2021-02-16 14:18:18.882] [main] [info] Found ProcessID 25992 of th11.exe
+[2021-02-16 14:18:19.889] [main] [info] Opening process, status code 18
+[2021-02-16 14:18:19.890] [main] [error] can't find csv file: invalid unordered_map<K, T> key
+[2021-02-16 14:24:46.976] [main] [info] Started!
+[2021-02-16 14:24:46.979] [main] [info] SetPrivilage sucessful
+[2021-02-16 14:24:46.980] [main] [info] Found a csv file 1.csv
+[2021-02-16 14:24:46.986] [main] [info] Found ProcessID 28604 of th10.exe
+[2021-02-16 14:24:46.991] [main] [info] Found ProcessID 28604 of th10chs.exe
+[2021-02-16 14:24:46.997] [main] [info] Found ProcessID 28604 of th10cht.exe
+[2021-02-16 14:24:47.003] [main] [info] Found ProcessID 5784 of th11.exe
+[2021-02-16 14:24:48.017] [main] [info] Opening process, status code 18
+[2021-02-16 14:24:48.019] [main] [error] can't find csv file: invalid unordered_map<K, T> key
+[2021-02-16 14:45:00.886] [main] [info] Started!
+[2021-02-16 14:45:00.896] [main] [info] SetPrivilage sucessful
+[2021-02-16 14:45:00.897] [main] [info] Found a csv file 1.csv
+[2021-02-16 14:45:00.905] [main] [info] Found ProcessID 17300 of th10.exe
+[2021-02-16 14:45:00.913] [main] [info] Found ProcessID 17300 of th10chs.exe
+[2021-02-16 14:45:00.921] [main] [info] Found ProcessID 17300 of th10cht.exe
+[2021-02-16 14:45:00.926] [main] [info] Found ProcessID 9536 of th11.exe
+[2021-02-16 14:45:01.932] [main] [info] Opening process, status code 18
+[2021-02-16 14:45:01.933] [main] [error] can't find csv file: invalid unordered_map<K, T> key
+[2021-02-16 14:45:03.699] [main] [error] read failed, error code 299
+[2021-02-16 14:45:03.700] [main] [error] Caught an exception: ReadProcessMemory failed, quitting

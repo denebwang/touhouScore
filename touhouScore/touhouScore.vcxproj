@@ -146,12 +146,14 @@
     <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="MemoryReader.cpp" />
+    <ClCompile Include="StageInfo.cpp" />
     <ClCompile Include="touhouScore.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="MemoryReader.h" />
+    <ClInclude Include="StageInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

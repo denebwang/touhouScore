@@ -4,31 +4,26 @@
 #include <vector>
 #include <fstream>
 #include <unordered_map>
-
-class StageInfo
-{
-public:
-	StageInfo(int stage = 0, int score = 0, int faith = 0);
-	~StageInfo();
-
-	void SetData(int score, int faith);
-	void Reset();
-	int stage;
-	int score;
-	int faith;
-};
-
-class TH10Info:public StageInfo{};
+#include <memory>
+#include <array>
+#include "StageInfo.h"
+#include "MemoryReader.h"
 
 class GameInfo
 {
 public:
 	struct patternHeader
 	{
-		std::string gameName;
+		int game;
 		int difficulty;
 		int shotType;
 		bool operator==(const patternHeader& other)const;
+	};
+	enum class game :int
+	{
+		invalid=0,
+		th10 = 10,
+		th11 = 11
 	};
 private:
 
@@ -38,36 +33,50 @@ private:
 		CSVReader(std::string filename);
 		patternHeader GetHeader();
 		std::vector<std::string> ReadRow();
+		std::vector<int> ReadIntRow();
 	private:
 		std::ifstream fin;
 	};
 
 	static std::unordered_map<patternHeader,std::string> patternFilenameMap;
 	static std::string DiffList[4];
-	static std::string shotTypeList[6];
+	static std::unordered_map<int,std::vector<std::string>> shotTypeMap;
+	
+	
 
-	StageInfo stageInfo[6];
-	StageInfo PatternInfo[6];//路线
-	StageInfo delta[6];//和路线的差值
+	std::vector<std::string> shotTypeList;
+	//StageInfo stageInfo[6];
+	//StageInfo PatternInfo[6];//路线
+	//StageInfo delta[6];//和路线的差值
+
+	std::array<std::unique_ptr<StageInfo>, 6> stageInfo;
+	std::array<std::unique_ptr<StageInfo>, 6> PatternInfo;
+	std::array<std::unique_ptr<StageInfo>, 6> delta;
+
 
 	int difficulty;
 	int shotType;
 
 	void SetPattern(patternHeader header);
 public:
-	GameInfo(std::string gameName);
+	//GameInfo(std::string gameName);
+	GameInfo(game gameName);
 	~GameInfo();
 	void SetInfo(int diff, int shot);
-	void SetData(int stage, int score, int faith);
-	void UpdateDelta();
+	void SetData(int stage, int score, std::vector<int> speical);
+	void UpdateDelta(int stage);
 	patternHeader GetHeader();
+	static GameInfo Create(std::string gameName, DWORD processID, MemoryReader*& mr);
 	static void ScanCSV();
+	static void Init();
 	void DisplayInfo();
 	std::string ShotType();
 	std::string Difficulty();
+	std::string GameName();
 
-	std::string gameName;
-	
+
+	game gameName;
+	static std::unordered_map<std::string, std::vector<std::string>> exeMap;//游戏文件名
 	
 };
 
@@ -81,7 +90,7 @@ namespace std {
 			// Compute individual hash values for first,
 			// second and third and combine them using XOR
 			// and bit shifting:
-			return ((hash<string>()(header.gameName)
+			return ((hash<int>()(header.game)
 				^ (hash<int>()(header.difficulty) << 1)) >> 1)
 				^ (hash<int>()(header.shotType) << 1);
 		}
