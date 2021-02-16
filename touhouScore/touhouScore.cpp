@@ -96,7 +96,7 @@ int main(void)
                 int diff = mr->GetDiff();
                 int shotType = mr->GetShotType();
                 int stage = mr->GetStage();
-                int score = mr->GetScore();
+                unsigned int score = mr->GetScore();
                 vector<int> specials = mr->GetSpecials();
                 gameInfo.SetInfo(diff, shotType);
                 gameInfo.SetData(stage, score, specials);

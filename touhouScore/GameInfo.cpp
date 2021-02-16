@@ -18,7 +18,7 @@ void GameInfo::SetPattern(patternHeader header)
 	CSVReader reader(filename);
 	reader.ReadRow();
 	reader.ReadRow();//skip header
-	vector<int> rowinfo;
+	vector<unsigned int> rowinfo;
 	for (int i = 0; i < 6; i++)
 	{
 		rowinfo = reader.ReadIntRow();
@@ -86,7 +86,7 @@ void GameInfo::SetInfo(int diff, int shot)
 	}
 }
 
-void GameInfo::SetData(int stage, int score, std::vector<int> specials)
+void GameInfo::SetData(int stage,unsigned  int score, std::vector<int> specials)
 {
 	if (stage == 0)return;
 	
@@ -254,7 +254,7 @@ GameInfo::CSVReader::CSVReader(std::string filename)
 GameInfo::patternHeader GameInfo::CSVReader::GetHeader()
 {
 	using namespace std;
-	vector<int> headerData = ReadIntRow();
+	vector<unsigned int> headerData = ReadIntRow();
 	patternHeader header = 
 	{ 
 		headerData[0],
@@ -277,15 +277,15 @@ std::vector<std::string> GameInfo::CSVReader::ReadRow()
 	return strings;
 }
 
-std::vector<int> GameInfo::CSVReader::ReadIntRow()
+std::vector<unsigned int> GameInfo::CSVReader::ReadIntRow()
 {
 	using namespace std;
 	vector<string> strings = ReadRow();
-	vector<int> ints;
+	vector<unsigned int> ints;
 	stringstream ss;
 	for (auto iter=strings.begin();iter!=strings.end();iter++)
 	{
-		int temp;
+		unsigned int temp;
 		ss << *iter;
 		ss >> temp;
 		ints.push_back(temp);

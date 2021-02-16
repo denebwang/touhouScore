@@ -33,7 +33,7 @@ private:
 		CSVReader(std::string filename);
 		patternHeader GetHeader();
 		std::vector<std::string> ReadRow();
-		std::vector<int> ReadIntRow();
+		std::vector<unsigned int> ReadIntRow();
 	private:
 		std::ifstream fin;
 	};
@@ -63,7 +63,7 @@ public:
 	GameInfo(game gameName);
 	~GameInfo();
 	void SetInfo(int diff, int shot);
-	void SetData(int stage, int score, std::vector<int> speical);
+	void SetData(int stage,unsigned int score, std::vector<int> speical);
 	void UpdateDelta(int stage);
 	patternHeader GetHeader();
 	static GameInfo Create(std::string gameName, DWORD processID, MemoryReader*& mr);

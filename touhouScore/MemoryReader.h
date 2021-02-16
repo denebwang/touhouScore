@@ -6,7 +6,7 @@ class MemoryReader
 public:
 	MemoryReader(DWORD processID);
 	~MemoryReader();
-	virtual int GetScore() = 0;
+	virtual unsigned int GetScore() = 0;
 	virtual int GetStage() = 0;
 	virtual std::vector<int> GetSpecials() = 0;
 	virtual int GetShotType() = 0;
@@ -22,7 +22,7 @@ class TH10Reader :public MemoryReader
 public:
 	TH10Reader(DWORD processID);
 	~TH10Reader();
-	int GetScore()override;
+	unsigned int GetScore()override;
 	int GetStage()override;
 	std::vector<int> GetSpecials()override;
 	int GetShotType()override;
@@ -42,7 +42,7 @@ class TH11Reader : public MemoryReader
 public:
 	TH11Reader(DWORD processID);
 	~TH11Reader();
-	int GetScore()override;
+	unsigned int GetScore()override;
 	int GetStage()override;
 	int GetShotType()override;
 	int GetDiff()override;

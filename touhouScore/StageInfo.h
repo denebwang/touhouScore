@@ -12,7 +12,7 @@ public:
 	virtual void DisplaySpecials() = 0;
 	virtual void Display(int mode) = 0;
 	int stage;
-	int score;
+	unsigned int score;//·ÀÖ¹21ÒÚÒç³ö
 	std::vector<int> specials;
 };
 
