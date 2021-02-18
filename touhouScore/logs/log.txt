@@ -283,3 +283,35 @@
 [2021-02-16 17:45:08.168] [main] [error] can't find csv file: invalid unordered_map<K, T> key
 [2021-02-16 17:45:17.194] [main] [error] read failed, error code 299
 [2021-02-16 17:45:17.200] [main] [error] Caught an exception: ReadProcessMemory failed, quitting
+[2021-02-18 16:26:10.203] [main] [info] Started!
+[2021-02-18 16:26:10.208] [main] [info] SetPrivilage sucessful
+[2021-02-18 16:26:10.208] [main] [info] Found a csv file 1.csv
+[2021-02-18 16:26:10.209] [main] [info] Scanning for Games...
+[2021-02-18 16:29:02.957] [main] [info] Started!
+[2021-02-18 16:29:02.962] [main] [info] SetPrivilage sucessful
+[2021-02-18 16:29:02.963] [main] [info] Found a csv file 1.csv
+[2021-02-18 16:29:02.963] [main] [info] Scanning for Games...
+[2021-02-18 16:32:49.086] [main] [info] Started!
+[2021-02-18 16:32:49.089] [main] [info] SetPrivilage sucessful
+[2021-02-18 16:32:49.089] [main] [info] Found a csv file 1.csv
+[2021-02-18 16:32:49.089] [main] [info] Scanning for Games...
+[2021-02-18 16:32:56.353] [main] [info] Found th10, ID 18628
+[2021-02-18 16:32:56.354] [main] [info] Opening process, status code 5
+[2021-02-18 16:32:56.354] [main] [error] read failed, error code 6
+[2021-02-18 16:32:56.355] [main] [error] Caught an exception: ReadProcessMemory failed, quitting
+[2021-02-18 16:33:22.729] [main] [info] Started!
+[2021-02-18 16:33:22.734] [main] [info] SetPrivilage sucessful
+[2021-02-18 16:33:22.734] [main] [info] Found a csv file 1.csv
+[2021-02-18 16:33:22.735] [main] [info] Scanning for Games...
+[2021-02-18 16:33:22.742] [main] [info] Found th10, ID 18628
+[2021-02-18 16:33:22.742] [main] [info] Opening process, status code 5
+[2021-02-18 16:33:22.742] [main] [error] read failed, error code 6
+[2021-02-18 16:33:22.744] [main] [error] Caught an exception: ReadProcessMemory failed, quitting
+[2021-02-18 16:33:41.891] [main] [info] Started!
+[2021-02-18 16:33:41.897] [main] [info] SetPrivilage sucessful
+[2021-02-18 16:33:41.897] [main] [info] Found a csv file 1.csv
+[2021-02-18 16:33:41.898] [main] [info] Scanning for Games...
+[2021-02-18 16:33:41.903] [main] [info] Found th10, ID 18628
+[2021-02-18 16:33:41.903] [main] [info] Opening process, status code 5
+[2021-02-18 16:33:56.350] [main] [error] read failed, error code 6
+[2021-02-18 16:33:56.365] [main] [error] Caught an exception: ReadProcessMemory failed, quitting

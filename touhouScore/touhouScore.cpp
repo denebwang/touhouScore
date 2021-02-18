@@ -1,13 +1,13 @@
 ﻿#include <windows.h>
 #include <tlhelp32.h>
 #include <iostream>
-#include <filesystem>
+//#include <filesystem>
 #include "MemoryReader.h"
 #include "GameInfo.h"
 #include"logger.h"
 
 using namespace std;
-namespace fs = filesystem;  
+//namespace fs = filesystem;  
 bool GetProcessIDByName(const char* processName, DWORD& processId);
 BOOL SetPrivilage();
 void ClearScreen(HANDLE HOutput); 
@@ -62,7 +62,9 @@ int main(void)
     //        break;
     //    Sleep(1000);
     //}
-    cout << "Scanning for Games...\n";
+    //因为设置了显示为houtbuffer，cout不能直接显示
+    //cout << "Scanning for Games...\n";
+    logger->info("Scanning for Games...");
     bool isFound = false;
     do
     {
@@ -81,9 +83,11 @@ int main(void)
             if (isFound)
                 break;
         }
+		if (isFound)
+			break;
         Sleep(1000);
-    } while (!isFound);
-
+    } while (true);
+    logger->info("Found {0}, ID {1}", gameName, procId);
     MemoryReader* mr = nullptr;
     GameInfo gameInfo = GameInfo::Create(gameName, procId, mr);
     //逗号分隔数字
@@ -167,7 +171,7 @@ bool GetProcessIDByName(const char* processName,DWORD& processID)
     } while (Process32Next(hProcessSnap, &pe32));
 
     processID = pe32.th32ProcessID;
-    logger->info("Found ProcessID {0} of {1}", processID, processName);
+    //logger->info("Found ProcessID {0} of {1}", processID, processName);
     CloseHandle(hProcessSnap);
     return found;
 }

@@ -35,9 +35,9 @@ TH10Reader::~TH10Reader()
 {
 }
 
-unsigned int TH10Reader::GetScore()
+long long TH10Reader::GetScore()
 {
-    return unsigned int(ReadInt(ScoreAddr))*10;
+    return long long(ReadInt(ScoreAddr))*10;
 }
 
 int TH10Reader::GetStage()
@@ -107,9 +107,9 @@ TH11Reader::~TH11Reader()
 {
 }
 
-unsigned int TH11Reader::GetScore()
+long long TH11Reader::GetScore()
 {
-    return unsigned int(ReadInt(ScoreAddr))*10;
+    return long long(ReadInt(ScoreAddr))*10;
 }
 
 int TH11Reader::GetStage()
