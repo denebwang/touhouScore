@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<vector>
 #include<string>
 class StageInfo
@@ -12,39 +12,42 @@ public:
 	virtual void DisplaySpecials() = 0;
 	virtual void Display(int mode) = 0;
 	int stage;
-	long long score;//·ÀÖ¹21ÒÚÒç³ö
+	long long score;//é˜²æ­¢21äº¿æº¢å‡º
 	std::vector<int> specials;
 };
 
 class TH10Info :public StageInfo
 {
 public:
-	const std::string specialName1 = "faith";
+	const std::vector<std::string> specialNames = { "faith" };
 
 	TH10Info(const TH10Info& other);
 	TH10Info(int stage = 0, int score = 0, int faith = 0);
 
 	TH10Info& operator=(const TH10Info& other);
-	// Í¨¹ý StageInfo ¼Ì³Ð
-	void SetData(int score, std::vector<int>& specials) override;//specialÖ»ÓÐÒ»¸öfaith
+	// é€šè¿‡ StageInfo ç»§æ‰¿
+	void SetData(int score, std::vector<int>& specials) override;
 	void Reset() override;
 	void DisplaySpecials() override;
 	void Display(int mode) override;
+
+
 };
 
 class TH11Info :public StageInfo
 {
 public:
-	const std::string specialName1 = "faith";
-	const std::string specialName2 = "graze";
+	const std::vector<std::string> specialNames = { "faith","graze" };
 
 	//TH11Info(const TH10Info& other);
 	TH11Info(int stage = 0, int score = 0, int faith = 0, int graze = 0);
 
 	//TH11Info& operator=(const TH10Info& other);
-	// Í¨¹ý StageInfo ¼Ì³Ð
+	// é€šè¿‡ StageInfo ç»§æ‰¿
 	void SetData(int score, std::vector<int>& specials) override;
 	void Reset() override;
 	void DisplaySpecials() override;
 	void Display(int mode) override;
+
+
 };

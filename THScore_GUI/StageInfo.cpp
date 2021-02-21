@@ -1,4 +1,4 @@
-#include <vector>
+ï»¿#include <vector>
 #include <iomanip>
 #include <iostream>
 
@@ -16,6 +16,7 @@ StageInfo::StageInfo(int stage, int score, std::vector<int> specials)
 StageInfo::~StageInfo()
 {
 }
+
 
 
 TH10Info::TH10Info(const TH10Info& other)
@@ -42,7 +43,6 @@ void TH10Info::SetData(int score, std::vector<int>& specials)
 {
 	this->score = score;
 	this->specials = specials;
-	//this->specials[0] *= 10;//ÐÅÑö·µ»ØÖµÃ»ÓÐ¸öÎ»
 }
 
 void TH10Info::Reset()
@@ -72,6 +72,7 @@ void TH10Info::Display(int mode)
 		<< std::setw(15) << specials[0]
 		<< std::endl;
 }
+
 
 TH11Info::TH11Info(int stage, int score, int faith, int graze)
 {
@@ -125,3 +126,4 @@ void TH11Info::Display(int mode)
 		<< std::setw(15) << specials[1]
 		<< std::endl;
 }
+

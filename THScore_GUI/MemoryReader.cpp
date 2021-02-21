@@ -1,4 +1,4 @@
-#include "MemoryReader.h"
+ï»¿#include "MemoryReader.h"
 #include <iostream>
 #include <exception>
 #include "logger.h"
@@ -54,34 +54,34 @@ int TH10Reader::GetShotType()
 {
     switch (ReadInt(ShotTypeAddr1))
     {
-    case 0://ÁéÃÎ
+    case 0://çµæ¢¦
         switch (ReadInt(ShotTypeAddr2))
         {
         case 0:
-            return 0;//ÃÎA
+            return 0;//æ¢¦A
             break;
         case 1:
-            return 1;//ÃÎB
+            return 1;//æ¢¦B
             break;
         case 2:
-            return 2;//ÃÎC
+            return 2;//æ¢¦C
             break;
         default:
             logger->error("Wrong sub shottype num {0}", ReadInt(ShotTypeAddr2));
             break;
         }
         break;
-    case 1://ÂíÁåÊí
+    case 1://é©¬é“ƒè–¯
         switch (ReadInt(ShotTypeAddr2))
         {
         case 0:
-            return 3;//Ä§A
+            return 3;//é­”A
             break;
         case 1:
-            return 4;//Ä§B
+            return 4;//é­”B
             break;
         case 2:
-            return 5;//Ä§C
+            return 5;//é­”C
             break;
         default:
             logger->error("Wrong sub shottype num { 0 }", ReadInt(ShotTypeAddr2));
@@ -121,34 +121,34 @@ int TH11Reader::GetShotType()
 {
     switch (ReadInt(ShotTypeAddr1))
     {
-    case 0://ÁéÃÎ
+    case 0://çµæ¢¦
         switch (ReadInt(ShotTypeAddr2))
         {
         case 0:
-            return 0;//ÃÎA
+            return 0;//æ¢¦A
             break;
         case 1:
-            return 1;//ÃÎB
+            return 1;//æ¢¦B
             break;
         case 2:
-            return 2;//ÃÎC
+            return 2;//æ¢¦C
             break;
         default:
             logger->error("Wrong sub shottype num {0}", ReadInt(ShotTypeAddr2));
             break;
         }
         break;
-    case 1://ÂíÁåÊí
+    case 1://é©¬é“ƒè–¯
         switch (ReadInt(ShotTypeAddr2))
         {
         case 0:
-            return 3;//Ä§A
+            return 3;//é­”A
             break;
         case 1:
-            return 4;//Ä§B
+            return 4;//é­”B
             break;
         case 2:
-            return 5;//Ä§C
+            return 5;//é­”C
             break;
         default:
             logger->error("Wrong sub shottype num { 0 }", ReadInt(ShotTypeAddr2));
