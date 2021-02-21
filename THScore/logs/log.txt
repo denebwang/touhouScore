@@ -120,3 +120,5 @@
 [2021-02-21 23:00:03.276] [main] [info] Found th11, ID 25552
 [2021-02-21 23:00:03.276] [main] [info] Opening process, status code 18
 [2021-02-21 23:00:04.963] [main] [error] can't find csv file: invalid unordered_map<K, T> key
+[2021-02-21 23:33:16.942] [main] [info] Found a csv file 1.csv
+[2021-02-21 23:33:16.945] [main] [info] SetPrivilage successful
