@@ -129,3 +129,7 @@
 [2021-02-21 23:35:36.120] [main] [error] can't find csv file: invalid unordered_map<K, T> key
 [2021-02-21 23:35:41.697] [main] [error] read failed, error code 299
 [2021-02-21 23:35:41.699] [main] [error] Caught an exception: ReadProcessMemory failed, quitting
+[2021-02-22 17:41:12.487] [main] [info] Found a csv file 1.csv
+[2021-02-22 17:41:12.489] [main] [info] SetPrivilage successful
+[2021-02-22 18:44:29.972] [main] [info] Found a csv file 1.csv
+[2021-02-22 18:44:29.974] [main] [info] SetPrivilage successful

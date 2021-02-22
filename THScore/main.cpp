@@ -4,13 +4,15 @@
 #include <iostream>
 #include "MemoryReader.h"
 #include "GameInfo.h"
-#include"logger.h"
+#include "logger.h"
+#include "spdlog/spdlog.h"
 #include <QtWidgets/QApplication>
 
 BOOL SetPrivilage();
 
 int main(int argc, char *argv[])
 {
+	logger->flush_on(spdlog::level::info);
 	GameInfo::Init();
 	GameInfo::ScanCSV();
 	SetPrivilage();

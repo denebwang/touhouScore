@@ -177,8 +177,15 @@ void GameInfo::ScanCSV()
 	using namespace std;
 	namespace fs = filesystem;
 	vector<fs::path> files;
-	for (auto& p : fs::directory_iterator("csv"))
-		files.push_back(p.path());
+	try 
+	{
+		for (auto& p : fs::directory_iterator("csv"))
+			files.push_back(p.path());
+	}
+	catch (fs::filesystem_error e)
+	{
+		logger->error("ScanCSV error: {0}", e.what());
+	}
 	for (auto file : files)
 	{
 		QFileInfo fileInfo(file);
