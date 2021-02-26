@@ -341,3 +341,9 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/THScore/logs/log.9.txt
+/THScore/logs/log.8.txt
+/THScore/logs/log.7.txt
+/THScore/logs/log.6.txt
+/THScore/logs/log.5.txt
+/THScore/logs/log.10.txt

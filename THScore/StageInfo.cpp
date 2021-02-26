@@ -108,12 +108,15 @@ bool StageInfo::CheckValid()
 	case 1://all
 		if (sections.front().GetSection() == Section::All)
 			return true;
+		break;
 	case 2://mid+boss
 		if (sections[0].GetSection() == Section::Mid && sections[1].GetSection() == Section::Boss)
 			return true;
+		break;
 	case 3:
 		if (sections[0].GetSection() == Section::Mid && sections[1].GetSection() == Section::Boss && sections[2].GetSection() == Section::Bonus)
 			return true;
+		break;
 	default:
 		break;
 	}
@@ -183,14 +186,25 @@ long long StageInfo::GetScore(Section section, int mode)
 	{
 		if (si.GetSection() == section)
 		{
-			si.GetScore(mode);
+			return si.GetScore(mode);
 		}
 	}
+	//没找到
 	if (section == Section::Bonus)
 	{
 		return GetScore(Section::Boss, mode);
 	}
-	else throw std::out_of_range("Section error in StageInfo::GetScore");
+	else
+	{
+		for each (SectionInfo si in sections)
+		{
+			if (si.GetSection() == Section::All)
+			{
+				return GetScore(Section::All, mode);
+			}
+		}
+		throw std::out_of_range("Section error in StageInfo::GetScore");
+	}
 }
 
 long long StageInfo::GetScore(int mode)
@@ -198,13 +212,13 @@ long long StageInfo::GetScore(int mode)
 	return GetScore(currentSection, mode);
 }
 
-std::vector<int>& StageInfo::GetSpecials(Section section, int mode)
+const std::vector<int>& StageInfo::GetSpecials(Section section, int mode)
 {
 	for each (SectionInfo si in sections)
 	{
 		if (si.GetSection() == section)
 		{
-			si.GetSpecials(mode);
+			return si.GetSpecials(mode);
 		}
 	}
 
@@ -212,10 +226,20 @@ std::vector<int>& StageInfo::GetSpecials(Section section, int mode)
 	{
 		return GetSpecials(Section::Boss, mode);
 	}
-	else throw std::out_of_range("Section error in StageInfo::GetSpecials");
+	else
+	{
+		for each (SectionInfo si in sections)
+		{
+			if (si.GetSection() == Section::All)
+			{
+				return GetSpecials(Section::All, mode);
+			}
+		}
+		throw std::out_of_range("Section error in StageInfo::GetSpecials");
+	}
 }
 
-std::vector<int>& StageInfo::GetSpecials(int mode)
+const std::vector<int>& StageInfo::GetSpecials(int mode)
 {
 	return GetSpecials(currentSection, mode);
 }
@@ -240,7 +264,7 @@ QStringList StageInfo::GetSectionNames()
 			temp = "Boss";
 			break;
 		case Section::Bonus:
-			temp = "Bouns";
+			temp = "Bonus";
 			break;
 		}
 		list << temp;

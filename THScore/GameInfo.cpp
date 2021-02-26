@@ -120,6 +120,10 @@ bool GameInfo::SetInfo(int diff, int shot)
 
 void GameInfo::SetData(int stage, long long score, std::vector<int>& specials)
 {	
+	if (stage<1)
+	{
+		return;
+	}
 	if (stage < currentStage)//推把了
 	{
 		for each (StageInfo si in stageInfo)
@@ -137,6 +141,10 @@ void GameInfo::SetData(int stage, long long score, std::vector<int>& specials)
 
 void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 {
+	if (currentStage<1)
+	{
+		return;
+	}
 	Section current = stageInfo[currentStage - 1].GetCurrentSection();
 	static int hp = 0, time = 0;
 	switch (game)

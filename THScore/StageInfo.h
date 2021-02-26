@@ -23,8 +23,8 @@ public:
 	//todo: get和set中状态向all坍缩
 	long long GetScore(Section section, int mode);
 	long long GetScore(int mode);
-	std::vector<int>& GetSpecials(Section section, int mode);
-	std::vector<int>& GetSpecials(int mode);
+	const std::vector<int>& GetSpecials(Section section, int mode);
+	const std::vector<int>& GetSpecials(int mode);
 	QStringList GetSectionNames();
 
 	void ClearSection();

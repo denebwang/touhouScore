@@ -19,7 +19,7 @@ int MemoryReader::ReadInt(DWORD address)
     byte buffer[4];
     if (!ReadProcessMemory(gameProcessHandle, (LPCVOID)address, &buffer, 4, 0))
     {
-        logger->error("read failed, error code {0}", GetLastError());
+        logger->error("read failed, error code {0}, while reading {1}", GetLastError(), address);
         throw std::exception("ReadProcessMemory failed");
     }
     unsigned int value;
@@ -29,7 +29,13 @@ int MemoryReader::ReadInt(DWORD address)
 
 int MemoryReader::ReadIntFromPointer(DWORD ptr, DWORD offset)
 {
-    return ReadInt(ReadInt(ptr) + offset);
+    DWORD pointedAddr = ReadInt(ptr);
+    if (pointedAddr != NULL)
+        return ReadInt(pointedAddr + offset);
+    else
+    {
+        return 0;
+    }
 }
 
 TH10Reader::TH10Reader(DWORD processID) : MemoryReader(processID)

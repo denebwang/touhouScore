@@ -70,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
 	InfoUpdateTimer->setInterval(100);
 	connect(InfoUpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateInfo);	
 	void (QTimer:: *timerStart)() = &QTimer::start;
+	connect(this, &MainWindow::FoundGame, this, &MainWindow::ReadInfo);
 	connect(this, &MainWindow::FoundGame, this, &MainWindow::InitChart);
 	connect(this, &MainWindow::FoundGame, InfoUpdateTimer, timerStart);	
 	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowInfo);
@@ -146,8 +147,6 @@ void MainWindow::UpdateInfo()
 
 void MainWindow::InitChart()
 {
-	//先读取一次信息
-	ReadInfo();
 	//更新表格
 	int columnCount = gameInfo->ColumnCount();
 	int rowCount = gameInfo->RowCount();
@@ -171,15 +170,15 @@ void MainWindow::InitChart()
 		for (int index = 0; index < SectionNames.size(); index++)
 		{
 			QTableWidgetItem* newItem = new QTableWidgetItem(SectionNames.at(index));
-			ui.tableWidget->setItem(rowOffset , 1, newItem);
-			ui.tableWidget->setSpan(rowOffset + index * 3, 1, 3, 1);
+			ui.tableWidget->setItem(rowOffset + index * 3 , 1, newItem);
+			ui.tableWidget->setSpan(rowOffset + index * 3 , 1, 3, 1);
 		}
 		//类别
 		for (int row = 0; row < rowCount; row += 3)
 		{
-			ui.tableWidget->item(row, 2)->setData(Qt::DisplayRole, "Game");
-			ui.tableWidget->item(row+1, 2)->setData(Qt::DisplayRole, "Pattern");
-			ui.tableWidget->item(row+2, 2)->setData(Qt::DisplayRole, "Delta");
+			ui.tableWidget->setItem(row, 2, new QTableWidgetItem("Game"));
+			ui.tableWidget->setItem(row + 1, 2, new QTableWidgetItem("Pattern"));
+			ui.tableWidget->setItem(row + 2, 2, new QTableWidgetItem("Delta"));
 		}
 		rowOffset += stageSectionCount * 3;
 
@@ -216,28 +215,28 @@ void MainWindow::ShowInfo()
 		int rowBias = 0, sectionCount = 0;
 		for (auto sectionInfo = sections.begin(); sectionInfo != sections.end(); sectionInfo++)
 		{
-			//分数 col=4
-			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 4)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(0)));
-			//其他 col=4+index
+			//分数 col=3
+			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(0)));
+			//其他 col=3+index
 			std::vector<int> specials = sectionInfo->GetSpecials(0);
 
 			for (int i = 0; i < specials.size(); i++)
 			{
-				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 4 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
 			}
 			//差值显示
 			rowBias = 2;
-			//分数 col=4
-			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3 + rowBias, 4)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(2)));
-			//其他 col=4+index
+			//分数 col=3
+			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(2)));
+			//其他 col=3+index
 			specials = sectionInfo->GetSpecials(2);
 			for (int i = 0; i < specials.size(); i++)
 			{
-				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3 + rowBias, 4 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3 , 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
 			}
 			sectionCount++;
 		}
-		rowIndex += sectionCount;
+		rowIndex += sectionCount*3;
 	}
 
 
@@ -259,13 +258,14 @@ void MainWindow::UpdatePattern()
 			//分数 col=3
 			ui.tableWidget->item(sectionCount * 3 + rowBias, 3)->setData(Qt::DisplayRole, loc.toString(section.GetScore(1)));
 			//其他 col=3+index
-			std::vector<int> specials = section.GetSpecials(1);
+			const std::vector<int> specials = section.GetSpecials(1);
 			for (int i = 0; i < specials.size(); i++)
 			{
 				ui.tableWidget->item(sectionCount * 3 + rowBias, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
 			}
+			sectionCount++;
 		}
-		sectionCount++;
+		
 	}
 }
 
