@@ -103,6 +103,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MemoryReader.cpp" />
+    <ClCompile Include="SectionInfo.cpp" />
     <ClCompile Include="StageInfo.cpp" />
     <QtRcc Include="mainwindow.qrc" />
     <QtUic Include="mainwindow.ui" />
@@ -113,9 +114,11 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Enums.h" />
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="MemoryReader.h" />
+    <ClInclude Include="SectionInfo.h" />
     <ClInclude Include="StageInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

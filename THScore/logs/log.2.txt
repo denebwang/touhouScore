@@ -1,0 +1,4 @@
+[2021-02-26 13:07:11.946] [main] [info] Found a csv file 2.csv
+[2021-02-26 13:07:11.948] [main] [info] SetPrivilage successful
+[2021-02-26 13:07:13.075] [main] [info] Found th10, ID 13844
+[2021-02-26 13:07:13.075] [main] [info] Opening process, status code 0

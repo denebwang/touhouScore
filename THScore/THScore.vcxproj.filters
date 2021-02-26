@@ -50,6 +50,9 @@
     <ClCompile Include="MemoryReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SectionInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="StageInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -64,7 +67,13 @@
     <ClInclude Include="MemoryReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SectionInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="StageInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Enums.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -27,6 +27,11 @@ int MemoryReader::ReadInt(DWORD address)
     return value;
 }
 
+int MemoryReader::ReadIntFromPointer(DWORD ptr, DWORD offset)
+{
+    return ReadInt(ReadInt(ptr) + offset);
+}
+
 TH10Reader::TH10Reader(DWORD processID) : MemoryReader(processID)
 {
 }
@@ -97,6 +102,16 @@ int TH10Reader::GetShotType()
 int TH10Reader::GetDiff()
 {
     return ReadInt(DifficultyAddr);
+}
+
+int TH10Reader::GetBossHP()
+{
+    return ReadIntFromPointer(BossHPptr, BossHPOffset);
+}
+
+int TH10Reader::GetStageFrame()
+{
+    return ReadInt(FrameCountAddr);
 }
 
 TH11Reader::TH11Reader(DWORD processID) : MemoryReader(processID)

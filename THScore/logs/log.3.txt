@@ -1,0 +1,5 @@
+[2021-02-26 13:06:52.463] [main] [info] Found a csv file 2.csv
+[2021-02-26 13:06:52.466] [main] [info] SetPrivilage successful
+[2021-02-26 13:06:53.605] [main] [info] Found th10, ID 13844
+[2021-02-26 13:06:53.605] [main] [info] Opening process, status code 0
+[2021-02-26 13:06:53.756] [main] [error] Stage1 is not filled correctly!

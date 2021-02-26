@@ -11,7 +11,10 @@ public:
 	virtual std::vector<int> GetSpecials() = 0;
 	virtual int GetShotType() = 0;
 	virtual int GetDiff() = 0;
+	virtual int GetBossHP() = 0;
+	virtual int GetStageFrame() = 0;
 	int ReadInt(DWORD address);
+	int ReadIntFromPointer(DWORD ptr,DWORD offset);
 private:
 	HANDLE gameProcessHandle;
 
@@ -27,6 +30,8 @@ public:
 	std::vector<int> GetSpecials()override;
 	int GetShotType()override;
 	int GetDiff()override;
+	int GetBossHP() override;
+	int GetStageFrame() override;
 
 private:
 	const static DWORD ScoreAddr = 0x00474C44;
@@ -35,6 +40,9 @@ private:
 	const static DWORD DifficultyAddr = 0x00474C74;
 	const static DWORD ShotTypeAddr1 = 0x00474C68;
 	const static DWORD ShotTypeAddr2 = 0x00474C6C;
+	const static DWORD FrameCountAddr = 0x00474C88;
+	const static DWORD BossHPptr = 0x0047770C;
+	const static DWORD BossHPOffset = 0x9E8C;
 };
 
 class TH11Reader : public MemoryReader

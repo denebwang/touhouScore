@@ -18,6 +18,7 @@ public:
     void InitChart();
     void ShowInfo();
     void UpdatePattern();
+    void ReadInfo();
 private:
     Ui::MainWindowClass ui;
     QTimer* GameScanTimer;

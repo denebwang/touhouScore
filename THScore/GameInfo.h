@@ -5,8 +5,10 @@
 #include <memory>
 #include <array>
 #include <filesystem>
+#include "SectionInfo.h"
 #include "StageInfo.h"
 #include "MemoryReader.h"
+#include "Enums.h"
 #include <QString>
 #include <QStringList>
 #include <QFile>
@@ -23,14 +25,8 @@ public:
 		int shotType;
 		bool operator==(const patternHeader& other)const;
 	};
-	enum class game :int
-	{
-		invalid=0,
-		th10 = 10,
-		th11 = 11
-	};
-private:
 
+private:
 	class CSVReader
 	{
 	public:
@@ -38,7 +34,8 @@ private:
 		~CSVReader();
 		patternHeader GetHeader();
 		std::vector<QString> ReadRow();
-		std::vector<long long> ReadIntRow();
+		std::vector<long long> ReadLongLongRow();
+		bool AtEnd();
 		void DiscardRow();
 	private:
 		QFile* file;
@@ -49,16 +46,12 @@ private:
 	static QString DiffList[4];
 	static std::unordered_map<int,std::vector<QString>> shotTypeMap;
 	
-	
-
 	std::vector<QString> shotTypeList;
 	//StageInfo stageInfo[6];
 	//StageInfo PatternInfo[6];//路线
 	//StageInfo delta[6];//和路线的差值
 
-	std::array<std::unique_ptr<StageInfo>, 6> stageInfo;
-	std::array<std::unique_ptr<StageInfo>, 6> PatternInfo;
-	std::array<std::unique_ptr<StageInfo>, 6> delta;
+	std::array<StageInfo, 6> stageInfo;
 
 
 	int difficulty;
@@ -69,33 +62,35 @@ private:
 	void SetPattern(patternHeader header);
 public:
 	//GameInfo(std::string gameName);
-	GameInfo(game gameName);
+	GameInfo(Game game);
 	~GameInfo();
 	bool SetInfo(int diff, int shot);//需要更新路线信息时返回true
 	void SetData(int stage, long long score, std::vector<int>& speical);
+	void TestSection(int bossHP, int timeLeft,int frameCount);
 	void UpdateDelta(int stage);
 	patternHeader GetHeader();
 	static GameInfo* Create(std::string gameName, DWORD processID, MemoryReader*& mr);
 	static void ScanCSV();
 	static void Init();
-	void DisplayInfo();
+	
 	QString ShotType();
 	QString Difficulty();
 	QString GameName();
 
-	//用于和表格交互
+	//用于和表格交互	
+	std::vector<QString> specialNames;
+
 	int ColumnCount();
 	int RowCount();
 	QStringList GetColumnHeader();
-	std::vector<QString> specialNames;
-	int CurrentStage();
-	int CurrentScore();
-	StageInfo& GetStage(int index);
-	StageInfo& GetPattern(int index);
-	StageInfo& GetDelta(int index);
-	std::vector<int>& CurrentSpecials();
+	int GetCurrentStage();
+	int GetStageSectionCount(int index);
+	QStringList GetSectionNames(int index);
+	Section GetCurrentSection(int index);
+	int GetCurrentSectionIndex(int index);
+	const std::vector<SectionInfo>& GetSectionInfos(int index);
 	
-	game gameName;
+	Game game;
 	static std::unordered_map<std::string, std::vector<std::wstring>> exeMap;//游戏文件名
 	
 };

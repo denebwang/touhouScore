@@ -56,30 +56,25 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui.setupUi(this);
     //初始化表格
-    //ui.gameNameLabel->setText("ddcsb");
     ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui.tableWidget->item(0,0)->setTextAlignment(Qt::AlignCenter);
 	ui.tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
-	//ui.tableWidget->set(false);
-	//QTableWidgetItem* item = new QTableWidgetItem;
-	//item->setFlags(item->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable & ~Qt::ItemIsEnabled);//设置不可编辑、选中；
-	//ui.tableWidget->setItemPrototype(item);
 	//定时扫描游戏
     GameScanTimer = new QTimer(this);
     GameScanTimer->setInterval(1000);
 	connect(GameScanTimer, &QTimer::timeout,this, &MainWindow::ScanGame);
-	connect(this, &MainWindow::FoundGame, this, &MainWindow::InitChart);
-	void (QTimer:: *timerStart)() = &QTimer::start;
-	
 	GameScanTimer->start();
 	//更新游戏信息
 	InfoUpdateTimer = new QTimer(this);
 	InfoUpdateTimer->setInterval(100);
-	connect(InfoUpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateInfo);
-	connect(this, &MainWindow::FoundGame, InfoUpdateTimer, timerStart);
+	connect(InfoUpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateInfo);	
+	void (QTimer:: *timerStart)() = &QTimer::start;
+	connect(this, &MainWindow::FoundGame, this, &MainWindow::InitChart);
+	connect(this, &MainWindow::FoundGame, InfoUpdateTimer, timerStart);	
 	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowInfo);
-	connect(this, &MainWindow::NewShottype, this, &MainWindow::UpdatePattern);
+	//connect(this, &MainWindow::NewShottype, this, &MainWindow::UpdatePattern);
+	connect(this, &MainWindow::NewShottype, this, &MainWindow::InitChart);
 	//指针初始置为null
 	mr = nullptr;
 	gameInfo = nullptr;
@@ -126,15 +121,7 @@ void MainWindow::UpdateInfo()
 {
 	try
 	{
-		int diff = mr->GetDiff();
-		int shotType = mr->GetShotType();
-		int stage = mr->GetStage();
-		long long score = mr->GetScore();
-		std::vector<int> specials = mr->GetSpecials();
-		if (gameInfo->SetInfo(diff, shotType))
-			emit NewShottype();
-		gameInfo->SetData(stage, score, specials);
-		gameInfo->UpdateDelta(stage);
+		ReadInfo();
 	}
 	catch (std::out_of_range& e)
 	{
@@ -159,26 +146,46 @@ void MainWindow::UpdateInfo()
 
 void MainWindow::InitChart()
 {
+	//先读取一次信息
+	ReadInfo();
 	//更新表格
 	int columnCount = gameInfo->ColumnCount();
 	int rowCount = gameInfo->RowCount();
 	ui.tableWidget->setColumnCount(columnCount);
 	ui.tableWidget->setRowCount(rowCount);
 	ui.tableWidget->setHorizontalHeaderLabels(gameInfo->GetColumnHeader());
-	//ui.tableWidget->item(0, 0)->setData(Qt::DisplayRole,"");//清空文字
 	this->adjustSize();
 	//填充初始数据
 	
-	//面数
+	int rowOffset = 0;
 	for (int i = 0; i < 6; i++)
 	{
+		//面数
+		int stageSectionCount = gameInfo->GetStageSectionCount(i);
+		QStringList SectionNames = gameInfo->GetSectionNames(i);
 		QTableWidgetItem* newItem = new QTableWidgetItem(QString::number(i + 1));
 		newItem->setTextAlignment(Qt::AlignCenter);
-		ui.tableWidget->setItem(i * 3, 0, newItem);
-		ui.tableWidget->setSpan(i * 3, 0, 3, 1);
+		ui.tableWidget->setItem(rowOffset, 0, newItem);
+		ui.tableWidget->setSpan(rowOffset, 0, stageSectionCount * 3, 1);
+		//section
+		for (int index = 0; index < SectionNames.size(); index++)
+		{
+			QTableWidgetItem* newItem = new QTableWidgetItem(SectionNames.at(index));
+			ui.tableWidget->setItem(rowOffset , 1, newItem);
+			ui.tableWidget->setSpan(rowOffset + index * 3, 1, 3, 1);
+		}
+		//类别
+		for (int row = 0; row < rowCount; row += 3)
+		{
+			ui.tableWidget->item(row, 2)->setData(Qt::DisplayRole, "Game");
+			ui.tableWidget->item(row+1, 2)->setData(Qt::DisplayRole, "Pattern");
+			ui.tableWidget->item(row+2, 2)->setData(Qt::DisplayRole, "Delta");
+		}
+		rowOffset += stageSectionCount * 3;
+
 	}
 	//其他数据：仅初始化
-	for (int col = 1; col < columnCount; col++)
+	for (int col = 3; col < columnCount; col++)
 	{
 		for (int row = 0; row < rowCount; row++)
 		{
@@ -187,61 +194,50 @@ void MainWindow::InitChart()
 			ui.tableWidget->setItem(row, col, newItem);
 		}
 	}
-	//类别
-	for (int row = 0; row < rowCount; row += 3)
-	{
-		ui.tableWidget->item(row, 1)->setData(Qt::DisplayRole, "Game");
-		ui.tableWidget->item(row+1, 1)->setData(Qt::DisplayRole, "Pattern");
-		ui.tableWidget->item(row+2, 1)->setData(Qt::DisplayRole, "Delta");
-	}
-
-
-
-
-
-	
-
-	//更新游戏信息
-	UpdateInfo();
 	ui.gameNameLabel->setText(gameInfo->GameName());
 	ui.DiffLabel->setText(gameInfo->Difficulty());
 	ui.ShottypeLabel->setText(gameInfo->ShotType());
 
-	//InfoUpdateTimer->start();
+	//更新路线
+	UpdatePattern();
 	
 }
 
 void MainWindow::ShowInfo()
 {
 	static QLocale loc = QLocale::English;
-	//int index = (gameInfo->CurrentStage() - 1);
-	int index;
-	int rowIndex;
+	int index = 0;
+	int rowIndex = 0;
 	for (int stage = 1; stage < 7; stage++)
 	{
 		index = stage - 1;
-		rowIndex = index * 3;
-	 
+		const std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(index);
 		//游戏内信息显示
-		int rowBias = 0;
-		//分数 col=2
-		ui.tableWidget->item(rowIndex + rowBias, 2)->setData(Qt::DisplayRole, loc.toString(gameInfo->GetStage(index).score));
-		//其他 col=2+index
-		std::vector<int> specials = gameInfo->GetStage(index).specials;
-		for (int i = 0; i < specials.size(); i++)
+		int rowBias = 0, sectionCount = 0;
+		for (auto sectionInfo = sections.begin(); sectionInfo != sections.end(); sectionInfo++)
 		{
-			ui.tableWidget->item(rowIndex + rowBias, 2 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+			//分数 col=4
+			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 4)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(0)));
+			//其他 col=4+index
+			std::vector<int> specials = sectionInfo->GetSpecials(0);
+
+			for (int i = 0; i < specials.size(); i++)
+			{
+				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 4 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+			}
+			//差值显示
+			rowBias = 2;
+			//分数 col=4
+			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3 + rowBias, 4)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(2)));
+			//其他 col=4+index
+			specials = sectionInfo->GetSpecials(2);
+			for (int i = 0; i < specials.size(); i++)
+			{
+				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3 + rowBias, 4 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+			}
+			sectionCount++;
 		}
-		//差值显示
-		rowBias = 2;
-		//分数 col=2
-		ui.tableWidget->item(rowIndex + rowBias, 2)->setData(Qt::DisplayRole, loc.toString(gameInfo->GetDelta(index).score));
-		//其他 col=2+index
-		specials = gameInfo->GetDelta(index).specials;
-		for (int i = 0; i < specials.size(); i++)
-		{
-			ui.tableWidget->item(rowIndex + rowBias, 2 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
-		}
+		rowIndex += sectionCount;
 	}
 
 
@@ -249,18 +245,42 @@ void MainWindow::ShowInfo()
 }
 
 void MainWindow::UpdatePattern()
-{//路线信息显示
+{	//路线信息显示
 	static QLocale loc = QLocale::English;
+
 	int rowBias = 1;
-	for (int row = 0; row < ui.tableWidget->rowCount(); row += 3)
+	int sectionCount = 0;
+	
+	for (int i = 0; i < 6; ++i)
 	{
-		//分数 col=2
-		ui.tableWidget->item(row + rowBias, 2)->setData(Qt::DisplayRole, loc.toString(gameInfo->GetPattern(row / 3).score));
-		//其他 col=2+index
-		std::vector<int> specials = gameInfo->GetPattern(row / 3).specials;
-		for (int i = 0; i < specials.size(); i++)
+		const std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
+		for each (auto section in sections)
 		{
-			ui.tableWidget->item(row + rowBias, 2 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+			//分数 col=3
+			ui.tableWidget->item(sectionCount * 3 + rowBias, 3)->setData(Qt::DisplayRole, loc.toString(section.GetScore(1)));
+			//其他 col=3+index
+			std::vector<int> specials = section.GetSpecials(1);
+			for (int i = 0; i < specials.size(); i++)
+			{
+				ui.tableWidget->item(sectionCount * 3 + rowBias, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+			}
 		}
+		sectionCount++;
 	}
+}
+
+void MainWindow::ReadInfo()
+{
+	int diff = mr->GetDiff();
+	int shotType = mr->GetShotType();
+	int stage = mr->GetStage();
+	long long score = mr->GetScore();
+	int bossHP = mr->GetBossHP();
+	int frameCount = mr->GetStageFrame();
+	std::vector<int> specials = mr->GetSpecials();
+	if (gameInfo->SetInfo(diff, shotType))
+		emit NewShottype();
+	gameInfo->SetData(stage, score, specials);
+	gameInfo->UpdateDelta(stage);
+	gameInfo->TestSection(bossHP,NULL,frameCount);
 }
