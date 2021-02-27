@@ -19,7 +19,7 @@ void GameInfo::SetPattern(patternHeader header)
 {
 	using namespace std;
 	//先将原有的清空
-	for each (StageInfo si in stageInfo)
+	for (auto &si : stageInfo)
 	{
 		si.ClearSection();
 	}
@@ -42,7 +42,7 @@ void GameInfo::SetPattern(patternHeader header)
 		}
 		stageInfo[stage - 1].SetData(section, 1, score, specials);
 	}
-	for each (auto stage in stageInfo)
+	for (auto &stage : stageInfo)
 	{
 		if (!stage.CheckValid())
 		{
@@ -110,7 +110,7 @@ bool GameInfo::SetInfo(int diff, int shot)
 	{
 		logger->error("can't find csv file: {0}", e.what());
 		//清空
-		for each (auto stage in stageInfo)
+		for (auto &stage : stageInfo)
 		{
 			stage.ResetAll(1);
 		}
@@ -126,7 +126,7 @@ void GameInfo::SetData(int stage, long long score, std::vector<int>& specials)
 	}
 	if (stage < currentStage)//推把了
 	{
-		for each (StageInfo si in stageInfo)
+		for (auto &si : stageInfo)
 		{
 			si.ResetAll();
 		}
@@ -327,7 +327,7 @@ int GameInfo::RowCount()
 {
 	//每section3行数据
 	int count = 0;
-	for each (auto stage in stageInfo)
+	for (auto &stage : stageInfo)
 	{
 		count += stage.GetSectionCount();
 	}
@@ -433,7 +433,7 @@ std::vector<QString> GameInfo::CSVReader::ReadRow()
 	line = ts->readLine();
 	QStringList strList = line.split(",", Qt::SkipEmptyParts);
 	vector<QString> strings;
-	for each (QString str in strList)
+	for (auto &str : strList)
 	{
 		strings.push_back(str);
 	}
@@ -445,7 +445,7 @@ std::vector<long long> GameInfo::CSVReader::ReadLongLongRow()
 	using namespace std;
 	vector<QString> strings = ReadRow();
 	vector<long long> ints;
-	for each (QString str in strings)
+	for (auto &str : strings)
 	{
 		ints.push_back(str.toLongLong());
 	}

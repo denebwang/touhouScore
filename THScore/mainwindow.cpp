@@ -166,10 +166,12 @@ void MainWindow::InitChart()
 		newItem->setTextAlignment(Qt::AlignCenter);
 		ui.tableWidget->setItem(rowOffset, 0, newItem);
 		ui.tableWidget->setSpan(rowOffset, 0, stageSectionCount * 3, 1);
+		//ui.tableWidget->setColumnWidth(0, 20);
 		//section
 		for (int index = 0; index < SectionNames.size(); index++)
 		{
 			QTableWidgetItem* newItem = new QTableWidgetItem(SectionNames.at(index));
+			newItem->setTextAlignment(Qt::AlignCenter);
 			ui.tableWidget->setItem(rowOffset + index * 3 , 1, newItem);
 			ui.tableWidget->setSpan(rowOffset + index * 3 , 1, 3, 1);
 		}
@@ -215,6 +217,7 @@ void MainWindow::ShowInfo()
 		int rowBias = 0, sectionCount = 0;
 		for (auto sectionInfo = sections.begin(); sectionInfo != sections.end(); sectionInfo++)
 		{
+			rowBias = 0;
 			//分数 col=3
 			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(0)));
 			//其他 col=3+index
@@ -253,7 +256,7 @@ void MainWindow::UpdatePattern()
 	for (int i = 0; i < 6; ++i)
 	{
 		const std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
-		for each (auto section in sections)
+		for (auto& section : sections)
 		{
 			//分数 col=3
 			ui.tableWidget->item(sectionCount * 3 + rowBias, 3)->setData(Qt::DisplayRole, loc.toString(section.GetScore(1)));

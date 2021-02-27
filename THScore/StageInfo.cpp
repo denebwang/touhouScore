@@ -29,8 +29,7 @@ void StageInfo::Init(Game game, int stage)
 
 void StageInfo::SetData(Section section, int mode, long long score, std::vector<int>& specials)
 {
-	
-	for each (SectionInfo si in sections)
+	for (auto &si : sections)
 	{
 		if (si.GetSection() == section)
 		{
@@ -41,7 +40,7 @@ void StageInfo::SetData(Section section, int mode, long long score, std::vector<
 	//没找到：未添加或bonus不存在
 	if (mode == 1)//设置路线状态
 	{
-		for each (SectionInfo si in sections)
+		for (auto &si : sections)
 		{
 			if (si.GetSection() == Section::All)
 			{
@@ -68,7 +67,7 @@ void StageInfo::SetData(int mode, long long score, std::vector<int>& specials)
 
 void StageInfo::Reset(Section section, int mode)
 {
-	for each (SectionInfo si in sections)
+	for (auto& si : sections)
 	{
 		if (si.GetSection() == section)
 		{
@@ -84,7 +83,7 @@ void StageInfo::Reset(int mode)
 
 void StageInfo::ResetAll(int mode)
 {
-	for each (SectionInfo si in sections)
+	for (auto& si : sections)
 	{
 		si.Reset(mode);
 	}
@@ -182,7 +181,7 @@ const std::vector<SectionInfo>& StageInfo::GetSectionInfos()const
 
 long long StageInfo::GetScore(Section section, int mode)
 {
-	for each (SectionInfo si in sections)
+	for (auto &si : sections)
 	{
 		if (si.GetSection() == section)
 		{
@@ -196,7 +195,7 @@ long long StageInfo::GetScore(Section section, int mode)
 	}
 	else
 	{
-		for each (SectionInfo si in sections)
+		for (auto &si : sections)
 		{
 			if (si.GetSection() == Section::All)
 			{
@@ -214,7 +213,7 @@ long long StageInfo::GetScore(int mode)
 
 const std::vector<int>& StageInfo::GetSpecials(Section section, int mode)
 {
-	for each (SectionInfo si in sections)
+	for (auto& si : sections)
 	{
 		if (si.GetSection() == section)
 		{
@@ -228,7 +227,7 @@ const std::vector<int>& StageInfo::GetSpecials(Section section, int mode)
 	}
 	else
 	{
-		for each (SectionInfo si in sections)
+		for (auto& si : sections)
 		{
 			if (si.GetSection() == Section::All)
 			{
@@ -247,7 +246,7 @@ const std::vector<int>& StageInfo::GetSpecials(int mode)
 QStringList StageInfo::GetSectionNames()
 {
 	QStringList list;
-	for each (auto var in sections)
+	for (auto &var : sections)
 	{	
 		QString temp;
 		switch (var.GetSection())
