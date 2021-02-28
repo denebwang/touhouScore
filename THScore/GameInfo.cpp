@@ -23,30 +23,43 @@ void GameInfo::SetPattern(patternHeader header)
 	{
 		si.ClearSection();
 	}
-	std::filesystem::path path = patternFileMap.at(header);
-	CSVReader reader(path);
-	reader.DiscardRow();
-	reader.DiscardRow();//skip header
-	vector<long long> rowinfo;//只有score会超过21亿
-	//0=stage,1=section,2=score,3+=special
-	while (!reader.AtEnd())
+	try
 	{
-		rowinfo = reader.ReadLongLongRow();
-		int stage = rowinfo[0];
-		Section section = static_cast<Section>(rowinfo[1]);
-		long long score = rowinfo[2];
-		std::vector<int> specials;
-		for (auto iter = next(rowinfo.begin(), 3); iter != rowinfo.end(); iter++)
+		std::filesystem::path path = patternFileMap.at(header);
+		CSVReader reader(path);
+		reader.DiscardRow();
+		reader.DiscardRow();//skip header
+		vector<long long> rowinfo;//只有score会超过21亿
+		//0=stage,1=section,2=score,3+=special
+		while (!reader.AtEnd())
 		{
-			specials.push_back(*iter);
+			rowinfo = reader.ReadLongLongRow();
+			int stage = rowinfo[0];
+			Section section = static_cast<Section>(rowinfo[1]);
+			long long score = rowinfo[2];
+			std::vector<int> specials;
+			for (auto iter = next(rowinfo.begin(), 3); iter != rowinfo.end(); iter++)
+			{
+				specials.push_back(*iter);
+			}
+			stageInfo[stage - 1].SetData(section, 1, score, specials);
 		}
-		stageInfo[stage - 1].SetData(section, 1, score, specials);
+	}
+	catch (std::out_of_range e)
+	{
+		logger->error("can't find csv file: {0}", e.what());
+
 	}
 	for (auto &stage : stageInfo)
 	{
 		if (!stage.CheckValid())
 		{
 			logger->error("Stage{0} is not filled correctly!", stage.GetStage());
+			if (stage.CheckEmpty())
+			{
+				stage.SetDeault(specialNames.size());
+			}
+			else 
 			throw std::runtime_error("GameInfo::SetPattern invalid");
 		}
 		stage.SetInitSection();
@@ -102,19 +115,7 @@ bool GameInfo::SetInfo(int diff, int shot)
 		return false;
 	shotType = shot;
 	difficulty = diff;
-	try 
-	{
 	SetPattern(GetHeader());
-	}
-	catch (std::out_of_range e)
-	{
-		logger->error("can't find csv file: {0}", e.what());
-		//清空
-		for (auto &stage : stageInfo)
-		{
-			stage.ResetAll(1);
-		}
-	}
 	return true;
 }
 
@@ -141,7 +142,7 @@ void GameInfo::SetData(int stage, long long score, std::vector<int>& specials)
 
 void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 {
-	if (currentStage<1)
+	if (currentStage < 1)
 	{
 		return;
 	}
@@ -335,7 +336,7 @@ int GameInfo::RowCount()
 	return count;
 }
 
-QStringList GameInfo::GetColumnHeader()
+QStringList GameInfo::GetColumnHeader() const
 {
 	QStringList list;
 	list  << "Stage" << "Section" << "" << "Score";
@@ -346,32 +347,32 @@ QStringList GameInfo::GetColumnHeader()
 	return list;
 }
 
-int GameInfo::GetCurrentStage()
+int GameInfo::GetCurrentStage() const
 {
 	return currentStage;
 }
 
-int GameInfo::GetStageSectionCount(int index)
+int GameInfo::GetStageSectionCount(int index) const
 {
 	return stageInfo[index].GetSectionCount();
 }
 
-QStringList GameInfo::GetSectionNames(int index)
+QStringList GameInfo::GetSectionNames(int index) const
 {
 	return stageInfo[index].GetSectionNames();
 }
 
-Section GameInfo::GetCurrentSection(int index)
+Section GameInfo::GetCurrentSection(int index) const
 {
 	return stageInfo[index].GetCurrentSection();
 }
 
-int GameInfo::GetCurrentSectionIndex(int index)
+int GameInfo::GetCurrentSectionIndex(int index) const
 {
 	return stageInfo[index].GetCurrentSectionIndex();
 }
 
-const std::vector<SectionInfo>& GameInfo::GetSectionInfos(int index)
+const std::vector<SectionInfo>& GameInfo::GetSectionInfos(int index) const
 {
 	return stageInfo[index].GetSectionInfos();
 }

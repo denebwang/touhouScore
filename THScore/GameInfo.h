@@ -82,13 +82,13 @@ public:
 
 	int ColumnCount();
 	int RowCount();
-	QStringList GetColumnHeader();
-	int GetCurrentStage();
-	int GetStageSectionCount(int index);
-	QStringList GetSectionNames(int index);
-	Section GetCurrentSection(int index);
-	int GetCurrentSectionIndex(int index);
-	const std::vector<SectionInfo>& GetSectionInfos(int index);
+	QStringList GetColumnHeader()const;
+	int GetCurrentStage()const;
+	int GetStageSectionCount(int index)const;
+	QStringList GetSectionNames(int index)const;
+	Section GetCurrentSection(int index)const;
+	int GetCurrentSectionIndex(int index)const;
+	const std::vector<SectionInfo>& GetSectionInfos(int index)const;
 	
 	Game game;
 	static std::unordered_map<std::string, std::vector<std::wstring>> exeMap;//游戏文件名

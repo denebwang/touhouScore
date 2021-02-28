@@ -27,6 +27,15 @@ void StageInfo::Init(Game game, int stage)
 	}
 }
 
+void StageInfo::SetDeault(int specialCount)
+{
+	if (sections.size() != 0)
+	{
+		sections.clear();
+	}
+	sections.push_back(SectionInfo(Section::All, 0, std::vector<int>(specialCount)));
+}
+
 void StageInfo::SetData(Section section, int mode, long long score, std::vector<int>& specials)
 {
 	for (auto &si : sections)
@@ -56,7 +65,11 @@ void StageInfo::SetData(Section section, int mode, long long score, std::vector<
 	{
 		SetData(Section::Boss, mode, score, specials);
 	}
-	else throw std::out_of_range("Section error in StageInfo::SetData");
+	else
+	{
+		//throw std::out_of_range("Section error in StageInfo::SetData");
+		logger->error("Tring to set data to a stage with no section");
+	}
 
 }
 
@@ -132,12 +145,12 @@ void StageInfo::SetInitSection()
 	SetCurrentSection(sections.front().GetSection());
 }
 
-Section StageInfo::GetCurrentSection()
+Section StageInfo::GetCurrentSection() const
 {
 	return currentSection;
 }
 
-int StageInfo::GetCurrentSectionIndex()
+int StageInfo::GetCurrentSectionIndex() const
 {
 	for (int i =0; i < sections.size(); i++)
 	{
@@ -164,12 +177,12 @@ Section StageInfo::GetPrevSection(bool& previousStage)
 	Section previous = static_cast<Section>(static_cast<int>(currentSection) - 1);
 }
 
-int StageInfo::GetStage()
+int StageInfo::GetStage() const
 {
 	return stage;
 }
 
-int StageInfo::GetSectionCount()
+int StageInfo::GetSectionCount() const
 {
 	return sections.size();
 }
@@ -179,7 +192,7 @@ const std::vector<SectionInfo>& StageInfo::GetSectionInfos()const
 	return sections;
 }
 
-long long StageInfo::GetScore(Section section, int mode)
+long long StageInfo::GetScore(Section section, int mode) const
 {
 	for (auto &si : sections)
 	{
@@ -206,12 +219,12 @@ long long StageInfo::GetScore(Section section, int mode)
 	}
 }
 
-long long StageInfo::GetScore(int mode)
+long long StageInfo::GetScore(int mode) const
 {
 	return GetScore(currentSection, mode);
 }
 
-const std::vector<int>& StageInfo::GetSpecials(Section section, int mode)
+const std::vector<int>& StageInfo::GetSpecials(Section section, int mode) const
 {
 	for (auto& si : sections)
 	{
@@ -238,12 +251,12 @@ const std::vector<int>& StageInfo::GetSpecials(Section section, int mode)
 	}
 }
 
-const std::vector<int>& StageInfo::GetSpecials(int mode)
+const std::vector<int>& StageInfo::GetSpecials(int mode) const
 {
 	return GetSpecials(currentSection, mode);
 }
 
-QStringList StageInfo::GetSectionNames()
+QStringList StageInfo::GetSectionNames() const
 {
 	QStringList list;
 	for (auto &var : sections)

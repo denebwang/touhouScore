@@ -73,9 +73,10 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(this, &MainWindow::FoundGame, this, &MainWindow::ReadInfo);
 	connect(this, &MainWindow::FoundGame, this, &MainWindow::InitChart);
 	connect(this, &MainWindow::FoundGame, InfoUpdateTimer, timerStart);	
+	connect(this, &MainWindow::NewShottype, this, &MainWindow::InitChart);
 	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowInfo);
 	//connect(this, &MainWindow::NewShottype, this, &MainWindow::UpdatePattern);
-	connect(this, &MainWindow::NewShottype, this, &MainWindow::InitChart);
+	
 	//指针初始置为null
 	mr = nullptr;
 	gameInfo = nullptr;
@@ -155,7 +156,6 @@ void MainWindow::InitChart()
 	ui.tableWidget->setHorizontalHeaderLabels(gameInfo->GetColumnHeader());
 	this->adjustSize();
 	//填充初始数据
-	
 	int rowOffset = 0;
 	for (int i = 0; i < 6; i++)
 	{
