@@ -109,6 +109,19 @@ GameInfo::~GameInfo()
 }
 
 
+bool GameInfo::CheckRetry(int stage)
+{
+	if (stage < currentStage)//推把了
+	{
+		for (auto& si : stageInfo)
+		{
+			si.ResetAll();
+			return true;
+		}
+	}
+	return false;
+}
+
 bool GameInfo::SetInfo(int diff, int shot)
 {
 	if (diff == difficulty && shot == shotType)
@@ -119,32 +132,31 @@ bool GameInfo::SetInfo(int diff, int shot)
 	return true;
 }
 
-void GameInfo::SetData(int stage, long long score, std::vector<int>& specials)
-{	
+bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
+{	//return true if stage changed
 	if (stage<1)
 	{
-		return;
+		return false;
 	}
-	if (stage < currentStage)//推把了
-	{
-		for (auto &si : stageInfo)
-		{
-			si.ResetAll();
-		}
-	}
-	stageInfo[stage - 1].SetData(0, score, specials);
 
-	currentStage = stage;
+	stageInfo[stage - 1].SetData(0, score, speical);
+	if (currentStage != stage)
+	{
+		currentStage = stage;
+		return true;
+	}
+	return false;
 	//UpdateDelta(stage);
 
 		
 }
 
-void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
+bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 {
+	bool sectionChanged = false;
 	if (currentStage < 1)
 	{
-		return;
+		return sectionChanged;
 	}
 	Section current = stageInfo[currentStage - 1].GetCurrentSection();
 	static int hp = 0, time = 0;
@@ -165,35 +177,41 @@ void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 				case 1:
 					if (bossHP>6000)//道中非血量5850
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 2:
 					if (bossHP > 3000)//道中符血量2300
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 3:
 					if (bossHP > 3000)//道中对话血量2500
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 4:
 					if (frameCount > 8500)//道中非血量比关底还多
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 5:
 					if (bossHP > 12000&&frameCount>5000)//道中血量12900,约4000帧开始减少;关底血量12400
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 6:
-					stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+					if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+						sectionChanged = true;
 					break;
 				default:
 					logger->error("Current stage error: {0}", currentStage);
@@ -201,8 +219,12 @@ void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 			}
 			break;
 		case Section::Boss:
+			//todo: 击破动画结束后再切换
 			if (bossHP < 0)//击破
-				stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus);
+			{
+				if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
+					sectionChanged = true;
+			}
 			break;
 		case Section::Bonus:
 			break;
@@ -218,6 +240,7 @@ void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 	}
 	hp = bossHP;
 	time = timeLeft;
+	return sectionChanged;
 }
 
 void GameInfo::UpdateDelta(int stage)
@@ -357,6 +380,17 @@ int GameInfo::GetStageSectionCount(int index) const
 	return stageInfo[index].GetSectionCount();
 }
 
+int GameInfo::GetCurrenSectionRowIndex() const
+{
+	int sectionCount = 0;
+	for (int index = 0; index < currentStage - 1; index++)
+	{
+		sectionCount += GetStageSectionCount(index);
+	}
+	sectionCount += stageInfo[currentStage - 1].GetCurrentSectionIndex() + 1;
+	return (sectionCount - 1) * 3;
+}
+
 QStringList GameInfo::GetSectionNames(int index) const
 {
 	return stageInfo[index].GetSectionNames();
@@ -365,6 +399,16 @@ QStringList GameInfo::GetSectionNames(int index) const
 Section GameInfo::GetCurrentSection(int index) const
 {
 	return stageInfo[index].GetCurrentSection();
+}
+
+const SectionInfo& GameInfo::GetCurrentSectionInfo(int index) const
+{
+	return stageInfo[index].GetCurrentSectionInfo();
+}
+
+const SectionInfo& GameInfo::GetPrevSectionInfo(int index) const
+{
+	return stageInfo[index].GetPrevSectionInfo();
 }
 
 int GameInfo::GetCurrentSectionIndex(int index) const

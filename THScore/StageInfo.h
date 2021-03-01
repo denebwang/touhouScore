@@ -30,11 +30,14 @@ public:
 	void ClearSection();
 	bool CheckEmpty();
 	bool CheckValid();
-	void SetCurrentSection(Section section);
+	bool CheckSectionExist(Section section);
+	bool SetCurrentSection(Section section);
 	void SetInitSection();
 	Section GetCurrentSection()const;
+	const SectionInfo& GetCurrentSectionInfo()const;
 	int GetCurrentSectionIndex() const ;
-	Section GetPrevSection(bool& previousStage);
+	//Section GetPrevSection(bool& previousStage);
+	const SectionInfo& GetPrevSectionInfo()const;
 	int GetStage()const;
 	int GetSectionCount()const;
 	const std::vector<SectionInfo>& GetSectionInfos()const;

@@ -64,9 +64,10 @@ public:
 	//GameInfo(std::string gameName);
 	GameInfo(Game game);
 	~GameInfo();
+	bool CheckRetry(int stage);
 	bool SetInfo(int diff, int shot);//需要更新路线信息时返回true
-	void SetData(int stage, long long score, std::vector<int>& speical);
-	void TestSection(int bossHP, int timeLeft,int frameCount);
+	bool SetData(int stage, long long score, std::vector<int>& speical);
+	bool TestSection(int bossHP, int timeLeft,int frameCount);
 	void UpdateDelta(int stage);
 	patternHeader GetHeader();
 	static GameInfo* Create(std::string gameName, DWORD processID, MemoryReader*& mr);
@@ -85,8 +86,12 @@ public:
 	QStringList GetColumnHeader()const;
 	int GetCurrentStage()const;
 	int GetStageSectionCount(int index)const;
+	int GetCurrenSectionRowIndex()const;
+	
 	QStringList GetSectionNames(int index)const;
 	Section GetCurrentSection(int index)const;
+	const SectionInfo& GetCurrentSectionInfo(int index)const;
+	const SectionInfo& GetPrevSectionInfo(int index)const;
 	int GetCurrentSectionIndex(int index)const;
 	const std::vector<SectionInfo>& GetSectionInfos(int index)const;
 	

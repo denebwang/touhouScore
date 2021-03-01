@@ -16,7 +16,8 @@ public:
     void ScanGame();
     void UpdateInfo();
     void InitChart();
-    void ShowInfo();
+    void ShowScore();
+    void ShowDelta();
     void UpdatePattern();
     void ReadInfo();
 private:
@@ -25,9 +26,13 @@ private:
     QTimer* InfoUpdateTimer;
     MemoryReader* mr;
     GameInfo* gameInfo;
-   
+    int currentSectionIndex;
+
+
 signals:
     void FoundGame(bool found);
     void ReadSuccees();
     void NewShottype();
+    void NewSection();
+    void Retry();
 };

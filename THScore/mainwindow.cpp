@@ -74,12 +74,15 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(this, &MainWindow::FoundGame, this, &MainWindow::InitChart);
 	connect(this, &MainWindow::FoundGame, InfoUpdateTimer, timerStart);	
 	connect(this, &MainWindow::NewShottype, this, &MainWindow::InitChart);
-	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowInfo);
+	connect(this, &MainWindow::Retry, this, &MainWindow::InitChart);
+	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowScore);
+	connect(this, &MainWindow::NewSection, this, &MainWindow::ShowDelta);
 	//connect(this, &MainWindow::NewShottype, this, &MainWindow::UpdatePattern);
 	
 	//指针初始置为null
 	mr = nullptr;
 	gameInfo = nullptr;
+	currentSectionIndex = 0;
 }
 
 MainWindow::~MainWindow()
@@ -193,6 +196,7 @@ void MainWindow::InitChart()
 			QTableWidgetItem* newItem = new QTableWidgetItem("0");
 			newItem->setTextAlignment(Qt::AlignCenter);
 			ui.tableWidget->setItem(row, col, newItem);
+			ui.tableWidget->setRowHidden(row, true);//初始关闭所有显示
 		}
 	}
 	ui.gameNameLabel->setText(gameInfo->GameName());
@@ -204,46 +208,53 @@ void MainWindow::InitChart()
 	
 }
 
-void MainWindow::ShowInfo()
+void MainWindow::ShowScore()
+{	//todo: 仅更新当前section
+	static QLocale loc = QLocale::English;
+	int currentStage = gameInfo->GetCurrentStage();
+	int row = gameInfo->GetCurrenSectionRowIndex();
+	SectionInfo current = gameInfo->GetCurrentSectionInfo(currentStage - 1);
+	//游戏内信息显示
+	//分数 col=3
+	ui.tableWidget->item(row, 3)->setData(Qt::DisplayRole, loc.toString(current.GetScore(0)));
+	//其他 col=3+index
+	std::vector<int> specials = current.GetSpecials(0);
+
+	for (int i = 0; i < specials.size(); i++)
+	{
+		ui.tableWidget->item(row, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+	}
+	//将当前section设为可见
+	ui.tableWidget->setRowHidden(row, false);
+}
+
+void MainWindow::ShowDelta()
 {
 	static QLocale loc = QLocale::English;
-	int index = 0;
-	int rowIndex = 0;
-	for (int stage = 1; stage < 7; stage++)
+	int currentStage = gameInfo->GetCurrentStage();
+	int row = gameInfo->GetCurrenSectionRowIndex();
+	if (row==0)
 	{
-		index = stage - 1;
-		const std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(index);
-		//游戏内信息显示
-		int rowBias = 0, sectionCount = 0;
-		for (auto sectionInfo = sections.begin(); sectionInfo != sections.end(); sectionInfo++)
-		{
-			rowBias = 0;
-			//分数 col=3
-			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(0)));
-			//其他 col=3+index
-			std::vector<int> specials = sectionInfo->GetSpecials(0);
-
-			for (int i = 0; i < specials.size(); i++)
-			{
-				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
-			}
-			//差值显示
-			rowBias = 2;
-			//分数 col=3
-			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(2)));
-			//其他 col=3+index
-			specials = sectionInfo->GetSpecials(2);
-			for (int i = 0; i < specials.size(); i++)
-			{
-				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3 , 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
-			}
-			sectionCount++;
-		}
-		rowIndex += sectionCount*3;
+		return;
 	}
-
-
-
+	SectionInfo current = gameInfo->GetPrevSectionInfo(currentStage - 1);
+	if (gameInfo->GetCurrentSectionIndex(currentStage-1)==0)//该面的第一个section，所以要显示前一面的最后一个section
+	{
+		current = gameInfo->GetCurrentSectionInfo(currentStage - 2);
+	}
+	
+	//rowBias = 2;
+	//分数 col=3
+	ui.tableWidget->item(row - 1, 3)->setData(Qt::DisplayRole, loc.toString(current.GetScore(2)));
+	//其他 col=3+index
+	std::vector<int> specials = current.GetSpecials(2);
+	for (int i = 0; i < specials.size(); i++)
+	{
+		ui.tableWidget->item(row - 1, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+	}
+	ui.tableWidget->setRowHidden(row - 1,false);
+	//隐藏pattern
+	ui.tableWidget->setRowHidden(row - 2, true);
 }
 
 void MainWindow::UpdatePattern()
@@ -266,6 +277,7 @@ void MainWindow::UpdatePattern()
 			{
 				ui.tableWidget->item(sectionCount * 3 + rowBias, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
 			}
+			ui.tableWidget->setRowHidden(sectionCount * 3 + rowBias, false);//初始显示所有路线
 			sectionCount++;
 		}
 		
@@ -281,9 +293,17 @@ void MainWindow::ReadInfo()
 	int bossHP = mr->GetBossHP();
 	int frameCount = mr->GetStageFrame();
 	std::vector<int> specials = mr->GetSpecials();
+	if (gameInfo->CheckRetry(stage))
+	{
+		emit Retry();
+	}
 	if (gameInfo->SetInfo(diff, shotType))
 		emit NewShottype();
-	gameInfo->SetData(stage, score, specials);
+	if (gameInfo->SetData(stage, score, specials))
+		emit NewSection();
 	gameInfo->UpdateDelta(stage);
-	gameInfo->TestSection(bossHP,NULL,frameCount);
+	if(gameInfo->TestSection(bossHP,NULL,frameCount))
+	{
+		emit NewSection();
+	}
 }
