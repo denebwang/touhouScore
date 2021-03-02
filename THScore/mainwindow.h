@@ -16,18 +16,25 @@ public:
     void ScanGame();
     void UpdateInfo();
     void InitChart();
-    void ShowInfo();
+    void ShowScore();
+    void ShowDelta();
     void UpdatePattern();
     void ReadInfo();
+    void RestoreChart();
+    void UpdateBackground();
 private:
     Ui::MainWindowClass ui;
     QTimer* GameScanTimer;
     QTimer* InfoUpdateTimer;
     MemoryReader* mr;
     GameInfo* gameInfo;
-   
+    int currentSectionIndex;
+
+    void SetDeltaColor(long long score, QTableWidgetItem* item);
 signals:
     void FoundGame(bool found);
     void ReadSuccees();
     void NewShottype();
+    void NewSection();
+    void Retry();
 };

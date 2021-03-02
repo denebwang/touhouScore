@@ -7,9 +7,11 @@
 #include <QTimer>
 #include <QLocale>
 #include <QString>
+#include <QBrush>
+#include <QColor>
 #include <QTableWidgetItem>
 
-bool GetProcessIDByName(const WCHAR* processName, DWORD& processId) 
+bool GetProcessIDByName(const WCHAR* processName, DWORD& processId)
 {
 	HANDLE hProcessSnap;
 	//HANDLE hProcess;
@@ -51,35 +53,39 @@ bool GetProcessIDByName(const WCHAR* processName, DWORD& processId)
 	return found;
 }
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+MainWindow::MainWindow(QWidget* parent)
+	: QMainWindow(parent)
 {
-    ui.setupUi(this);
-    //初始化表格
-    ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	ui.tableWidget->item(0,0)->setTextAlignment(Qt::AlignCenter);
+	ui.setupUi(this);
+	//初始化表格
+	ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui.tableWidget->item(0, 0)->setTextAlignment(Qt::AlignCenter);
 	ui.tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 	//定时扫描游戏
-    GameScanTimer = new QTimer(this);
-    GameScanTimer->setInterval(1000);
-	connect(GameScanTimer, &QTimer::timeout,this, &MainWindow::ScanGame);
+	GameScanTimer = new QTimer(this);
+	GameScanTimer->setInterval(1000);
+	connect(GameScanTimer, &QTimer::timeout, this, &MainWindow::ScanGame);
 	GameScanTimer->start();
 	//更新游戏信息
 	InfoUpdateTimer = new QTimer(this);
 	InfoUpdateTimer->setInterval(100);
-	connect(InfoUpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateInfo);	
-	void (QTimer:: *timerStart)() = &QTimer::start;
+	connect(InfoUpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateInfo);
+	void (QTimer:: * timerStart)() = &QTimer::start;
 	connect(this, &MainWindow::FoundGame, this, &MainWindow::ReadInfo);
-	connect(this, &MainWindow::FoundGame, this, &MainWindow::InitChart);
-	connect(this, &MainWindow::FoundGame, InfoUpdateTimer, timerStart);	
+	//connect(this, &MainWindow::FoundGame, this, &MainWindow::InitChart);
+	connect(this, &MainWindow::FoundGame, InfoUpdateTimer, timerStart);
 	connect(this, &MainWindow::NewShottype, this, &MainWindow::InitChart);
-	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowInfo);
+	connect(this, &MainWindow::Retry, this, &MainWindow::RestoreChart);
+	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowScore);
+	connect(this, &MainWindow::NewSection, this, &MainWindow::ShowDelta);
+	connect(this, &MainWindow::NewSection, this, &MainWindow::UpdateBackground);
 	//connect(this, &MainWindow::NewShottype, this, &MainWindow::UpdatePattern);
-	
+
 	//指针初始置为null
 	mr = nullptr;
 	gameInfo = nullptr;
+	currentSectionIndex = 0;
 }
 
 MainWindow::~MainWindow()
@@ -87,7 +93,7 @@ MainWindow::~MainWindow()
 	if (!(mr == nullptr))
 		delete mr;
 	if (!(gameInfo == nullptr))
-	delete gameInfo;
+		delete gameInfo;
 }
 
 void MainWindow::ScanGame()
@@ -172,8 +178,8 @@ void MainWindow::InitChart()
 		{
 			QTableWidgetItem* newItem = new QTableWidgetItem(SectionNames.at(index));
 			newItem->setTextAlignment(Qt::AlignCenter);
-			ui.tableWidget->setItem(rowOffset + index * 3 , 1, newItem);
-			ui.tableWidget->setSpan(rowOffset + index * 3 , 1, 3, 1);
+			ui.tableWidget->setItem(rowOffset + index * 3, 1, newItem);
+			ui.tableWidget->setSpan(rowOffset + index * 3, 1, 3, 1);
 		}
 		//类别
 		for (int row = 0; row < rowCount; row += 3)
@@ -193,6 +199,7 @@ void MainWindow::InitChart()
 			QTableWidgetItem* newItem = new QTableWidgetItem("0");
 			newItem->setTextAlignment(Qt::AlignCenter);
 			ui.tableWidget->setItem(row, col, newItem);
+			ui.tableWidget->setRowHidden(row, true);//初始关闭所有显示
 		}
 	}
 	ui.gameNameLabel->setText(gameInfo->GameName());
@@ -201,49 +208,65 @@ void MainWindow::InitChart()
 
 	//更新路线
 	UpdatePattern();
-	
+
 }
 
-void MainWindow::ShowInfo()
+void MainWindow::ShowScore()
 {
-	static QLocale loc = QLocale::English;
-	int index = 0;
-	int rowIndex = 0;
-	for (int stage = 1; stage < 7; stage++)
-	{
-		index = stage - 1;
-		const std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(index);
-		//游戏内信息显示
-		int rowBias = 0, sectionCount = 0;
-		for (auto sectionInfo = sections.begin(); sectionInfo != sections.end(); sectionInfo++)
-		{
-			rowBias = 0;
-			//分数 col=3
-			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(0)));
-			//其他 col=3+index
-			std::vector<int> specials = sectionInfo->GetSpecials(0);
 
-			for (int i = 0; i < specials.size(); i++)
-			{
-				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
-			}
-			//差值显示
-			rowBias = 2;
-			//分数 col=3
-			ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3, 3)->setData(Qt::DisplayRole, loc.toString(sectionInfo->GetScore(2)));
-			//其他 col=3+index
-			specials = sectionInfo->GetSpecials(2);
-			for (int i = 0; i < specials.size(); i++)
-			{
-				ui.tableWidget->item(rowIndex + rowBias + sectionCount * 3 , 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
-			}
-			sectionCount++;
-		}
-		rowIndex += sectionCount*3;
+	static QLocale loc = QLocale::English;
+	int currentStage = gameInfo->GetCurrentStage();
+	int row = gameInfo->GetCurrenSectionRowIndex();
+	SectionInfo current = gameInfo->GetCurrentSectionInfo(currentStage - 1);
+	//游戏内信息显示
+	//分数 col=3
+	ui.tableWidget->item(row, 3)->setData(Qt::DisplayRole, loc.toString(current.GetScore(0)));
+	//其他 col=3+index
+	std::vector<int> specials = current.GetSpecials(0);
+
+	for (int i = 0; i < specials.size(); i++)
+	{
+		ui.tableWidget->item(row, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+	}
+	//将当前section设为可见
+	ui.tableWidget->setRowHidden(row, false);
+}
+
+void MainWindow::ShowDelta()
+{
+
+	static QLocale loc = QLocale::English;
+	int currentStage = gameInfo->GetCurrentStage();
+	int row = gameInfo->GetCurrenSectionRowIndex();
+	if (row == 0)
+	{
+		return;
+	}
+	SectionInfo current = gameInfo->GetPrevSectionInfo(currentStage - 1);
+	if (gameInfo->GetCurrentSectionIndex(currentStage - 1) == 0)//该面的第一个section，所以要显示前一面的最后一个section
+	{
+		current = gameInfo->GetCurrentSectionInfo(currentStage - 2);
 	}
 
+	//rowBias = 2;
+	//分数 col=3
+	QTableWidgetItem* scoreItem = ui.tableWidget->item(row - 1, 3);
+	long long score = current.GetScore(2);
+	scoreItem->setData(Qt::DisplayRole, loc.toString(score));
+	SetDeltaColor(score, scoreItem);
 
-
+	//其他 col=3+index
+	std::vector<int> specials = current.GetSpecials(2);
+	for (int i = 0; i < specials.size(); i++)
+	{
+		QTableWidgetItem* specialItem = ui.tableWidget->item(row - 1, 3 + 1 + i);
+		int special = specials[i];
+		specialItem->setData(Qt::DisplayRole, loc.toString(special));
+		SetDeltaColor(special, specialItem);
+	}
+	ui.tableWidget->setRowHidden(row - 1, false);
+	//隐藏pattern
+	ui.tableWidget->setRowHidden(row - 2, true);
 }
 
 void MainWindow::UpdatePattern()
@@ -252,7 +275,7 @@ void MainWindow::UpdatePattern()
 
 	int rowBias = 1;
 	int sectionCount = 0;
-	
+
 	for (int i = 0; i < 6; ++i)
 	{
 		const std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
@@ -266,9 +289,10 @@ void MainWindow::UpdatePattern()
 			{
 				ui.tableWidget->item(sectionCount * 3 + rowBias, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
 			}
+			ui.tableWidget->setRowHidden(sectionCount * 3 + rowBias, false);//初始显示所有路线
 			sectionCount++;
 		}
-		
+
 	}
 }
 
@@ -281,9 +305,66 @@ void MainWindow::ReadInfo()
 	int bossHP = mr->GetBossHP();
 	int frameCount = mr->GetStageFrame();
 	std::vector<int> specials = mr->GetSpecials();
+	if (gameInfo->CheckRetry(stage))
+	{
+		emit Retry();
+	}
 	if (gameInfo->SetInfo(diff, shotType))
 		emit NewShottype();
-	gameInfo->SetData(stage, score, specials);
+	if (gameInfo->SetData(stage, score, specials))
+		emit NewSection();
 	gameInfo->UpdateDelta(stage);
-	gameInfo->TestSection(bossHP,NULL,frameCount);
+	if (gameInfo->TestSection(bossHP, NULL, frameCount))
+	{
+		emit NewSection();
+	}
+}
+
+void MainWindow::RestoreChart()
+{
+	int rowCount = ui.tableWidget->rowCount();
+	for (int i = 0; i < rowCount; i += 3)
+	{
+		ui.tableWidget->setRowHidden(i, true);
+		ui.tableWidget->setRowHidden(i + 1, false);
+		ui.tableWidget->setRowHidden(i + 2, true);
+	}
+}
+
+void MainWindow::UpdateBackground()
+{
+	static QBrush currentBackground(QColor(204, 229, 255));
+	static QBrush prevBackground;
+	int row = gameInfo->GetCurrenSectionRowIndex();
+
+	int column = ui.tableWidget->columnCount();
+	for (int col = 2; col < column; col++)
+	{
+		ui.tableWidget->item(row, col)->setBackground(currentBackground);
+		if (row < 3)
+		{
+			continue;
+		}
+		ui.tableWidget->item(row - 3, col)->setBackground(prevBackground);
+	}
+
+}
+
+void MainWindow::SetDeltaColor(long long score, QTableWidgetItem* item)
+{
+	static QBrush red = QBrush(Qt::red);
+	static QBrush green = QBrush(Qt::green);
+	static QBrush defaultBrush = QBrush();
+	if (score < 0)
+	{
+		item->setForeground(red);
+	}
+	else if (score > 0)
+	{
+		item->setForeground(green);
+	}
+	else
+	{
+		item->setForeground(defaultBrush);
+	}
 }

@@ -19,7 +19,7 @@ void GameInfo::SetPattern(patternHeader header)
 {
 	using namespace std;
 	//先将原有的清空
-	for (auto &si : stageInfo)
+	for (auto& si : stageInfo)
 	{
 		si.ClearSection();
 	}
@@ -50,7 +50,7 @@ void GameInfo::SetPattern(patternHeader header)
 		logger->error("can't find csv file: {0}", e.what());
 
 	}
-	for (auto &stage : stageInfo)
+	for (auto& stage : stageInfo)
 	{
 		if (!stage.CheckValid())
 		{
@@ -59,8 +59,8 @@ void GameInfo::SetPattern(patternHeader header)
 			{
 				stage.SetDeault(specialNames.size());
 			}
-			else 
-			throw std::runtime_error("GameInfo::SetPattern invalid");
+			else
+				throw std::runtime_error("GameInfo::SetPattern invalid");
 		}
 		stage.SetInitSection();
 	}
@@ -109,6 +109,19 @@ GameInfo::~GameInfo()
 }
 
 
+bool GameInfo::CheckRetry(int stage)
+{
+	if (stage < currentStage)//推把了
+	{
+		for (auto& si : stageInfo)
+		{
+			si.ResetAll();
+			return true;
+		}
+	}
+	return false;
+}
+
 bool GameInfo::SetInfo(int diff, int shot)
 {
 	if (diff == difficulty && shot == shotType)
@@ -119,32 +132,31 @@ bool GameInfo::SetInfo(int diff, int shot)
 	return true;
 }
 
-void GameInfo::SetData(int stage, long long score, std::vector<int>& specials)
-{	
-	if (stage<1)
+bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
+{	//return true if stage changed
+	if (stage < 1)
 	{
-		return;
+		return false;
 	}
-	if (stage < currentStage)//推把了
-	{
-		for (auto &si : stageInfo)
-		{
-			si.ResetAll();
-		}
-	}
-	stageInfo[stage - 1].SetData(0, score, specials);
 
-	currentStage = stage;
+	stageInfo[stage - 1].SetData(0, score, speical);
+	if (currentStage != stage)
+	{
+		currentStage = stage;
+		return true;
+	}
+	return false;
 	//UpdateDelta(stage);
 
-		
+
 }
 
-void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
+bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 {
+	bool sectionChanged = false;
 	if (currentStage < 1)
 	{
-		return;
+		return sectionChanged;
 	}
 	Section current = stageInfo[currentStage - 1].GetCurrentSection();
 	static int hp = 0, time = 0;
@@ -163,37 +175,43 @@ void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 				switch (currentStage)
 				{
 				case 1:
-					if (bossHP>6000)//道中非血量5850
+					if (bossHP > 6000)//道中非血量5850
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 2:
 					if (bossHP > 3000)//道中符血量2300
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 3:
 					if (bossHP > 3000)//道中对话血量2500
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 4:
 					if (frameCount > 8500)//道中非血量比关底还多
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 5:
-					if (bossHP > 12000&&frameCount>5000)//道中血量12900,约4000帧开始减少;关底血量12400
+					if (bossHP > 12000 && frameCount > 5000)//道中血量12900,约4000帧开始减少;关底血量12400
 					{
-						stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
 					}
 					break;
 				case 6:
-					stageInfo[currentStage - 1].SetCurrentSection(Section::Boss);
+					if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+						sectionChanged = true;
 					break;
 				default:
 					logger->error("Current stage error: {0}", currentStage);
@@ -201,8 +219,12 @@ void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 			}
 			break;
 		case Section::Boss:
+			//todo: 击破动画结束后再切换
 			if (bossHP < 0)//击破
-				stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus);
+			{
+				if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
+					sectionChanged = true;
+			}
 			break;
 		case Section::Bonus:
 			break;
@@ -218,6 +240,7 @@ void GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 	}
 	hp = bossHP;
 	time = timeLeft;
+	return sectionChanged;
 }
 
 void GameInfo::UpdateDelta(int stage)
@@ -236,12 +259,12 @@ void GameInfo::UpdateDelta(int stage)
 	{
 		dSpecial.push_back(*iter1 - *iter2);
 	}
-	stageInfo[index].SetData(2,dScore, dSpecial);
+	stageInfo[index].SetData(2, dScore, dSpecial);
 }
 
 GameInfo::patternHeader GameInfo::GetHeader()
 {
-	return patternHeader{static_cast<int>(game),difficulty,shotType};
+	return patternHeader{ static_cast<int>(game),difficulty,shotType };
 }
 
 GameInfo* GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*& mr)
@@ -266,7 +289,7 @@ void GameInfo::ScanCSV()
 	using namespace std;
 	namespace fs = filesystem;
 	vector<fs::path> files;
-	try 
+	try
 	{
 		for (auto& p : fs::directory_iterator("csv"))
 			files.push_back(p.path());
@@ -278,13 +301,13 @@ void GameInfo::ScanCSV()
 	for (auto file : files)
 	{
 		QFileInfo fileInfo(file);
-		if (fileInfo.suffix()=="csv")
+		if (fileInfo.suffix() == "csv")
 		{
 			logger->info("Found a csv file {0}", fileInfo.fileName().toUtf8().data());
 			CSVReader reader(file);
 			patternHeader header = reader.GetHeader();
-			
-			patternFileMap.insert(std::make_pair(header,file));
+
+			patternFileMap.insert(std::make_pair(header, file));
 		}
 	}
 }
@@ -328,7 +351,7 @@ int GameInfo::RowCount()
 {
 	//每section3行数据
 	int count = 0;
-	for (auto &stage : stageInfo)
+	for (auto& stage : stageInfo)
 	{
 		count += stage.GetSectionCount();
 	}
@@ -339,7 +362,7 @@ int GameInfo::RowCount()
 QStringList GameInfo::GetColumnHeader() const
 {
 	QStringList list;
-	list  << "Stage" << "Section" << "" << "Score";
+	list << "Stage" << "Section" << "" << "Score";
 	for (auto iter = specialNames.begin(); iter != specialNames.end(); iter++)
 	{
 		list << *iter;
@@ -354,26 +377,79 @@ int GameInfo::GetCurrentStage() const
 
 int GameInfo::GetStageSectionCount(int index) const
 {
+	if (index < 0)
+	{
+		index = 0;
+	}
 	return stageInfo[index].GetSectionCount();
+}
+
+int GameInfo::GetCurrenSectionRowIndex() const
+{
+	if (currentStage<1)
+	{
+		return 0;
+	}
+	int sectionCount = 0;
+	for (int index = 0; index < currentStage - 1; index++)
+	{
+		sectionCount += GetStageSectionCount(index);
+	}
+	sectionCount += stageInfo[currentStage - 1].GetCurrentSectionIndex() + 1;
+	return (sectionCount - 1) * 3;
 }
 
 QStringList GameInfo::GetSectionNames(int index) const
 {
+	if (index < 0)
+	{
+		index = 0;
+	}
 	return stageInfo[index].GetSectionNames();
 }
 
 Section GameInfo::GetCurrentSection(int index) const
 {
+	if (index < 0)
+	{
+		index = 0;
+	}
 	return stageInfo[index].GetCurrentSection();
+}
+
+const SectionInfo& GameInfo::GetCurrentSectionInfo(int index) const
+{
+	if (index < 0)
+	{
+		index = 0;
+	}
+	return stageInfo[index].GetCurrentSectionInfo();
+}
+
+const SectionInfo& GameInfo::GetPrevSectionInfo(int index) const
+{
+	if (index < 0)
+	{
+		index = 0;
+	}
+	return stageInfo[index].GetPrevSectionInfo();
 }
 
 int GameInfo::GetCurrentSectionIndex(int index) const
 {
+	if (index < 0)
+	{
+		index = 0;
+	}
 	return stageInfo[index].GetCurrentSectionIndex();
 }
 
 const std::vector<SectionInfo>& GameInfo::GetSectionInfos(int index) const
 {
+	if (index < 0)
+	{
+		index = 0;
+	}
 	return stageInfo[index].GetSectionInfos();
 }
 
@@ -416,8 +492,8 @@ GameInfo::patternHeader GameInfo::CSVReader::GetHeader()
 {
 	using namespace std;
 	vector<long long> headerData = ReadLongLongRow();
-	patternHeader header = 
-	{ 
+	patternHeader header =
+	{
 		headerData[0],
 		headerData[1],
 		headerData[2],
@@ -430,11 +506,11 @@ std::vector<QString> GameInfo::CSVReader::ReadRow()
 	using namespace std;
 
 	//QTextStream textStream(file);
-	QString line; 
+	QString line;
 	line = ts->readLine();
 	QStringList strList = line.split(",", Qt::SkipEmptyParts);
 	vector<QString> strings;
-	for (auto &str : strList)
+	for (auto& str : strList)
 	{
 		strings.push_back(str);
 	}
@@ -446,7 +522,7 @@ std::vector<long long> GameInfo::CSVReader::ReadLongLongRow()
 	using namespace std;
 	vector<QString> strings = ReadRow();
 	vector<long long> ints;
-	for (auto &str : strings)
+	for (auto& str : strings)
 	{
 		ints.push_back(str.toLongLong());
 	}

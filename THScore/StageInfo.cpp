@@ -135,9 +135,22 @@ bool StageInfo::CheckValid()
 	return false;
 }
 
-void StageInfo::SetCurrentSection(Section section)
+bool StageInfo::CheckSectionExist(Section section)
+{
+	for (auto& si : sections)
+	{
+		if (si.GetSection() == section)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool StageInfo::SetCurrentSection(Section section)
 {
 	currentSection = section;
+	return CheckSectionExist(section);
 }
 
 void StageInfo::SetInitSection()
@@ -150,9 +163,21 @@ Section StageInfo::GetCurrentSection() const
 	return currentSection;
 }
 
+const SectionInfo& StageInfo::GetCurrentSectionInfo() const
+{
+	for (auto& si : sections)
+	{
+		if ((si.GetSection()==currentSection)||(si.GetSection() == Section::Bonus)||(si.GetSection() == Section::All))
+		{
+			return si;
+		}
+	}
+	return sections.back();
+}
+
 int StageInfo::GetCurrentSectionIndex() const
 {
-	for (int i =0; i < sections.size(); i++)
+	for (int i = 0; i < sections.size(); i++)
 	{
 		if (sections[i].GetSection() == currentSection)
 		{
@@ -162,20 +187,38 @@ int StageInfo::GetCurrentSectionIndex() const
 	return -1;
 }
 
-Section StageInfo::GetPrevSection(bool& previousStage)
+const SectionInfo& StageInfo::GetPrevSectionInfo() const
 {
-	previousStage = false;
-	if (currentSection==Section::All)
+	for (auto iter = sections.begin(); iter != sections.end(); iter++)
 	{
-		return currentSection;
+		if (iter->GetSection()==currentSection)
+		{
+			if (iter != sections.begin())
+			{
+				return *prev(iter);
+			}
+			else
+			{
+				return *iter;
+			}
+		}
 	}
-	else if (currentSection == Section::Mid)
-	{
-		previousStage = true;
-		return Section::Bonus;
-	}
-	Section previous = static_cast<Section>(static_cast<int>(currentSection) - 1);
 }
+
+//Section StageInfo::GetPrevSection(bool& previousStage)
+//{
+//	previousStage = false;
+//	if (currentSection==Section::All)
+//	{
+//		return currentSection;
+//	}
+//	else if (currentSection == Section::Mid)
+//	{
+//		previousStage = true;
+//		return Section::Bonus;
+//	}
+//	Section previous = static_cast<Section>(static_cast<int>(currentSection) - 1);
+//}
 
 int StageInfo::GetStage() const
 {
