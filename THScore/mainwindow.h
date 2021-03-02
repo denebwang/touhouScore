@@ -20,6 +20,8 @@ public:
     void ShowDelta();
     void UpdatePattern();
     void ReadInfo();
+    void RestoreChart();
+    void UpdateBackground();
 private:
     Ui::MainWindowClass ui;
     QTimer* GameScanTimer;
@@ -28,7 +30,7 @@ private:
     GameInfo* gameInfo;
     int currentSectionIndex;
 
-
+    void SetDeltaColor(long long score, QTableWidgetItem* item);
 signals:
     void FoundGame(bool found);
     void ReadSuccees();
