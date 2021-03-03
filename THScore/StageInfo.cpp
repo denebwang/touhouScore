@@ -20,7 +20,7 @@ void StageInfo::Init(Game game, int stage)
 	case Game::invalid:
 		break;
 	case Game::th10:
-		
+
 		break;
 	case Game::th11:
 		break;
@@ -38,7 +38,7 @@ void StageInfo::SetDeault(int specialCount)
 
 void StageInfo::SetData(Section section, int mode, long long score, std::vector<int>& specials)
 {
-	for (auto &si : sections)
+	for (auto& si : sections)
 	{
 		if (si.GetSection() == section)
 		{
@@ -49,7 +49,7 @@ void StageInfo::SetData(Section section, int mode, long long score, std::vector<
 	//没找到：未添加或bonus不存在
 	if (mode == 1)//设置路线状态
 	{
-		for (auto &si : sections)
+		for (auto& si : sections)
 		{
 			if (si.GetSection() == Section::All)
 			{
@@ -61,7 +61,7 @@ void StageInfo::SetData(Section section, int mode, long long score, std::vector<
 		SectionInfo newSection(section, score, specials);
 		sections.push_back(newSection);
 	}
-	else if (section==Section::Bonus)
+	else if (section == Section::Bonus)
 	{
 		SetData(Section::Boss, mode, score, specials);
 	}
@@ -167,7 +167,7 @@ const SectionInfo& StageInfo::GetCurrentSectionInfo() const
 {
 	for (auto& si : sections)
 	{
-		if ((si.GetSection()==currentSection)||(si.GetSection() == Section::Bonus)||(si.GetSection() == Section::All))
+		if ((si.GetSection() == currentSection) || (si.GetSection() == Section::Bonus) || (si.GetSection() == Section::All))
 		{
 			return si;
 		}
@@ -191,7 +191,7 @@ const SectionInfo& StageInfo::GetPrevSectionInfo() const
 {
 	for (auto iter = sections.begin(); iter != sections.end(); iter++)
 	{
-		if (iter->GetSection()==currentSection)
+		if (iter->GetSection() == currentSection)
 		{
 			if (iter != sections.begin())
 			{
@@ -237,7 +237,7 @@ const std::vector<SectionInfo>& StageInfo::GetSectionInfos()const
 
 long long StageInfo::GetScore(Section section, int mode) const
 {
-	for (auto &si : sections)
+	for (auto& si : sections)
 	{
 		if (si.GetSection() == section)
 		{
@@ -251,7 +251,7 @@ long long StageInfo::GetScore(Section section, int mode) const
 	}
 	else
 	{
-		for (auto &si : sections)
+		for (auto& si : sections)
 		{
 			if (si.GetSection() == Section::All)
 			{
@@ -302,8 +302,8 @@ const std::vector<int>& StageInfo::GetSpecials(int mode) const
 QStringList StageInfo::GetSectionNames() const
 {
 	QStringList list;
-	for (auto &var : sections)
-	{	
+	for (auto& var : sections)
+	{
 		QString temp;
 		switch (var.GetSection())
 		{

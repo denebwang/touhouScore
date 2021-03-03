@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'mainwindowjtCkcR.ui'
+** Form generated from reading UI file 'mainwindowrdhwTr.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef MAINWINDOWJTCKCR_H
-#define MAINWINDOWJTCKCR_H
+#ifndef MAINWINDOWRDHWTR_H
+#define MAINWINDOWRDHWTR_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
@@ -19,6 +19,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QTableWidget>
+#include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -36,6 +37,7 @@ public:
     QLabel *ShottypeLabel;
     QTableWidget *tableWidget;
     QMenuBar *menuBar;
+    QToolBar *toolBar;
 
     void setupUi(QMainWindow *MainWindowClass)
     {
@@ -136,6 +138,11 @@ public:
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
         menuBar->setGeometry(QRect(0, 0, 500, 22));
         MainWindowClass->setMenuBar(menuBar);
+        toolBar = new QToolBar(MainWindowClass);
+        toolBar->setObjectName(QString::fromUtf8("toolBar"));
+        toolBar->setMovable(false);
+        toolBar->setAllowedAreas(Qt::TopToolBarArea);
+        MainWindowClass->addToolBar(Qt::TopToolBarArea, toolBar);
 
         retranslateUi(MainWindowClass);
 
@@ -155,6 +162,7 @@ public:
         ___qtablewidgetitem->setText(QCoreApplication::translate("MainWindowClass", "\346\255\243\345\234\250\346\211\253\346\217\217\346\270\270\346\210\217\350\277\233\347\250\213...", nullptr));
         tableWidget->setSortingEnabled(__sortingEnabled);
 
+        toolBar->setWindowTitle(QCoreApplication::translate("MainWindowClass", "toolBar", nullptr));
     } // retranslateUi
 
 };
@@ -165,4 +173,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // MAINWINDOWJTCKCR_H
+#endif // MAINWINDOWRDHWTR_H

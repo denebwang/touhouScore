@@ -341,6 +341,16 @@ QString GameInfo::GameName()
 
 
 
+const std::vector<QString>& GameInfo::GetShotTypeList(int gameNum)
+{
+	return shotTypeMap.at(gameNum);
+}
+
+const std::vector<QString>& GameInfo::GetShotTypeList()const
+{
+	return shotTypeList;
+}
+
 int GameInfo::ColumnCount()
 {
 	//stage+section+header+score+...
@@ -350,12 +360,16 @@ int GameInfo::ColumnCount()
 int GameInfo::RowCount()
 {
 	//每section3行数据
+	return 3 * SectionCount();
+}
+
+int GameInfo::SectionCount()
+{
 	int count = 0;
 	for (auto& stage : stageInfo)
 	{
 		count += stage.GetSectionCount();
 	}
-	count *= 3;
 	return count;
 }
 
@@ -386,7 +400,7 @@ int GameInfo::GetStageSectionCount(int index) const
 
 int GameInfo::GetCurrenSectionRowIndex() const
 {
-	if (currentStage<1)
+	if (currentStage < 1)
 	{
 		return 0;
 	}
@@ -464,7 +478,7 @@ void GameInfo::Init()
 }
 
 std::unordered_map<int, std::vector<QString>> GameInfo::shotTypeMap;
-QString GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
+const QString GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
 std::unordered_map<GameInfo::patternHeader, std::filesystem::path> GameInfo::patternFileMap;
 std::unordered_map<std::string, std::vector<std::wstring>> GameInfo::exeMap;
 

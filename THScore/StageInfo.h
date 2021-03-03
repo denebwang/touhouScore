@@ -10,7 +10,7 @@ class StageInfo
 public:
 	StageInfo(int stage = 0);
 
-	
+
 	//初始化
 	void Init(Game game, int stage);
 	void SetDeault(int specialCount);
@@ -35,7 +35,7 @@ public:
 	void SetInitSection();
 	Section GetCurrentSection()const;
 	const SectionInfo& GetCurrentSectionInfo()const;
-	int GetCurrentSectionIndex() const ;
+	int GetCurrentSectionIndex() const;
 	//Section GetPrevSection(bool& previousStage);
 	const SectionInfo& GetPrevSectionInfo()const;
 	int GetStage()const;

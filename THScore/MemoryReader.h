@@ -14,7 +14,7 @@ public:
 	virtual int GetBossHP() = 0;
 	virtual int GetStageFrame() = 0;
 	int ReadInt(DWORD address);
-	int ReadIntFromPointer(DWORD ptr,DWORD offset);
+	int ReadIntFromPointer(DWORD ptr, DWORD offset);
 private:
 	HANDLE gameProcessHandle;
 

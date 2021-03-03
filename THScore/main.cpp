@@ -10,17 +10,17 @@
 
 BOOL SetPrivilage();
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	logger->flush_on(spdlog::level::info);
 	GameInfo::Init();
 	GameInfo::ScanCSV();
 	SetPrivilage();
 
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-    return a.exec();
+	QApplication a(argc, argv);
+	MainWindow w;
+	w.show();
+	return a.exec();
 }
 
 BOOL SetPrivilage()

@@ -2,8 +2,11 @@
 #include "GameInfo.h"
 #include "MemoryReader.h"
 #include "logger.h"
+#include "editorwindow.h"
 #include "Windows.h"
 #include <tlhelp32.h>
+#include <QToolBar>
+#include <QAction>
 #include <QTimer>
 #include <QLocale>
 #include <QString>
@@ -57,6 +60,14 @@ MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	//工具栏
+	QAction* patternEditAction = ui.toolBar->addAction("Pattern Edit");
+	connect(patternEditAction, &QAction::triggered, []()
+		{
+			EditorWindow* editer = new EditorWindow();
+			editer->setAttribute(Qt::WA_DeleteOnClose);
+			editer->show();
+		});
 	//初始化表格
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);

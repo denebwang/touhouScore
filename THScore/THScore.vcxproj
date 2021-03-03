@@ -102,10 +102,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="editorwindow.cpp" />
     <ClCompile Include="MemoryReader.cpp" />
     <ClCompile Include="SectionInfo.cpp" />
     <ClCompile Include="StageInfo.cpp" />
     <QtRcc Include="mainwindow.qrc" />
+    <QtUic Include="editorwindow.ui" />
     <QtUic Include="mainwindow.ui" />
     <QtMoc Include="mainwindow.h" />
     <ClCompile Include="GameInfo.cpp" />
@@ -114,6 +116,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="editorwindow.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="logger.h" />
