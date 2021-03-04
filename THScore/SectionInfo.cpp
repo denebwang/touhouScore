@@ -59,6 +59,28 @@ const Section SectionInfo::GetSection()const
 	return section;
 }
 
+QString SectionInfo::GetSectionName() const
+{
+	switch (section)
+	{
+	default:
+		logger->error("SectionInfo::GetSectionName() error");
+		break;
+	case Section::All:
+		return "All";
+		break;
+	case Section::Mid:
+		return "Mid";
+		break;
+	case Section::Boss:
+		return "Boss";
+		break;
+	case Section::Bonus:
+		return "Bonus";
+		break;
+	}
+}
+
 const long long SectionInfo::GetScore(int mode)const
 {
 	return scores[mode];

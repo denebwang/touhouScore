@@ -377,9 +377,16 @@ QStringList GameInfo::GetColumnHeader() const
 {
 	QStringList list;
 	list << "Stage" << "Section" << "" << "Score";
-	for (auto iter = specialNames.begin(); iter != specialNames.end(); iter++)
+	list += GetSpecialNames();
+	return list;
+}
+
+QStringList GameInfo::GetSpecialNames() const
+{
+	QStringList list;
+	for (auto& str:specialNames)
 	{
-		list << *iter;
+		list << str;
 	}
 	return list;
 }

@@ -89,6 +89,7 @@ public:
 	int RowCount();
 	int SectionCount();
 	QStringList GetColumnHeader()const;
+	QStringList GetSpecialNames()const;
 	int GetCurrentStage()const;
 	int GetStageSectionCount(int index)const;
 	int GetCurrenSectionRowIndex()const;

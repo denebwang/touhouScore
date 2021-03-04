@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QString>
 #include <vector>
+#include <QLocale>
 #include "ui_editorwindow.h"
 
 class EditorWindow : public QWidget
@@ -20,7 +21,7 @@ private:
 	const int GetDiffIndex(const QString& diffName);
 	const int GetShotIndex(const QString& shotName);
 	GameInfo* gameInfo;
-
+	QLocale loc;
 	int shot;
 	int diff;
 };

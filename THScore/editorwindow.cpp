@@ -1,18 +1,27 @@
 ﻿#include "editorwindow.h"
+#include <vector>
 #include <QStringList>
 #include <QString>
+#include <QLocale>
 #include <QComboBox>
+#include <QTableWidget>
+#include <QTreeWidgetItem>
 #include <exception>
 #include "logger.h"
 #include "GameInfo.h"
+#include "SectionInfo.h"
 
 EditorWindow::EditorWindow(QWidget* parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
+	ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui.tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 	gameInfo = nullptr;
 	diff = 0;
 	shot = 0;
+	loc = QLocale::English;
 	QString unselected("Unselected");
 	QStringList gameList;
 	//空白即缺省
@@ -30,43 +39,34 @@ EditorWindow::EditorWindow(QWidget* parent)
 	//根据所选游戏更新机体
 	connect(ui.GameCombo, &QComboBox::currentTextChanged, [=](const QString& gameName)
 		{
-			ui.ShotCombo->clear();
-			ui.ShotCombo->addItem(unselected);
-			std::vector<QString> shottypeList;
 			try
 			{
-				shottypeList = GameInfo::GetShotTypeList(GetGameIndex(gameName));
+				if (gameInfo != nullptr)
+				{
+					delete gameInfo;
+				}
+				gameInfo = new GameInfo(static_cast<Game>(GetGameIndex(gameName)));
 			}
 			catch (std::out_of_range& e)
 			{
 				logger->warn("{0} not supported yet!", gameName.toUtf8().data());
 			}
-			catch (std::runtime_error& e)
-			{
-				//logger->error("Game name error: {}", gameName.toUtf8().data());
-			}
-			for (auto& str : shottypeList)
-			{
-				ui.ShotCombo->addItem(str);
-			}
-		});
-	connect(ui.GameCombo, &QComboBox::currentTextChanged, [=](const QString& gameName)
-		{
-			try
-			{
-				gameInfo = new GameInfo(static_cast<Game>(GetGameIndex(gameName)));
-			}
 			catch (std::exception& e)
 			{
 				return;
+			}
+			ui.ShotCombo->clear();
+			ui.ShotCombo->addItem(unselected);
+			std::vector<QString> shottypeList = gameInfo->GetShotTypeList();
+			for (auto& str : shottypeList)
+			{
+				ui.ShotCombo->addItem(str);
 			}
 		});
 	connect(ui.DiffCombo, &QComboBox::currentTextChanged, [=](const QString& diffName)
 		{
 			diff = GetDiffIndex(diffName);
 		});
-
-
 	connect(ui.ShotCombo, &QComboBox::currentTextChanged, [=](const QString& shotName)
 		{
 			if (shotName == "Unselected")
@@ -80,9 +80,56 @@ EditorWindow::EditorWindow(QWidget* parent)
 				gameInfo->SetInfo(diff, shot);
 				ui.formWidget->setCurrentIndex(1);
 				ui.tableWidget->clear();
-				ui.tableWidget->setColumnCount(gameInfo->ColumnCount());
+				ui.tableWidget->setColumnCount(gameInfo->ColumnCount() * 2 - 3);//每列增加一列用于放增量,并增加一列用于放置选择section组合的下拉框
+				QStringList header, specials;
+				header << "Stage" << "" << "Section" << "Score" << "Delta";
+				specials = gameInfo->GetSpecialNames();
+				for (auto& str : specials)
+				{
+					header << str << "Delta";
+				}
+				ui.tableWidget->setHorizontalHeaderLabels(header);
 				ui.tableWidget->setRowCount(gameInfo->SectionCount());
 				//todo: 初始化表格
+				//设置面数单元格合并
+				int row = 0;
+				for (int i = 0; i < 6; i++)
+				{
+					int sectionCount = gameInfo->GetStageSectionCount(i);
+					ui.tableWidget->setSpan(row, 0, sectionCount, 1);
+					QTableWidgetItem* newStage = new QTableWidgetItem(QString::number(i + 1));
+					newStage->setTextAlignment(Qt::AlignCenter);
+					ui.tableWidget->setItem(row, 0, newStage);
+					ui.tableWidget->setSpan(row, 1, sectionCount, 1);
+					//todo: 下拉框改变section
+					ui.tableWidget->setCellWidget(row, 1, new QComboBox);
+					std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
+					for (int index = 0; index < sections.size(); index++)
+					{
+						int rowIndex = row + index;
+						ui.tableWidget->setItem(rowIndex, 2, new QTableWidgetItem(sections[index].GetSectionName()));
+						long long score = sections[index].GetScore(1);
+						ui.tableWidget->setItem(rowIndex, 3, new QTableWidgetItem(loc.toString(score)));
+						long long dScore = rowIndex == 0 ? score :
+							score - loc.toLongLong(ui.tableWidget->item(rowIndex - 1, 3)->text());
+						ui.tableWidget->setItem(rowIndex, 4, new QTableWidgetItem(loc.toString(dScore)));//分数差值
+						auto specials = sections[index].GetSpecials(1);
+						for (int j = 0; j < specials.size(); j ++)
+						{
+							int colIndex = 5 + j * 2;
+							ui.tableWidget->setItem(rowIndex, colIndex, new QTableWidgetItem(loc.toString(specials[j])));
+							int dSpecial = rowIndex == 0 ? specials[j] :
+								specials[j] - loc.toInt(ui.tableWidget->item(rowIndex - 1, colIndex)->text());
+							ui.tableWidget->setItem(rowIndex, colIndex + 1 , new QTableWidgetItem(loc.toString(dSpecial)));
+						}
+					}
+					row += sectionCount;
+				}
+				//填充数据
+
+
+
+				ui.tableWidget->adjustSize();
 			}
 
 		});

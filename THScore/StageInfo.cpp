@@ -304,25 +304,7 @@ QStringList StageInfo::GetSectionNames() const
 	QStringList list;
 	for (auto& var : sections)
 	{
-		QString temp;
-		switch (var.GetSection())
-		{
-		default:
-			break;
-		case Section::All:
-			temp = "All";
-			break;
-		case Section::Mid:
-			temp = "Mid";
-			break;
-		case Section::Boss:
-			temp = "Boss";
-			break;
-		case Section::Bonus:
-			temp = "Bonus";
-			break;
-		}
-		list << temp;
+		list << var.GetSectionName();
 	}
 	return list;
 }

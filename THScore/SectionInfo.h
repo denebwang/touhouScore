@@ -2,6 +2,7 @@
 #include<vector>
 #include <array>
 #include<string>
+#include <QString>
 #include "Enums.h"
 
 class SectionInfo
@@ -16,6 +17,7 @@ public:
 
 
 	const Section GetSection()const;
+	QString GetSectionName()const;
 	const long long GetScore(int mode)const;
 	//long long GetScore(int mode);
 	const std::vector<int>& GetSpecials(int mode)const;
