@@ -219,6 +219,7 @@ void MainWindow::InitChart()
 
 	//更新路线
 	UpdatePattern();
+	UpdateBackground();
 
 }
 
