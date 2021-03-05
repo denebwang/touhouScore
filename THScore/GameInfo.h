@@ -24,7 +24,7 @@ public:
 		int difficulty;
 		int shotType;
 		bool operator==(const patternHeader& other)const;
-		QString ToQString();
+		//QString ToQString();
 	};
 
 private:

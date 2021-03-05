@@ -17,7 +17,19 @@ public:
 	void UpdatePattern();
 	void UpdatePatternList();
 	void UpdateSectionType(int row,int col);
+	void UpdateTable(int row,int col);
+	void SaveCSV();
 private:
+	class CSVWriter
+	{
+	public:
+		CSVWriter(int game,int diff,int shot);
+		~CSVWriter();
+		void WriteLine(const QString& str);
+	private:
+		QFile* file;
+		QTextStream* ts;
+	};
 	QStringList SectionTypeList;
 	Ui::EditorWindow ui;
 	const int GetGameIndex(const QString& gameName);

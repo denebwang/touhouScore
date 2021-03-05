@@ -8,7 +8,11 @@
 #include <QTableWidget>
 #include <QListWidget>
 #include <QTableWidgetItem>
+#include <QFile>
+#include <QTextStream>
 #include <exception>
+#include <filesystem>
+#include <Qt>
 #include "logger.h"
 #include "GameInfo.h"
 #include "SectionInfo.h"
@@ -49,10 +53,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 		{
 			ui.ShotCombo->clear();
 			ui.ShotCombo->addItem(unselected);
-			if (gameInfo != nullptr)
-			{
-				delete gameInfo;
-			}
+
 
 			if (gameName == "Unselected")
 			{
@@ -62,10 +63,15 @@ EditorWindow::EditorWindow(QWidget* parent)
 			}
 			else
 			{
+
 				//根据所选游戏更新机体
 				try
 				{
 					game = GetGameIndex(gameName);
+					if (gameInfo != nullptr)
+					{
+						delete gameInfo;
+					}
 					gameInfo = new GameInfo(static_cast<Game>(game));
 				}
 				catch (std::exception& e)
@@ -120,7 +126,8 @@ EditorWindow::EditorWindow(QWidget* parent)
 			ui.DiffCombo->setCurrentText(strList[1]);
 			ui.ShotCombo->setCurrentText(strList[2]);
 		});
-	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateSectionType);
+	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
+	connect(ui.saveButton, &QPushButton::pressed,this, &EditorWindow::SaveCSV);
 }
 
 EditorWindow::~EditorWindow()
@@ -133,7 +140,7 @@ EditorWindow::~EditorWindow()
 
 void EditorWindow::UpdatePattern()
 {
-	disconnect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateSectionType);
+	disconnect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
 	ui.formWidget->setCurrentIndex(1);
 	ui.tableWidget->clear();
 	ui.tableWidget->setColumnCount(gameInfo->ColumnCount() * 2 - 3);//每列增加一列用于放增量,并增加一列用于放置选择section组合的下拉框
@@ -198,7 +205,7 @@ void EditorWindow::UpdatePattern()
 
 
 	ui.tableWidget->adjustSize();
-	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateSectionType);
+	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
 }
 
 void EditorWindow::UpdatePatternList()
@@ -250,75 +257,164 @@ void EditorWindow::UpdatePatternList()
 
 void EditorWindow::UpdateSectionType(int row, int col)
 {
-	if (col == 1)//改变section模式
+	int type = SectionTypeList.indexOf(ui.tableWidget->item(row, col)->text());
+	int stage = ui.tableWidget->item(row, 0)->text().toInt();
+	std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(stage - 1);
+	StageInfo* si = gameInfo->GetStageInfo(stage - 1);
+	si->ClearSection();
+	switch (type)
 	{
-		int type = SectionTypeList.indexOf(ui.tableWidget->item(row, col)->text());
-		int stage = ui.tableWidget->item(row, 0)->text().toInt();
-		std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(stage - 1);
-		StageInfo* si = gameInfo->GetStageInfo(stage - 1);
-		si->ClearSection();
-		switch (type)
-		{
-		case 0://all
-		{
-			SectionInfo last = sections.back();
-			si->SetData(Section::All, 1, last.GetScore(1), last.GetSpecials(1));
-			break;
-		}
-		case 1://m+b
-		{
-			switch (sections.size())
-			{
-			case 1:
-			{
-				si->SetData(Section::Mid, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
-				si->SetData(Section::Boss, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
-				break;
-			}
-			case 2:
-			{
-				si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
-				si->SetData(Section::Boss, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
-				break;
-			}
-			case 3:
-				si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
-				SectionInfo last = sections.back();
-				si->SetData(Section::Boss, 1, last.GetScore(1), last.GetSpecials(1));
-			}
-			break;
-		}
-		case 2://m+b+b
-		{
-			switch (sections.size())
-			{
-			case 1:
-				si->SetData(Section::Mid, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
-				si->SetData(Section::Boss, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
-				si->SetData(Section::Bonus, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
-				break;
-			case 2:
-				si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
-				si->SetData(Section::Boss, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
-				si->SetData(Section::Bonus, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
-				break;
-			case 3:
-				si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
-				si->SetData(Section::Boss, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
-				si->SetData(Section::Bonus, 1, sections[2].GetScore(1), sections[2].GetSpecials(1));
-				break;
-			default:
-				break;
-			}
-			break;
-		}
-		default:
-			logger->error("Wrong switch type in EditorWindow::UpdateSectionType,col=1");
-			si->SetData(Section::All, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
-			break;
-		}
-		UpdatePattern();
+	case 0://all
+	{
+		SectionInfo last = sections.back();
+		si->SetData(Section::All, 1, last.GetScore(1), last.GetSpecials(1));
+		break;
 	}
+	case 1://m+b
+	{
+		switch (sections.size())
+		{
+		case 1:
+		{
+			si->SetData(Section::Mid, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
+			si->SetData(Section::Boss, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+			break;
+		}
+		case 2:
+		{
+			si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+			si->SetData(Section::Boss, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
+			break;
+		}
+		case 3:
+			si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+			SectionInfo last = sections.back();
+			si->SetData(Section::Boss, 1, last.GetScore(1), last.GetSpecials(1));
+		}
+		break;
+	}
+	case 2://m+b+b
+	{
+		switch (sections.size())
+		{
+		case 1:
+			si->SetData(Section::Mid, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
+			si->SetData(Section::Boss, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
+			si->SetData(Section::Bonus, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+			break;
+		case 2:
+			si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+			si->SetData(Section::Boss, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
+			si->SetData(Section::Bonus, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
+			break;
+		case 3:
+			si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+			si->SetData(Section::Boss, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
+			si->SetData(Section::Bonus, 1, sections[2].GetScore(1), sections[2].GetSpecials(1));
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+	default:
+		logger->error("Wrong switch type in EditorWindow::UpdateSectionType,col=1");
+		si->SetData(Section::All, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+		break;
+	}
+	UpdatePattern();
+
+}
+
+void EditorWindow::UpdateTable(int row, int col)
+{
+	qDebug() << row << " " << col;
+	if (col == 1)
+		UpdateSectionType(row, col);
+	if (col > 2)
+	{
+		long long data = loc.toLongLong(ui.tableWidget->item(row, col)->text());
+		if (((col - 3) % 2 )== 1)//处于delta位置上
+		{
+			long long score = loc.toLongLong(ui.tableWidget->item(row, col - 1)->text());
+			long long newScore = 0;
+			if (row == 0)
+			{
+				newScore = data;
+			}
+			else
+			{
+				long long last = loc.toLongLong(ui.tableWidget->item(row - 1, col - 1)->text());
+				newScore = data + last;
+			}
+			if (newScore != score)
+				ui.tableWidget->item(row, col - 1)->setData(Qt::DisplayRole, loc.toString(newScore));
+		}
+		else//直接编辑分数
+		{
+			//更新delta
+			long long delta = loc.toLongLong(ui.tableWidget->item(row, col + 1)->text());
+			long long newDelta;
+			if (row==0)
+			{
+				newDelta = data;
+			}
+			else
+			{
+				long long last = loc.toLongLong(ui.tableWidget->item(row - 1, col)->text());
+				newDelta = data - last;
+			}
+			if (newDelta != delta)
+			{
+				ui.tableWidget->item(row, col + 1)->setData(Qt::DisplayRole, loc.toString(newDelta));
+			}
+			//更新下一行
+			if (row+1 < ui.tableWidget->rowCount())
+			{
+				long long next = loc.toLongLong(ui.tableWidget->item(row + 1, col)->text());
+				long long nextDelta = loc.toLongLong(ui.tableWidget->item(row + 1, col + 1)->text());
+				long long newNext = data + nextDelta;
+				if (newNext != next)
+				{
+					ui.tableWidget->item(row + 1, col)->setData(Qt::DisplayRole, loc.toString(newNext));
+				}
+			}
+		}
+	}
+
+
+}
+
+void EditorWindow::SaveCSV()
+{
+	static QString delimiter(",");
+	CSVWriter writer(game, diff, shot);
+	QStringList line;
+	line << QString::number(game) << QString::number(diff) << QString::number(shot);
+	writer.WriteLine(line.join(delimiter));
+	line.clear();
+	line << "stage" << "section" << "score";
+	line += gameInfo->GetSpecialNames();
+	writer.WriteLine(line.join(delimiter));
+	line.clear();
+	for (int i=0;i<6;i++)
+	{
+		std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
+		for (auto& section:sections)
+		{
+			line << QString::number(i + 1) << QString::number(static_cast<int>(section.GetSection()))
+				<< QString::number(section.GetScore(1));
+			std::vector<int>specials = section.GetSpecials(1);
+			for (auto& spec:specials)
+			{
+				line << QString::number(spec);
+			}
+			writer.WriteLine(line.join(delimiter));
+			line.clear();
+		}
+	}
+	
+	
 }
 
 const int EditorWindow::GetGameIndex(const QString& gameName)
@@ -426,3 +522,32 @@ void EditorWindow::SetPatternList()
 	}
 }
 
+EditorWindow::CSVWriter::CSVWriter(int game,int diff,int shot)
+{
+	QStringList patternName;
+	patternName << GameInfo::GameName(static_cast<Game>(game));
+	patternName << GameInfo::DiffList[diff];
+	patternName << GameInfo::GetShotTypeList(game)[shot];
+	auto filename = patternName.join("-").append(".csv").toStdWString();
+	std::filesystem::path newFile(L"./csv");
+	newFile /= filename;
+	qDebug() << newFile.c_str();
+	file = new QFile(newFile);
+	if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
+	{
+		throw std::runtime_error("Open csv file failed!");
+	}
+	ts = new QTextStream(file);
+}
+
+EditorWindow::CSVWriter::~CSVWriter()
+{
+	delete ts;
+	file->close();
+	delete file;
+}
+
+void EditorWindow::CSVWriter::WriteLine(const QString& str)
+{
+	*ts << str << Qt::endl;
+}

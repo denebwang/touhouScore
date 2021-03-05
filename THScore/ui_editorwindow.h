@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'editorwindowpyCGuu.ui'
+** Form generated from reading UI file 'editorwindowqIwfiL.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef EDITORWINDOWPYCGUU_H
-#define EDITORWINDOWPYCGUU_H
+#ifndef EDITORWINDOWQIWFIL_H
+#define EDITORWINDOWQIWFIL_H
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
@@ -16,6 +16,8 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QListWidget>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QVBoxLayout>
@@ -48,6 +50,11 @@ public:
     QWidget *tablePage;
     QVBoxLayout *verticalLayout_2;
     QTableWidget *tableWidget;
+    QWidget *widget;
+    QHBoxLayout *horizontalLayout_5;
+    QSpacerItem *horizontalSpacer;
+    QPushButton *saveButton;
+    QSpacerItem *horizontalSpacer_2;
 
     void setupUi(QWidget *EditorWindow)
     {
@@ -202,6 +209,28 @@ public:
 
         verticalLayout->addWidget(formWidget);
 
+        widget = new QWidget(EditorWindow);
+        widget->setObjectName(QString::fromUtf8("widget"));
+        horizontalLayout_5 = new QHBoxLayout(widget);
+        horizontalLayout_5->setSpacing(6);
+        horizontalLayout_5->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_5->addItem(horizontalSpacer);
+
+        saveButton = new QPushButton(widget);
+        saveButton->setObjectName(QString::fromUtf8("saveButton"));
+
+        horizontalLayout_5->addWidget(saveButton);
+
+        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_5->addItem(horizontalSpacer_2);
+
+
+        verticalLayout->addWidget(widget);
+
 
         retranslateUi(EditorWindow);
 
@@ -217,6 +246,7 @@ public:
         GameLabel->setText(QCoreApplication::translate("EditorWindow", "Game: ", nullptr));
         DiffLabel->setText(QCoreApplication::translate("EditorWindow", "Difficulty: ", nullptr));
         ShotLabel->setText(QCoreApplication::translate("EditorWindow", "Shottype: ", nullptr));
+        saveButton->setText(QCoreApplication::translate("EditorWindow", "Save", nullptr));
     } // retranslateUi
 
 };
@@ -227,4 +257,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // EDITORWINDOWPYCGUU_H
+#endif // EDITORWINDOWQIWFIL_H
