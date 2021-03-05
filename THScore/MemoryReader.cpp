@@ -20,7 +20,7 @@ int MemoryReader::ReadInt(DWORD address)
 	if (!ReadProcessMemory(gameProcessHandle, (LPCVOID)address, &buffer, 4, 0))
 	{
 		logger->error("read failed, error code {0}, while reading {1}", GetLastError(), address);
-		throw std::exception("ReadProcessMemory failed");
+		throw std::runtime_error("ReadProcessMemory failed");
 	}
 	unsigned int value;
 	memcpy(&value, buffer, sizeof(int));

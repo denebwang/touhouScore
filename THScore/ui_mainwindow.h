@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'mainwindowrdhwTr.ui'
+** Form generated from reading UI file 'mainwindowjEwmJs.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef MAINWINDOWRDHWTR_H
-#define MAINWINDOWRDHWTR_H
+#ifndef MAINWINDOWJEWMJS_H
+#define MAINWINDOWJEWMJS_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
@@ -18,6 +18,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
@@ -35,6 +36,12 @@ public:
     QLabel *gameNameLabel;
     QLabel *DiffLabel;
     QLabel *ShottypeLabel;
+    QStackedWidget *stackedWidget;
+    QWidget *defaultPage;
+    QHBoxLayout *horizontalLayout_2;
+    QLabel *label;
+    QWidget *tablePage;
+    QHBoxLayout *horizontalLayout_3;
     QTableWidget *tableWidget;
     QMenuBar *menuBar;
     QToolBar *toolBar;
@@ -102,7 +109,29 @@ public:
 
         verticalLayout->addWidget(headerFrame);
 
-        tableWidget = new QTableWidget(centralWidget);
+        stackedWidget = new QStackedWidget(centralWidget);
+        stackedWidget->setObjectName(QString::fromUtf8("stackedWidget"));
+        defaultPage = new QWidget();
+        defaultPage->setObjectName(QString::fromUtf8("defaultPage"));
+        horizontalLayout_2 = new QHBoxLayout(defaultPage);
+        horizontalLayout_2->setSpacing(6);
+        horizontalLayout_2->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        label = new QLabel(defaultPage);
+        label->setObjectName(QString::fromUtf8("label"));
+        label->setTextFormat(Qt::RichText);
+        label->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_2->addWidget(label);
+
+        stackedWidget->addWidget(defaultPage);
+        tablePage = new QWidget();
+        tablePage->setObjectName(QString::fromUtf8("tablePage"));
+        horizontalLayout_3 = new QHBoxLayout(tablePage);
+        horizontalLayout_3->setSpacing(6);
+        horizontalLayout_3->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        tableWidget = new QTableWidget(tablePage);
         if (tableWidget->columnCount() < 1)
             tableWidget->setColumnCount(1);
         if (tableWidget->rowCount() < 1)
@@ -131,7 +160,11 @@ public:
         tableWidget->horizontalHeader()->setStretchLastSection(true);
         tableWidget->verticalHeader()->setVisible(false);
 
-        verticalLayout->addWidget(tableWidget);
+        horizontalLayout_3->addWidget(tableWidget);
+
+        stackedWidget->addWidget(tablePage);
+
+        verticalLayout->addWidget(stackedWidget);
 
         MainWindowClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindowClass);
@@ -146,6 +179,9 @@ public:
 
         retranslateUi(MainWindowClass);
 
+        stackedWidget->setCurrentIndex(0);
+
+
         QMetaObject::connectSlotsByName(MainWindowClass);
     } // setupUi
 
@@ -155,11 +191,10 @@ public:
         gameNameLabel->setText(QCoreApplication::translate("MainWindowClass", "\346\270\270\346\210\217", nullptr));
         DiffLabel->setText(QCoreApplication::translate("MainWindowClass", "\351\232\276\345\272\246", nullptr));
         ShottypeLabel->setText(QCoreApplication::translate("MainWindowClass", "\346\234\272\344\275\223", nullptr));
+        label->setText(QCoreApplication::translate("MainWindowClass", "Serching for games...", nullptr));
 
         const bool __sortingEnabled = tableWidget->isSortingEnabled();
         tableWidget->setSortingEnabled(false);
-        QTableWidgetItem *___qtablewidgetitem = tableWidget->item(0, 0);
-        ___qtablewidgetitem->setText(QCoreApplication::translate("MainWindowClass", "\346\255\243\345\234\250\346\211\253\346\217\217\346\270\270\346\210\217\350\277\233\347\250\213...", nullptr));
         tableWidget->setSortingEnabled(__sortingEnabled);
 
         toolBar->setWindowTitle(QCoreApplication::translate("MainWindowClass", "toolBar", nullptr));
@@ -173,4 +208,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // MAINWINDOWRDHWTR_H
+#endif // MAINWINDOWJEWMJS_H

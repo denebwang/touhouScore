@@ -131,6 +131,7 @@ void MainWindow::ScanGame()
 	{
 		logger->info("Found {0}, ID {1}", gameName, procId);
 		gameInfo = GameInfo::Create(gameName, procId, mr);
+		ui.stackedWidget->setCurrentIndex(1);
 		GameScanTimer->stop();
 		emit FoundGame(isFound);
 	}
@@ -142,11 +143,15 @@ void MainWindow::UpdateInfo()
 	{
 		ReadInfo();
 	}
-	catch (std::out_of_range& e)
+	catch (std::runtime_error& e)
 	{
-		logger->error("Caught an exception: {0}, quitting", e.what());
+		logger->error("Caught an exception: {0}", e.what());
 		logger->info("Possibly game closed");
-		this->close();
+		delete gameInfo;
+		GameScanTimer->start();
+		InfoUpdateTimer->stop();
+		ui.stackedWidget->setCurrentIndex(0);
+		return;
 	}
 	catch (...)
 	{
@@ -156,7 +161,7 @@ void MainWindow::UpdateInfo()
 		}
 		catch (std::exception& e)
 		{
-			logger->error("Caught an exception: {0}, quitting", e.what());
+			logger->error("Caught an exception: {0}", e.what());
 			this->close();
 		}
 	}
