@@ -480,6 +480,11 @@ const std::vector<SectionInfo>& GameInfo::GetSectionInfos(int index) const
 	return stageInfo[index].GetSectionInfos();
 }
 
+StageInfo* GameInfo::GetStageInfo(int index)
+{
+	return &stageInfo[index];
+}
+
 const std::unordered_map< GameInfo::patternHeader, std::filesystem::path >& GameInfo::GetPatternFileMap()
 {
 	return patternFileMap;

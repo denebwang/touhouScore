@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'editorwindowgvrEkR.ui'
+** Form generated from reading UI file 'editorwindowpyCGuu.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef EDITORWINDOWGVREKR_H
-#define EDITORWINDOWGVREKR_H
+#ifndef EDITORWINDOWPYCGUU_H
+#define EDITORWINDOWPYCGUU_H
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
@@ -192,6 +192,7 @@ public:
         tableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
         tableWidget->setAutoScroll(false);
+        tableWidget->setEditTriggers(QAbstractItemView::AllEditTriggers);
         tableWidget->setTextElideMode(Qt::ElideRight);
         tableWidget->verticalHeader()->setVisible(false);
 
@@ -226,4 +227,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // EDITORWINDOWGVREKR_H
+#endif // EDITORWINDOWPYCGUU_H

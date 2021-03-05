@@ -26,7 +26,7 @@ SectionInfo::~SectionInfo()
 {
 }
 
-void SectionInfo::SetData(int mode, long long score, std::vector<int>& specials)
+void SectionInfo::SetData(int mode, long long score, const std::vector<int>& specials)
 {
 	try
 	{
@@ -37,6 +37,11 @@ void SectionInfo::SetData(int mode, long long score, std::vector<int>& specials)
 	{
 		logger->error("SectionInfo::SetData mode out of range: mode == {0}", mode);
 	}
+}
+
+void SectionInfo::SetSection(Section section)
+{
+	this->section = section;
 }
 
 void SectionInfo::Reset(int mode)

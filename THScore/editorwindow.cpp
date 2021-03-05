@@ -2,6 +2,7 @@
 #include <vector>
 #include <QStringList>
 #include <QString>
+#include <QPoint>
 #include <QLocale>
 #include <QComboBox>
 #include <QTableWidget>
@@ -11,6 +12,7 @@
 #include "logger.h"
 #include "GameInfo.h"
 #include "SectionInfo.h"
+#include "ComboCell.h"
 
 EditorWindow::EditorWindow(QWidget* parent)
 	: QWidget(parent)
@@ -23,8 +25,9 @@ EditorWindow::EditorWindow(QWidget* parent)
 	diff = 0;
 	shot = 0;
 	game = 0;
+	SectionTypeList << "All" << "Mid+Boss" << "Mid+Boss+Bonus";
 	ui.formWidget->setCurrentIndex(0);
-	UpdateUpdateList();
+	UpdatePatternList();
 
 	loc = QLocale::English;
 	QString unselected("Unselected");
@@ -112,15 +115,12 @@ EditorWindow::EditorWindow(QWidget* parent)
 	//选择对应路线自动设置
 	connect(ui.listWidget, &QListWidget::itemDoubleClicked, [=](QListWidgetItem* item)
 		{
-			QStringList strList = item->text().split("-",Qt::SkipEmptyParts);
+			QStringList strList = item->text().split("-", Qt::SkipEmptyParts);
 			ui.GameCombo->setCurrentText(strList[0]);
 			ui.DiffCombo->setCurrentText(strList[1]);
 			ui.ShotCombo->setCurrentText(strList[2]);
 		});
-
-
-
-
+	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateSectionType);
 }
 
 EditorWindow::~EditorWindow()
@@ -133,6 +133,7 @@ EditorWindow::~EditorWindow()
 
 void EditorWindow::UpdatePattern()
 {
+	disconnect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateSectionType);
 	ui.formWidget->setCurrentIndex(1);
 	ui.tableWidget->clear();
 	ui.tableWidget->setColumnCount(gameInfo->ColumnCount() * 2 - 3);//每列增加一列用于放增量,并增加一列用于放置选择section组合的下拉框
@@ -145,25 +146,36 @@ void EditorWindow::UpdatePattern()
 	}
 	ui.tableWidget->setHorizontalHeaderLabels(header);
 	ui.tableWidget->setRowCount(gameInfo->SectionCount());
-	//todo: 初始化表格
+	ui.tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+	ui.tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+	ComboCell* cbc = new ComboCell(ui.tableWidget);
+	ui.tableWidget->setItemDelegateForColumn(1, cbc);
 	//设置面数单元格合并
 	int row = 0;
+
+
 	for (int i = 0; i < 6; i++)
 	{
 		int sectionCount = gameInfo->GetStageSectionCount(i);
 		ui.tableWidget->setSpan(row, 0, sectionCount, 1);
 		QTableWidgetItem* newStage = new QTableWidgetItem(QString::number(i + 1));
+		newStage->setFlags(newStage->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
 		newStage->setTextAlignment(Qt::AlignCenter);
 		ui.tableWidget->setItem(row, 0, newStage);
-		ui.tableWidget->setSpan(row, 1, sectionCount, 1);
+
 		//todo: 下拉框改变section
-		ui.tableWidget->setCellWidget(row, 1, new QComboBox);
+		QTableWidgetItem* newSection = new QTableWidgetItem(SectionTypeList[sectionCount - 1]);
+		newStage->setTextAlignment(Qt::AlignCenter);
+		ui.tableWidget->setItem(row, 1, newSection);
+		ui.tableWidget->setSpan(row, 1, sectionCount, 1);
 
 		std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
 		for (int index = 0; index < sections.size(); index++)
 		{
 			int rowIndex = row + index;
-			ui.tableWidget->setItem(rowIndex, 2, new QTableWidgetItem(sections[index].GetSectionName()));
+			QTableWidgetItem* sectionNameItem = new QTableWidgetItem(sections[index].GetSectionName());
+			sectionNameItem->setFlags(sectionNameItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
+			ui.tableWidget->setItem(rowIndex, 2, sectionNameItem);
 			long long score = sections[index].GetScore(1);
 			ui.tableWidget->setItem(rowIndex, 3, new QTableWidgetItem(loc.toString(score)));
 			long long dScore = rowIndex == 0 ? score :
@@ -186,9 +198,10 @@ void EditorWindow::UpdatePattern()
 
 
 	ui.tableWidget->adjustSize();
+	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateSectionType);
 }
 
-void EditorWindow::UpdateUpdateList()
+void EditorWindow::UpdatePatternList()
 {
 	patterns.clear();
 	ui.listWidget->clear();
@@ -232,6 +245,79 @@ void EditorWindow::UpdateUpdateList()
 			}
 		}
 		SetPatternList();
+	}
+}
+
+void EditorWindow::UpdateSectionType(int row, int col)
+{
+	if (col == 1)//改变section模式
+	{
+		int type = SectionTypeList.indexOf(ui.tableWidget->item(row, col)->text());
+		int stage = ui.tableWidget->item(row, 0)->text().toInt();
+		std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(stage - 1);
+		StageInfo* si = gameInfo->GetStageInfo(stage - 1);
+		si->ClearSection();
+		switch (type)
+		{
+		case 0://all
+		{
+			SectionInfo last = sections.back();
+			si->SetData(Section::All, 1, last.GetScore(1), last.GetSpecials(1));
+			break;
+		}
+		case 1://m+b
+		{
+			switch (sections.size())
+			{
+			case 1:
+			{
+				si->SetData(Section::Mid, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
+				si->SetData(Section::Boss, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+				break;
+			}
+			case 2:
+			{
+				si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+				si->SetData(Section::Boss, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
+				break;
+			}
+			case 3:
+				si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+				SectionInfo last = sections.back();
+				si->SetData(Section::Boss, 1, last.GetScore(1), last.GetSpecials(1));
+			}
+			break;
+		}
+		case 2://m+b+b
+		{
+			switch (sections.size())
+			{
+			case 1:
+				si->SetData(Section::Mid, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
+				si->SetData(Section::Boss, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
+				si->SetData(Section::Bonus, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+				break;
+			case 2:
+				si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+				si->SetData(Section::Boss, 1, 0, std::vector<int>(sections[0].GetSpecials(1).size()));
+				si->SetData(Section::Bonus, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
+				break;
+			case 3:
+				si->SetData(Section::Mid, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+				si->SetData(Section::Boss, 1, sections[1].GetScore(1), sections[1].GetSpecials(1));
+				si->SetData(Section::Bonus, 1, sections[2].GetScore(1), sections[2].GetSpecials(1));
+				break;
+			default:
+				break;
+			}
+			break;
+		}
+		default:
+			logger->error("Wrong switch type in EditorWindow::UpdateSectionType,col=1");
+			si->SetData(Section::All, 1, sections[0].GetScore(1), sections[0].GetSpecials(1));
+			break;
+		}
+		UpdatePattern();
 	}
 }
 
@@ -339,3 +425,4 @@ void EditorWindow::SetPatternList()
 		ui.listWidget->addItem(patternName.join("-"));
 	}
 }
+

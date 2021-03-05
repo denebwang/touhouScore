@@ -59,6 +59,9 @@
     <ClCompile Include="editorwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ComboCell.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameInfo.h">
@@ -82,6 +85,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="editorwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ComboCell.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

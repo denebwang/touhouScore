@@ -101,6 +101,7 @@ public:
 	const SectionInfo& GetPrevSectionInfo(int index)const;
 	int GetCurrentSectionIndex(int index)const;
 	const std::vector<SectionInfo>& GetSectionInfos(int index)const;
+	StageInfo* GetStageInfo(int index);
 	static const std::unordered_map< patternHeader, std::filesystem::path >& GetPatternFileMap();
 
 	Game game;

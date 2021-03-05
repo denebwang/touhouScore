@@ -16,7 +16,7 @@ public:
 	void SetDeault(int specialCount);
 	//与section交互:
 	void SetData(int mode, long long score, std::vector<int>& specials);
-	void SetData(Section section, int mode, long long score, std::vector<int>& specials);
+	void SetData(Section section, int mode, long long score, const std::vector<int>& specials);
 	void Reset(Section section, int mode);
 	void Reset(int mode);
 	void ResetAll(int mode = 0);

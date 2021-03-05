@@ -15,8 +15,10 @@ public:
 	EditorWindow(QWidget* parent = Q_NULLPTR);
 	~EditorWindow();
 	void UpdatePattern();
-	void UpdateUpdateList();
+	void UpdatePatternList();
+	void UpdateSectionType(int row,int col);
 private:
+	QStringList SectionTypeList;
 	Ui::EditorWindow ui;
 	const int GetGameIndex(const QString& gameName);
 	const int GetDiffIndex(const QString& diffName);

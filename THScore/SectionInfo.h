@@ -12,7 +12,8 @@ public:
 	SectionInfo(Section section, long long patternScore, std::vector<int> patternSpecials);
 	~SectionInfo();
 
-	void SetData(int mode, long long score, std::vector<int>& specials);
+	void SetData(int mode, long long score, const std::vector<int>& specials);
+	void SetSection(Section section);
 	void Reset(int mode = 0);
 
 

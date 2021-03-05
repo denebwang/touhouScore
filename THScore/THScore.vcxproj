@@ -102,6 +102,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ComboCell.cpp" />
     <ClCompile Include="editorwindow.cpp" />
     <ClCompile Include="MemoryReader.cpp" />
     <ClCompile Include="SectionInfo.cpp" />
@@ -117,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="editorwindow.h" />
+    <QtMoc Include="ComboCell.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="logger.h" />

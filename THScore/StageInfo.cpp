@@ -36,7 +36,7 @@ void StageInfo::SetDeault(int specialCount)
 	sections.push_back(SectionInfo(Section::All, 0, std::vector<int>(specialCount)));
 }
 
-void StageInfo::SetData(Section section, int mode, long long score, std::vector<int>& specials)
+void StageInfo::SetData(Section section, int mode, long long score, const std::vector<int>& specials)
 {
 	for (auto& si : sections)
 	{
