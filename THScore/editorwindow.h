@@ -12,16 +12,20 @@ class EditorWindow : public QWidget
 	Q_OBJECT
 
 public:
-	EditorWindow(QWidget *parent = Q_NULLPTR);
+	EditorWindow(QWidget* parent = Q_NULLPTR);
 	~EditorWindow();
-	
+	void UpdatePattern();
+	void UpdateUpdateList();
 private:
 	Ui::EditorWindow ui;
 	const int GetGameIndex(const QString& gameName);
 	const int GetDiffIndex(const QString& diffName);
 	const int GetShotIndex(const QString& shotName);
+	void SetPatternList();
 	GameInfo* gameInfo;
 	QLocale loc;
+	std::vector<GameInfo::patternHeader> patterns;
+	int game;
 	int shot;
 	int diff;
 };

@@ -100,6 +100,7 @@ GameInfo::GameInfo(Game game)
 		logger->warn("{0} is not supported yet!", game);
 		specialNames = {};
 		this->game = Game::invalid;
+		throw std::runtime_error(" Game::invalid");
 		break;
 	}
 }
@@ -325,6 +326,13 @@ QString GameInfo::Difficulty()
 
 QString GameInfo::GameName()
 {
+	return GameName(game);
+}
+
+
+
+QString GameInfo::GameName(Game game)
+{
 	switch (game)
 	{
 	case Game::th10:
@@ -338,8 +346,6 @@ QString GameInfo::GameName()
 	}
 	return "ERROR";
 }
-
-
 
 const std::vector<QString>& GameInfo::GetShotTypeList(int gameNum)
 {
@@ -472,6 +478,11 @@ const std::vector<SectionInfo>& GameInfo::GetSectionInfos(int index) const
 		index = 0;
 	}
 	return stageInfo[index].GetSectionInfos();
+}
+
+const std::unordered_map< GameInfo::patternHeader, std::filesystem::path >& GameInfo::GetPatternFileMap()
+{
+	return patternFileMap;
 }
 
 void GameInfo::Init()

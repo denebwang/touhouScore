@@ -24,6 +24,7 @@ public:
 		int difficulty;
 		int shotType;
 		bool operator==(const patternHeader& other)const;
+		QString ToQString();
 	};
 
 private:
@@ -77,6 +78,7 @@ public:
 	QString ShotType();
 	QString Difficulty();
 	QString GameName();
+	static QString GameName(Game game);
 
 	static const std::vector<QString>& GetShotTypeList(int gameNum);
 	const std::vector<QString>& GetShotTypeList()const;
@@ -93,13 +95,13 @@ public:
 	int GetCurrentStage()const;
 	int GetStageSectionCount(int index)const;
 	int GetCurrenSectionRowIndex()const;
-
 	QStringList GetSectionNames(int index)const;
 	Section GetCurrentSection(int index)const;
 	const SectionInfo& GetCurrentSectionInfo(int index)const;
 	const SectionInfo& GetPrevSectionInfo(int index)const;
 	int GetCurrentSectionIndex(int index)const;
 	const std::vector<SectionInfo>& GetSectionInfos(int index)const;
+	static const std::unordered_map< patternHeader, std::filesystem::path >& GetPatternFileMap();
 
 	Game game;
 	static std::unordered_map<std::string, std::vector<std::wstring>> exeMap;//游戏文件名
