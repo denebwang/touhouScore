@@ -352,7 +352,7 @@ void MainWindow::ReadInfo()
 			if (gameInfo->SetInfo(diff, shotType))
 				emit NewShottype();
 		}
-		catch (std::runtime_error& e)
+		catch (std::out_of_range& e)
 		{
 			emit NewShottype();
 		}
@@ -390,7 +390,6 @@ void MainWindow::UpdateBackground()
 	static QBrush currentBackground(QColor(204, 229, 255));
 	static QBrush prevBackground;
 	int row = gameInfo->GetCurrenSectionRowIndex();
-
 	int column = ui.tableWidget->columnCount();
 	for (int col = 2; col < column; col++)
 	{

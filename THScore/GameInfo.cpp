@@ -43,7 +43,12 @@ bool GameInfo::SetPattern(patternHeader header)
 	}
 	catch (std::out_of_range& e)
 	{
-		logger->error("can't find csv file: {0}", e.what());
+		logger->error("can't find csv file");
+		//生成默认路线
+		for (auto& stage:stageInfo)
+		{
+			stage.SetDeault(specialNames.size());
+		}
 		std::rethrow_exception(std::current_exception());
 	}
 	catch (std::runtime_error& e)
