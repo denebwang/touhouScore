@@ -2,7 +2,6 @@
 #include <vector>
 #include <QStringList>
 #include <QString>
-#include <QPoint>
 #include <QLocale>
 #include <QComboBox>
 #include <QTableWidget>
@@ -10,9 +9,12 @@
 #include <QTableWidgetItem>
 #include <QFile>
 #include <QTextStream>
+#include <QHeaderView>
+#include <QAbstractScrollArea>
+#include <QPushButton>
+#include <Qt>
 #include <exception>
 #include <filesystem>
-#include <Qt>
 #include "logger.h"
 #include "GameInfo.h"
 #include "SectionInfo.h"
@@ -127,7 +129,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 			ui.ShotCombo->setCurrentText(strList[2]);
 		});
 	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
-	connect(ui.saveButton, &QPushButton::pressed,this, &EditorWindow::SaveCSV);
+	connect(ui.saveButton, &QPushButton::pressed, this, &EditorWindow::SaveCSV);
 }
 
 EditorWindow::~EditorWindow()
@@ -328,13 +330,12 @@ void EditorWindow::UpdateSectionType(int row, int col)
 
 void EditorWindow::UpdateTable(int row, int col)
 {
-	qDebug() << row << " " << col;
 	if (col == 1)
 		UpdateSectionType(row, col);
 	if (col > 2)
 	{
 		long long data = loc.toLongLong(ui.tableWidget->item(row, col)->text());
-		if (((col - 3) % 2 )== 1)//处于delta位置上
+		if (((col - 3) % 2) == 1)//处于delta位置上
 		{
 			long long score = loc.toLongLong(ui.tableWidget->item(row, col - 1)->text());
 			long long newScore = 0;
@@ -352,10 +353,34 @@ void EditorWindow::UpdateTable(int row, int col)
 		}
 		else//直接编辑分数
 		{
+			int stage = 0;
+			for (int i = row; i > -1; i--)
+			{
+				auto* item = ui.tableWidget->item(i, 0);
+				if (item==nullptr)
+				{
+					continue;
+				}
+				stage = item->text().toInt();
+				break;
+			}
+			if (stage==0)
+			{
+				logger->error("Find stage number while writing data to info failed");
+				throw std::runtime_error("EditorWindow::UpdateTable");
+			}
+			Section section = GetSection(ui.tableWidget->item(row, 2)->text());
+			long long score = loc.toLongLong(ui.tableWidget->item(row, 3)->text());
+			std::vector<int>specials;
+			for (int column = 5; column < ui.tableWidget->columnCount(); column++)
+			{
+				specials.push_back(loc.toInt(ui.tableWidget->item(row, column)->text()));
+			}
+			gameInfo->SetPattern(stage, section, score, specials);
 			//更新delta
 			long long delta = loc.toLongLong(ui.tableWidget->item(row, col + 1)->text());
 			long long newDelta;
-			if (row==0)
+			if (row == 0)
 			{
 				newDelta = data;
 			}
@@ -369,14 +394,14 @@ void EditorWindow::UpdateTable(int row, int col)
 				ui.tableWidget->item(row, col + 1)->setData(Qt::DisplayRole, loc.toString(newDelta));
 			}
 			//更新下一行
-			if (row+1 < ui.tableWidget->rowCount())
+			if (row + 1 < ui.tableWidget->rowCount())
 			{
 				long long next = loc.toLongLong(ui.tableWidget->item(row + 1, col)->text());
 				long long nextDelta = loc.toLongLong(ui.tableWidget->item(row + 1, col + 1)->text());
-				long long newNext = data + nextDelta;
-				if (newNext != next)
+				long long newNextDelta = next - data;
+				if (newNextDelta != nextDelta)
 				{
-					ui.tableWidget->item(row + 1, col)->setData(Qt::DisplayRole, loc.toString(newNext));
+					ui.tableWidget->item(row + 1, col + 1)->setData(Qt::DisplayRole, loc.toString(newNextDelta));
 				}
 			}
 		}
@@ -397,15 +422,15 @@ void EditorWindow::SaveCSV()
 	line += gameInfo->GetSpecialNames();
 	writer.WriteLine(line.join(delimiter));
 	line.clear();
-	for (int i=0;i<6;i++)
+	for (int i = 0; i < 6; i++)
 	{
 		std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
-		for (auto& section:sections)
+		for (auto& section : sections)
 		{
 			line << QString::number(i + 1) << QString::number(static_cast<int>(section.GetSection()))
 				<< QString::number(section.GetScore(1));
 			std::vector<int>specials = section.GetSpecials(1);
-			for (auto& spec:specials)
+			for (auto& spec : specials)
 			{
 				line << QString::number(spec);
 			}
@@ -413,8 +438,8 @@ void EditorWindow::SaveCSV()
 			line.clear();
 		}
 	}
-	
-	
+
+
 }
 
 const int EditorWindow::GetGameIndex(const QString& gameName)
@@ -510,6 +535,26 @@ const int EditorWindow::GetShotIndex(const QString& shotName)
 	return -1;
 }
 
+const Section EditorWindow::GetSection(const QString& secName)
+{
+	if (secName.toLower() == "all")
+	{
+		return Section::All;
+	}
+	if (secName.toLower() == "mid")
+	{
+		return Section::Mid;
+	}
+	if (secName.toLower() == "boss")
+	{
+		return Section::Boss;
+	}
+	if (secName.toLower() == "bonus")
+	{
+		return Section::Bonus;
+	}
+}
+
 void EditorWindow::SetPatternList()
 {
 	for (auto& pattern : patterns)
@@ -522,7 +567,7 @@ void EditorWindow::SetPatternList()
 	}
 }
 
-EditorWindow::CSVWriter::CSVWriter(int game,int diff,int shot)
+EditorWindow::CSVWriter::CSVWriter(int game, int diff, int shot)
 {
 	QStringList patternName;
 	patternName << GameInfo::GameName(static_cast<Game>(game));
@@ -531,7 +576,6 @@ EditorWindow::CSVWriter::CSVWriter(int game,int diff,int shot)
 	auto filename = patternName.join("-").append(".csv").toStdWString();
 	std::filesystem::path newFile(L"./csv");
 	newFile /= filename;
-	qDebug() << newFile.c_str();
 	file = new QFile(newFile);
 	if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
 	{

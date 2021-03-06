@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <memory>
 #include <array>
 #include <filesystem>
 #include "SectionInfo.h"
@@ -68,6 +67,7 @@ public:
 	bool CheckRetry(int stage);
 	bool SetInfo(int diff, int shot);//需要更新路线信息时返回true
 	bool SetData(int stage, long long score, std::vector<int>& speical);
+	void SetPattern(int stage, Section section, long long score, std::vector<int>& speical);
 	bool TestSection(int bossHP, int timeLeft, int frameCount);
 	void UpdateDelta(int stage);
 	patternHeader GetHeader();

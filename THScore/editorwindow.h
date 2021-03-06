@@ -1,8 +1,11 @@
 ﻿#pragma once
 
 #include "GameInfo.h"
+#include "Enums.h"
 #include <QWidget>
 #include <QString>
+#include <QFile>
+#include <QTextStream>
 #include <vector>
 #include <QLocale>
 #include "ui_editorwindow.h"
@@ -16,14 +19,14 @@ public:
 	~EditorWindow();
 	void UpdatePattern();
 	void UpdatePatternList();
-	void UpdateSectionType(int row,int col);
-	void UpdateTable(int row,int col);
+	void UpdateSectionType(int row, int col);
+	void UpdateTable(int row, int col);
 	void SaveCSV();
 private:
 	class CSVWriter
 	{
 	public:
-		CSVWriter(int game,int diff,int shot);
+		CSVWriter(int game, int diff, int shot);
 		~CSVWriter();
 		void WriteLine(const QString& str);
 	private:
@@ -35,6 +38,7 @@ private:
 	const int GetGameIndex(const QString& gameName);
 	const int GetDiffIndex(const QString& diffName);
 	const int GetShotIndex(const QString& shotName);
+	const Section GetSection(const QString& secName);
 	void SetPatternList();
 	GameInfo* gameInfo;
 	QLocale loc;

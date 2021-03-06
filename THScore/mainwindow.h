@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QTimer>
+#include <QTableWidgetItem>
 #include "GameInfo.h"
 #include "MemoryReader.h"
 #include "ui_mainwindow.h"

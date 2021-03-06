@@ -1,5 +1,4 @@
 ﻿#include "MemoryReader.h"
-#include <iostream>
 #include <exception>
 #include "logger.h"
 MemoryReader::MemoryReader(DWORD processID)

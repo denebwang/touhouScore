@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <vector>
-#include <memory>
 #include <QString>
 #include <QStringList>
 #include "SectionInfo.h"

@@ -3,6 +3,7 @@
 #include "Enums.h"
 #include <vector>
 #include <exception>
+#include <QStringList>
 
 StageInfo::StageInfo(int stage)
 {

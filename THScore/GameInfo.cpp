@@ -1,19 +1,14 @@
 ﻿#include "GameInfo.h"
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
 #include <filesystem>
 #include <vector>
 #include <array>
-#include <memory>
 #include <exception>
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
 #include "logger.h"
 #include "Enums.h"
-#include "spdlog/sinks/rotating_file_sink.h"
+//#include "spdlog/sinks/rotating_file_sink.h"
 
 void GameInfo::SetPattern(patternHeader header)
 {
@@ -64,6 +59,11 @@ void GameInfo::SetPattern(patternHeader header)
 		}
 		stage.SetInitSection();
 	}
+}
+
+void GameInfo::SetPattern(int stage, Section section, long  long score, std::vector<int>& speical)
+{
+	stageInfo[stage - 1].SetData(section, 1, score, speical);
 }
 
 GameInfo::GameInfo(Game game)
@@ -390,7 +390,7 @@ QStringList GameInfo::GetColumnHeader() const
 QStringList GameInfo::GetSpecialNames() const
 {
 	QStringList list;
-	for (auto& str:specialNames)
+	for (auto& str : specialNames)
 	{
 		list << str;
 	}

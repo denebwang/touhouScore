@@ -1,7 +1,6 @@
 ﻿#pragma once
-#include<vector>
+#include <vector>
 #include <array>
-#include<string>
 #include <QString>
 #include "Enums.h"
 

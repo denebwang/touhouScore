@@ -1,5 +1,4 @@
 ﻿#include <vector>
-#include <array>
 #include <exception>
 #include "logger.h"
 #include "SectionInfo.h"

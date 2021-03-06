@@ -1,18 +1,25 @@
 ﻿#include "mainwindow.h"
 #include "GameInfo.h"
+#include "SectionInfo.h"
 #include "MemoryReader.h"
 #include "logger.h"
 #include "editorwindow.h"
-#include "Windows.h"
+#include <string>
+#include <vector>
+#include <exception>
+#include <Windows.h>
 #include <tlhelp32.h>
 #include <QToolBar>
 #include <QAction>
 #include <QTimer>
 #include <QLocale>
 #include <QString>
+#include <QStringList>
 #include <QBrush>
 #include <QColor>
 #include <QTableWidgetItem>
+#include <QHeaderView>
+#include <QAbstractScrollArea>
 
 bool GetProcessIDByName(const WCHAR* processName, DWORD& processId)
 {
@@ -101,9 +108,9 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-	if (!(mr == nullptr))
+	if (mr != nullptr)
 		delete mr;
-	if (!(gameInfo == nullptr))
+	if (gameInfo != nullptr)
 		delete gameInfo;
 }
 
@@ -148,6 +155,9 @@ void MainWindow::UpdateInfo()
 		logger->error("Caught an exception: {0}", e.what());
 		logger->info("Possibly game closed");
 		delete gameInfo;
+		delete mr;
+		gameInfo = nullptr;
+		mr = nullptr;
 		GameScanTimer->start();
 		InfoUpdateTimer->stop();
 		ui.stackedWidget->setCurrentIndex(0);

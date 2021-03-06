@@ -1,11 +1,7 @@
 ﻿#include "mainwindow.h"
 #include <windows.h>
-
-#include <iostream>
-#include "MemoryReader.h"
 #include "GameInfo.h"
 #include "logger.h"
-#include "spdlog/spdlog.h"
 #include <QtWidgets/QApplication>
 
 BOOL SetPrivilage();

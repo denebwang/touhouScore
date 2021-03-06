@@ -4,7 +4,7 @@ class ComboCell : public QStyledItemDelegate
 {
 	Q_OBJECT
 public:
-	ComboCell(QObject* parent=nullptr);
+	ComboCell(QObject* parent = nullptr);
 	~ComboCell();
 
 	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
