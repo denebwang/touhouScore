@@ -1,21 +1,17 @@
 ﻿#include "GameInfo.h"
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
 #include <filesystem>
 #include <vector>
 #include <array>
-#include <memory>
 #include <exception>
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
+
 #include "logger.h"
 #include "Enums.h"
-#include "spdlog/sinks/rotating_file_sink.h"
+//#include "spdlog/sinks/rotating_file_sink.h"
 
-void GameInfo::SetPattern(patternHeader header)
+bool GameInfo::SetPattern(patternHeader header)
 {
 	using namespace std;
 	//先将原有的清空
@@ -45,25 +41,38 @@ void GameInfo::SetPattern(patternHeader header)
 			stageInfo[stage - 1].SetData(section, 1, score, specials);
 		}
 	}
-	catch (std::out_of_range e)
+	catch (std::out_of_range& e)
 	{
 		logger->error("can't find csv file: {0}", e.what());
-
+		std::rethrow_exception(std::current_exception());
+	}
+	catch (std::runtime_error& e)
+	{
+		logger->error(e.what());
 	}
 	for (auto& stage : stageInfo)
 	{
 		if (!stage.CheckValid())
 		{
-			logger->error("Stage{0} is not filled correctly!", stage.GetStage());
+			logger->warn("Stage{0} is not filled correctly!", stage.GetStage());
 			if (stage.CheckEmpty())
 			{
 				stage.SetDeault(specialNames.size());
+				logger->info("Stage {0} is empty, auto filling data...", stage.GetStage());
 			}
 			else
-				throw std::runtime_error("GameInfo::SetPattern invalid");
+			{
+				throw std::runtime_error("Pattern invalid");
+			}
 		}
 		stage.SetInitSection();
 	}
+	return true;
+}
+
+void GameInfo::SetPattern(int stage, Section section, long  long score, std::vector<int>& speical)
+{
+	stageInfo[stage - 1].SetData(section, 1, score, speical);
 }
 
 GameInfo::GameInfo(Game game)
@@ -100,6 +109,7 @@ GameInfo::GameInfo(Game game)
 		logger->warn("{0} is not supported yet!", game);
 		specialNames = {};
 		this->game = Game::invalid;
+		throw std::runtime_error(" Game::invalid");
 		break;
 	}
 }
@@ -325,6 +335,13 @@ QString GameInfo::Difficulty()
 
 QString GameInfo::GameName()
 {
+	return GameName(game);
+}
+
+
+
+QString GameInfo::GameName(Game game)
+{
 	switch (game)
 	{
 	case Game::th10:
@@ -339,7 +356,15 @@ QString GameInfo::GameName()
 	return "ERROR";
 }
 
+const std::vector<QString>& GameInfo::GetShotTypeList(int gameNum)
+{
+	return shotTypeMap.at(gameNum);
+}
 
+const std::vector<QString>& GameInfo::GetShotTypeList()const
+{
+	return shotTypeList;
+}
 
 int GameInfo::ColumnCount()
 {
@@ -350,12 +375,16 @@ int GameInfo::ColumnCount()
 int GameInfo::RowCount()
 {
 	//每section3行数据
+	return 3 * SectionCount();
+}
+
+int GameInfo::SectionCount()
+{
 	int count = 0;
 	for (auto& stage : stageInfo)
 	{
 		count += stage.GetSectionCount();
 	}
-	count *= 3;
 	return count;
 }
 
@@ -363,9 +392,16 @@ QStringList GameInfo::GetColumnHeader() const
 {
 	QStringList list;
 	list << "Stage" << "Section" << "" << "Score";
-	for (auto iter = specialNames.begin(); iter != specialNames.end(); iter++)
+	list += GetSpecialNames();
+	return list;
+}
+
+QStringList GameInfo::GetSpecialNames() const
+{
+	QStringList list;
+	for (auto& str : specialNames)
 	{
-		list << *iter;
+		list << str;
 	}
 	return list;
 }
@@ -386,7 +422,7 @@ int GameInfo::GetStageSectionCount(int index) const
 
 int GameInfo::GetCurrenSectionRowIndex() const
 {
-	if (currentStage<1)
+	if (currentStage < 1)
 	{
 		return 0;
 	}
@@ -453,6 +489,16 @@ const std::vector<SectionInfo>& GameInfo::GetSectionInfos(int index) const
 	return stageInfo[index].GetSectionInfos();
 }
 
+StageInfo* GameInfo::GetStageInfo(int index)
+{
+	return &stageInfo[index];
+}
+
+const std::unordered_map< GameInfo::patternHeader, std::filesystem::path >& GameInfo::GetPatternFileMap()
+{
+	return patternFileMap;
+}
+
 void GameInfo::Init()
 {
 	//机体列表
@@ -464,7 +510,7 @@ void GameInfo::Init()
 }
 
 std::unordered_map<int, std::vector<QString>> GameInfo::shotTypeMap;
-QString GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
+const QString GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
 std::unordered_map<GameInfo::patternHeader, std::filesystem::path> GameInfo::patternFileMap;
 std::unordered_map<std::string, std::vector<std::wstring>> GameInfo::exeMap;
 

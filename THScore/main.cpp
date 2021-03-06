@@ -1,26 +1,41 @@
 ﻿#include "mainwindow.h"
 #include <windows.h>
-
-#include <iostream>
-#include "MemoryReader.h"
 #include "GameInfo.h"
 #include "logger.h"
-#include "spdlog/spdlog.h"
 #include <QtWidgets/QApplication>
+#include <QMessageBox>
 
 BOOL SetPrivilage();
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	logger->flush_on(spdlog::level::info);
 	GameInfo::Init();
 	GameInfo::ScanCSV();
 	SetPrivilage();
 
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-    return a.exec();
+	
+	QApplication a(argc, argv);
+	MainWindow w;
+	w.show();
+	try
+	{
+		return a.exec();
+	}
+	catch (...)
+	{
+		auto exptr = std::current_exception();
+		try {
+			rethrow_exception(exptr);
+		}
+		catch (std::exception& e)
+		{
+			logger->error("Caught an exception: {0}", e.what());
+			QMessageBox::critical(&w, "Critial error!", QString("Caught an unexpected exception: %1").arg(e.what()));
+			return 1;
+		}
+	}
+	return 1;
 }
 
 BOOL SetPrivilage()

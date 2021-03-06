@@ -102,10 +102,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ComboCell.cpp" />
+    <ClCompile Include="editorwindow.cpp" />
     <ClCompile Include="MemoryReader.cpp" />
     <ClCompile Include="SectionInfo.cpp" />
     <ClCompile Include="StageInfo.cpp" />
     <QtRcc Include="mainwindow.qrc" />
+    <QtUic Include="editorwindow.ui" />
     <QtUic Include="mainwindow.ui" />
     <QtMoc Include="mainwindow.h" />
     <ClCompile Include="GameInfo.cpp" />
@@ -114,12 +117,22 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="editorwindow.h" />
+    <QtMoc Include="ComboCell.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="MemoryReader.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SectionInfo.h" />
     <ClInclude Include="StageInfo.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="THScore.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
+    <Image Include="icon\thscore.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

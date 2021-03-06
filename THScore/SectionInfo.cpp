@@ -1,5 +1,4 @@
 ﻿#include <vector>
-#include <array>
 #include <exception>
 #include "logger.h"
 #include "SectionInfo.h"
@@ -26,7 +25,7 @@ SectionInfo::~SectionInfo()
 {
 }
 
-void SectionInfo::SetData(int mode, long long score, std::vector<int>& specials)
+void SectionInfo::SetData(int mode, long long score, const std::vector<int>& specials)
 {
 	try
 	{
@@ -37,6 +36,11 @@ void SectionInfo::SetData(int mode, long long score, std::vector<int>& specials)
 	{
 		logger->error("SectionInfo::SetData mode out of range: mode == {0}", mode);
 	}
+}
+
+void SectionInfo::SetSection(Section section)
+{
+	this->section = section;
 }
 
 void SectionInfo::Reset(int mode)
@@ -57,6 +61,28 @@ void SectionInfo::Reset(int mode)
 const Section SectionInfo::GetSection()const
 {
 	return section;
+}
+
+QString SectionInfo::GetSectionName() const
+{
+	switch (section)
+	{
+	default:
+		logger->error("SectionInfo::GetSectionName() error");
+		break;
+	case Section::All:
+		return "All";
+		break;
+	case Section::Mid:
+		return "Mid";
+		break;
+	case Section::Boss:
+		return "Boss";
+		break;
+	case Section::Bonus:
+		return "Bonus";
+		break;
+	}
 }
 
 const long long SectionInfo::GetScore(int mode)const

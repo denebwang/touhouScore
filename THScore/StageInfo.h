@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <vector>
-#include <memory>
 #include <QString>
 #include <QStringList>
 #include "SectionInfo.h"
@@ -10,13 +9,13 @@ class StageInfo
 public:
 	StageInfo(int stage = 0);
 
-	
+
 	//初始化
 	void Init(Game game, int stage);
 	void SetDeault(int specialCount);
 	//与section交互:
 	void SetData(int mode, long long score, std::vector<int>& specials);
-	void SetData(Section section, int mode, long long score, std::vector<int>& specials);
+	void SetData(Section section, int mode, long long score, const std::vector<int>& specials);
 	void Reset(Section section, int mode);
 	void Reset(int mode);
 	void ResetAll(int mode = 0);
@@ -35,7 +34,7 @@ public:
 	void SetInitSection();
 	Section GetCurrentSection()const;
 	const SectionInfo& GetCurrentSectionInfo()const;
-	int GetCurrentSectionIndex() const ;
+	int GetCurrentSectionIndex() const;
 	//Section GetPrevSection(bool& previousStage);
 	const SectionInfo& GetPrevSectionInfo()const;
 	int GetStage()const;

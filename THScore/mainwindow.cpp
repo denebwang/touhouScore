@@ -1,15 +1,26 @@
 ﻿#include "mainwindow.h"
 #include "GameInfo.h"
+#include "SectionInfo.h"
 #include "MemoryReader.h"
 #include "logger.h"
-#include "Windows.h"
+#include "editorwindow.h"
+#include <string>
+#include <vector>
+#include <exception>
+#include <Windows.h>
 #include <tlhelp32.h>
+#include <QToolBar>
+#include <QAction>
 #include <QTimer>
 #include <QLocale>
 #include <QString>
+#include <QStringList>
 #include <QBrush>
 #include <QColor>
 #include <QTableWidgetItem>
+#include <QHeaderView>
+#include <QAbstractScrollArea>
+#include <QMessageBox>
 
 bool GetProcessIDByName(const WCHAR* processName, DWORD& processId)
 {
@@ -57,6 +68,14 @@ MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	//工具栏
+	QAction* patternEditAction = ui.toolBar->addAction("Pattern Edit");
+	connect(patternEditAction, &QAction::triggered, []()
+		{
+			EditorWindow* editer = new EditorWindow();
+			editer->setAttribute(Qt::WA_DeleteOnClose);
+			editer->show();
+		});
 	//初始化表格
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -90,9 +109,9 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-	if (!(mr == nullptr))
+	if (mr != nullptr)
 		delete mr;
-	if (!(gameInfo == nullptr))
+	if (gameInfo != nullptr)
 		delete gameInfo;
 }
 
@@ -119,9 +138,17 @@ void MainWindow::ScanGame()
 	if (isFound)
 	{
 		logger->info("Found {0}, ID {1}", gameName, procId);
-		gameInfo = GameInfo::Create(gameName, procId, mr);
-		GameScanTimer->stop();
-		emit FoundGame(isFound);
+		try
+		{
+			gameInfo = GameInfo::Create(gameName, procId, mr);
+			ui.stackedWidget->setCurrentIndex(1);
+			GameScanTimer->stop();
+			emit FoundGame(isFound);
+		}
+		catch (std::runtime_error& e)
+		{
+			QMessageBox::warning(this, "Game not Supported", QString("%1 is not supported yet!").arg(QString::fromStdString(gameName)));
+		}
 	}
 }
 
@@ -131,11 +158,18 @@ void MainWindow::UpdateInfo()
 	{
 		ReadInfo();
 	}
-	catch (std::out_of_range& e)
+	catch (std::runtime_error& e)
 	{
-		logger->error("Caught an exception: {0}, quitting", e.what());
+		logger->error("Caught an exception: {0}", e.what());
 		logger->info("Possibly game closed");
-		this->close();
+		delete gameInfo;
+		delete mr;
+		gameInfo = nullptr;
+		mr = nullptr;
+		GameScanTimer->start();
+		InfoUpdateTimer->stop();
+		ui.stackedWidget->setCurrentIndex(0);
+		return;
 	}
 	catch (...)
 	{
@@ -145,9 +179,10 @@ void MainWindow::UpdateInfo()
 		}
 		catch (std::exception& e)
 		{
-			logger->error("Caught an exception: {0}, quitting", e.what());
+			logger->error("Caught an exception: {0}", e.what());
 			this->close();
 		}
+		return;
 	}
 	emit ReadSuccees();
 }
@@ -208,6 +243,7 @@ void MainWindow::InitChart()
 
 	//更新路线
 	UpdatePattern();
+	UpdateBackground();
 
 }
 
@@ -309,8 +345,26 @@ void MainWindow::ReadInfo()
 	{
 		emit Retry();
 	}
-	if (gameInfo->SetInfo(diff, shotType))
-		emit NewShottype();
+	try
+	{
+		try
+		{
+			if (gameInfo->SetInfo(diff, shotType))
+				emit NewShottype();
+		}
+		catch (std::runtime_error& e)
+		{
+			emit NewShottype();
+		}
+
+	}
+	catch (std::runtime_error& e)
+	{
+		QMessageBox::warning(this, "Pattern invalid", QString("Pattern for %1 %2 %3 is not a valid pattern file")
+			.arg(gameInfo->GameName())
+			.arg(gameInfo->Difficulty())
+			.arg(gameInfo->ShotType()));
+	}
 	if (gameInfo->SetData(stage, score, specials))
 		emit NewSection();
 	gameInfo->UpdateDelta(stage);
