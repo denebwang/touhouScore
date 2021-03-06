@@ -123,8 +123,16 @@
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="MemoryReader.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SectionInfo.h" />
     <ClInclude Include="StageInfo.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="THScore.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
+    <Image Include="icon\thscore.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

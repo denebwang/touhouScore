@@ -12,6 +12,7 @@
 #include <QHeaderView>
 #include <QAbstractScrollArea>
 #include <QPushButton>
+#include <QMessageBox>
 #include <Qt>
 #include <exception>
 #include <filesystem>
@@ -28,13 +29,13 @@ EditorWindow::EditorWindow(QWidget* parent)
 	ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui.tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 	gameInfo = nullptr;
-	diff = 0;
-	shot = 0;
+	diff = -1;
+	shot = -1;
 	game = 0;
 	SectionTypeList << "All" << "Mid+Boss" << "Mid+Boss+Bonus";
 	ui.formWidget->setCurrentIndex(0);
 	UpdatePatternList();
-
+	ui.saveButton->setEnabled(false);
 	loc = QLocale::English;
 	QString unselected("Unselected");
 	QStringList gameList;
@@ -53,19 +54,19 @@ EditorWindow::EditorWindow(QWidget* parent)
 
 	connect(ui.GameCombo, &QComboBox::currentTextChanged, [=](const QString& gameName)
 		{
-			ui.ShotCombo->clear();
-			ui.ShotCombo->addItem(unselected);
-
-
 			if (gameName == "Unselected")
 			{
 				game = 0;
+				delete gameInfo;
+				gameInfo = nullptr;
+				ui.ShotCombo->clear();
+				ui.ShotCombo->addItem(unselected);
 				ui.DiffCombo->setCurrentIndex(0);
 				ui.ShotCombo->setCurrentIndex(0);
+				ui.formWidget->setCurrentIndex(0);
 			}
 			else
 			{
-
 				//根据所选游戏更新机体
 				try
 				{
@@ -79,9 +80,14 @@ EditorWindow::EditorWindow(QWidget* parent)
 				catch (std::exception& e)
 				{
 					logger->warn("{0} not supported yet!", gameName.toUtf8().data());
+					QMessageBox::warning(this, "Game not supported", QString("%1 is not supported yet").arg(gameName));
 					ui.GameCombo->setCurrentIndex(0);
+					game = 0;
+					UpdatePatternList();
 					return;
 				}
+				ui.ShotCombo->clear();
+				ui.ShotCombo->addItem(unselected);
 				std::vector<QString> shottypeList = gameInfo->GetShotTypeList();
 				for (auto& str : shottypeList)
 				{
@@ -94,29 +100,57 @@ EditorWindow::EditorWindow(QWidget* parent)
 	connect(ui.DiffCombo, &QComboBox::currentTextChanged, [=](const QString& diffName)
 		{
 			diff = GetDiffIndex(diffName);
-			if (diffName == "Unselected")
+			if (diffName == "Unselected" || shot == -1)
 			{
+				UpdatePatternList();
 				ui.formWidget->setCurrentIndex(0);
+				ui.saveButton->setEnabled(false);
+				return;
 			}
-
+			else
+			{
+				try
+				{
+					gameInfo->SetInfo(diff, shot);
+					UpdatePattern();
+				}
+				catch (std::out_of_range& e)
+				{
+					QMessageBox::warning(this, "Pattern invalid", QString("Pattern for %1 %2 %3 is not a valid pattern file")
+						.arg(gameInfo->GameName())
+						.arg(gameInfo->Difficulty())
+						.arg(gameInfo->ShotType()));
+				}
+			}
 		});
 	connect(ui.ShotCombo, &QComboBox::currentTextChanged, [=](const QString& shotName)
-		{
+		{//todo: 筛选对应机体的路线
 			if (gameInfo == nullptr)
 			{
 				return;
 			}
 			shot = GetShotIndex(shotName);
-			if (shotName == "Unselected")
+			if (diff == -1 || shotName == "Unselected")
 			{
+				UpdatePatternList();
 				ui.formWidget->setCurrentIndex(0);
-				//todo: 显示所有路线
+				ui.saveButton->setEnabled(false);
+				return;
 			}
 			else
 			{
-
-				gameInfo->SetInfo(diff, shot);
-				UpdatePattern();
+				try
+				{
+					gameInfo->SetInfo(diff, shot);
+					UpdatePattern();
+				}
+				catch (std::out_of_range& e)
+				{
+					QMessageBox::warning(this, "Pattern invalid", QString("Pattern for %1 %2 %3 is not a valid pattern file")
+						.arg(gameInfo->GameName())
+						.arg(gameInfo->Difficulty())
+						.arg(gameInfo->ShotType()));
+				}
 			}
 
 		});
@@ -144,6 +178,7 @@ void EditorWindow::UpdatePattern()
 {
 	disconnect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
 	ui.formWidget->setCurrentIndex(1);
+	ui.saveButton->setEnabled(true);
 	ui.tableWidget->clear();
 	ui.tableWidget->setColumnCount(gameInfo->ColumnCount() * 2 - 3);//每列增加一列用于放增量,并增加一列用于放置选择section组合的下拉框
 	QStringList header, specials;
@@ -357,14 +392,14 @@ void EditorWindow::UpdateTable(int row, int col)
 			for (int i = row; i > -1; i--)
 			{
 				auto* item = ui.tableWidget->item(i, 0);
-				if (item==nullptr)
+				if (item == nullptr)
 				{
 					continue;
 				}
 				stage = item->text().toInt();
 				break;
 			}
-			if (stage==0)
+			if (stage == 0)
 			{
 				logger->error("Find stage number while writing data to info failed");
 				throw std::runtime_error("EditorWindow::UpdateTable");
@@ -372,7 +407,7 @@ void EditorWindow::UpdateTable(int row, int col)
 			Section section = GetSection(ui.tableWidget->item(row, 2)->text());
 			long long score = loc.toLongLong(ui.tableWidget->item(row, 3)->text());
 			std::vector<int>specials;
-			for (int column = 5; column < ui.tableWidget->columnCount(); column++)
+			for (int column = 5; column < ui.tableWidget->columnCount(); column += 2)
 			{
 				specials.push_back(loc.toInt(ui.tableWidget->item(row, column)->text()));
 			}
@@ -413,14 +448,24 @@ void EditorWindow::UpdateTable(int row, int col)
 void EditorWindow::SaveCSV()
 {
 	static QString delimiter(",");
-	CSVWriter writer(game, diff, shot);
+	CSVWriter* writer = nullptr;
+	try
+	{
+		writer = new CSVWriter(game, diff, shot);
+	}
+	catch (std::runtime_error& e)
+	{
+		logger->error(e.what());
+		QMessageBox::warning(this, "Save CSV failed", "Please close any program that is used the file");
+		return;
+	}
 	QStringList line;
 	line << QString::number(game) << QString::number(diff) << QString::number(shot);
-	writer.WriteLine(line.join(delimiter));
+	writer->WriteLine(line.join(delimiter));
 	line.clear();
 	line << "stage" << "section" << "score";
 	line += gameInfo->GetSpecialNames();
-	writer.WriteLine(line.join(delimiter));
+	writer->WriteLine(line.join(delimiter));
 	line.clear();
 	for (int i = 0; i < 6; i++)
 	{
@@ -434,11 +479,11 @@ void EditorWindow::SaveCSV()
 			{
 				line << QString::number(spec);
 			}
-			writer.WriteLine(line.join(delimiter));
+			writer->WriteLine(line.join(delimiter));
 			line.clear();
 		}
 	}
-
+	delete writer;
 
 }
 

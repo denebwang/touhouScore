@@ -6,11 +6,12 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
+
 #include "logger.h"
 #include "Enums.h"
 //#include "spdlog/sinks/rotating_file_sink.h"
 
-void GameInfo::SetPattern(patternHeader header)
+bool GameInfo::SetPattern(patternHeader header)
 {
 	using namespace std;
 	//先将原有的清空
@@ -40,25 +41,33 @@ void GameInfo::SetPattern(patternHeader header)
 			stageInfo[stage - 1].SetData(section, 1, score, specials);
 		}
 	}
-	catch (std::out_of_range e)
+	catch (std::out_of_range& e)
 	{
 		logger->error("can't find csv file: {0}", e.what());
-
+		std::rethrow_exception(std::current_exception());
+	}
+	catch (std::runtime_error& e)
+	{
+		logger->error(e.what());
 	}
 	for (auto& stage : stageInfo)
 	{
 		if (!stage.CheckValid())
 		{
-			logger->error("Stage{0} is not filled correctly!", stage.GetStage());
+			logger->warn("Stage{0} is not filled correctly!", stage.GetStage());
 			if (stage.CheckEmpty())
 			{
 				stage.SetDeault(specialNames.size());
+				logger->info("Stage {0} is empty, auto filling data...", stage.GetStage());
 			}
 			else
-				throw std::runtime_error("GameInfo::SetPattern invalid");
+			{
+				throw std::runtime_error("Pattern invalid");
+			}
 		}
 		stage.SetInitSection();
 	}
+	return true;
 }
 
 void GameInfo::SetPattern(int stage, Section section, long  long score, std::vector<int>& speical)

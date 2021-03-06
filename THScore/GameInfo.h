@@ -59,7 +59,7 @@ private:
 
 	int currentStage;
 
-	void SetPattern(patternHeader header);
+	bool SetPattern(patternHeader header);
 public:
 	//GameInfo(std::string gameName);
 	GameInfo(Game game);

@@ -20,6 +20,7 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QAbstractScrollArea>
+#include <QMessageBox>
 
 bool GetProcessIDByName(const WCHAR* processName, DWORD& processId)
 {
@@ -137,10 +138,17 @@ void MainWindow::ScanGame()
 	if (isFound)
 	{
 		logger->info("Found {0}, ID {1}", gameName, procId);
-		gameInfo = GameInfo::Create(gameName, procId, mr);
-		ui.stackedWidget->setCurrentIndex(1);
-		GameScanTimer->stop();
-		emit FoundGame(isFound);
+		try
+		{
+			gameInfo = GameInfo::Create(gameName, procId, mr);
+			ui.stackedWidget->setCurrentIndex(1);
+			GameScanTimer->stop();
+			emit FoundGame(isFound);
+		}
+		catch (std::runtime_error& e)
+		{
+			QMessageBox::warning(this, "Game not Supported", QString("%1 is not supported yet!").arg(QString::fromStdString(gameName)));
+		}
 	}
 }
 
@@ -174,6 +182,7 @@ void MainWindow::UpdateInfo()
 			logger->error("Caught an exception: {0}", e.what());
 			this->close();
 		}
+		return;
 	}
 	emit ReadSuccees();
 }
@@ -336,8 +345,26 @@ void MainWindow::ReadInfo()
 	{
 		emit Retry();
 	}
-	if (gameInfo->SetInfo(diff, shotType))
-		emit NewShottype();
+	try
+	{
+		try
+		{
+			if (gameInfo->SetInfo(diff, shotType))
+				emit NewShottype();
+		}
+		catch (std::runtime_error& e)
+		{
+			emit NewShottype();
+		}
+
+	}
+	catch (std::runtime_error& e)
+	{
+		QMessageBox::warning(this, "Pattern invalid", QString("Pattern for %1 %2 %3 is not a valid pattern file")
+			.arg(gameInfo->GameName())
+			.arg(gameInfo->Difficulty())
+			.arg(gameInfo->ShotType()));
+	}
 	if (gameInfo->SetData(stage, score, specials))
 		emit NewSection();
 	gameInfo->UpdateDelta(stage);

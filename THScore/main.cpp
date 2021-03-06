@@ -3,6 +3,7 @@
 #include "GameInfo.h"
 #include "logger.h"
 #include <QtWidgets/QApplication>
+#include <QMessageBox>
 
 BOOL SetPrivilage();
 
@@ -13,10 +14,28 @@ int main(int argc, char* argv[])
 	GameInfo::ScanCSV();
 	SetPrivilage();
 
+	
 	QApplication a(argc, argv);
 	MainWindow w;
 	w.show();
-	return a.exec();
+	try
+	{
+		return a.exec();
+	}
+	catch (...)
+	{
+		auto exptr = std::current_exception();
+		try {
+			rethrow_exception(exptr);
+		}
+		catch (std::exception& e)
+		{
+			logger->error("Caught an exception: {0}", e.what());
+			QMessageBox::critical(&w, "Critial error!", QString("Caught an unexpected exception: %1").arg(e.what()));
+			return 1;
+		}
+	}
+	return 1;
 }
 
 BOOL SetPrivilage()
