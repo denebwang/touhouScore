@@ -166,7 +166,7 @@ bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 
 }
 
-bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
+bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFrame)
 {
 	bool sectionChanged = false;
 	if (currentStage < 1)
@@ -234,11 +234,14 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount)
 			}
 			break;
 		case Section::Boss:
-			//todo: 击破动画结束后再切换
+			
 			if (bossHP < 0)//击破
 			{
-				if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
-					sectionChanged = true;
+				if (localFrame > 200 && localFrame < 300)//结算后localframe才重新计数，延迟一段时间用来吃消弹
+				{
+					if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
+						sectionChanged = true;
+				}
 			}
 			break;
 		case Section::Bonus:
@@ -262,7 +265,7 @@ void GameInfo::UpdateDelta(int stage)
 {
 	if (stage < 1)
 	{
-		logger->error("Stage incorrect in GameInfo::UpdateDelta: {0}", stage);
+		//logger->error("Stage incorrect in GameInfo::UpdateDelta: {0}", stage);
 		return;
 	}
 	int index = stage - 1;

@@ -13,6 +13,7 @@ public:
 	virtual int GetDiff() = 0;
 	virtual int GetBossHP() = 0;
 	virtual int GetStageFrame() = 0;
+	virtual int GetLocalFrame() = 0;
 	int ReadInt(DWORD address);
 	int ReadIntFromPointer(DWORD ptr, DWORD offset);
 private:
@@ -32,6 +33,7 @@ public:
 	int GetDiff()override;
 	int GetBossHP() override;
 	int GetStageFrame() override;
+	int GetLocalFrame() override;
 
 private:
 	const static DWORD ScoreAddr = 0x00474C44;
@@ -41,6 +43,7 @@ private:
 	const static DWORD ShotTypeAddr1 = 0x00474C68;
 	const static DWORD ShotTypeAddr2 = 0x00474C6C;
 	const static DWORD FrameCountAddr = 0x00474C88;
+	const static DWORD LocalFrameAddr = 0x00474C8C;
 	const static DWORD BossHPptr = 0x0047770C;
 	const static DWORD BossHPOffset = 0x9E8C;
 };

@@ -119,6 +119,11 @@ int TH10Reader::GetStageFrame()
 	return ReadInt(FrameCountAddr);
 }
 
+int TH10Reader::GetLocalFrame()
+{
+	return ReadInt(LocalFrameAddr);
+}
+
 TH11Reader::TH11Reader(DWORD processID) : MemoryReader(processID)
 {
 }

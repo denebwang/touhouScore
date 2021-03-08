@@ -68,7 +68,7 @@ public:
 	bool SetInfo(int diff, int shot);//需要更新路线信息时返回true
 	bool SetData(int stage, long long score, std::vector<int>& speical);
 	void SetPattern(int stage, Section section, long long score, std::vector<int>& speical);
-	bool TestSection(int bossHP, int timeLeft, int frameCount);
+	bool TestSection(int bossHP, int timeLeft, int frameCount, int localFrame);
 	void UpdateDelta(int stage);
 	patternHeader GetHeader();
 	static GameInfo* Create(std::string gameName, DWORD processID, MemoryReader*& mr);

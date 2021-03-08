@@ -340,6 +340,7 @@ void MainWindow::ReadInfo()
 	long long score = mr->GetScore();
 	int bossHP = mr->GetBossHP();
 	int frameCount = mr->GetStageFrame();
+	int localFrame = mr->GetLocalFrame();
 	std::vector<int> specials = mr->GetSpecials();
 	if (gameInfo->CheckRetry(stage))
 	{
@@ -368,7 +369,7 @@ void MainWindow::ReadInfo()
 	if (gameInfo->SetData(stage, score, specials))
 		emit NewSection();
 	gameInfo->UpdateDelta(stage);
-	if (gameInfo->TestSection(bossHP, NULL, frameCount))
+	if (gameInfo->TestSection(bossHP, NULL, frameCount, localFrame))
 	{
 		emit NewSection();
 	}
