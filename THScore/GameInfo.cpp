@@ -85,7 +85,7 @@ GameInfo::GameInfo(Game game)
 	//设为-1防止均未0时不读取路线
 	difficulty = -1;
 	shotType = -1;
-	currentStage = 0;
+	currentStage = 1;
 	switch (game)
 	{
 	case Game::th10:
@@ -149,10 +149,11 @@ bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 	{
 		return false;
 	}
-
 	stageInfo[stage - 1].SetData(0, score, speical);
 	if (currentStage != stage)
 	{
+		//避免由于换面导致结算加不到
+		stageInfo[currentStage - 1].SetData(0, score, speical);
 		currentStage = stage;
 		return true;
 	}
@@ -257,7 +258,7 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 				switch (currentStage)
 				{
 				case 1:
-					if (bossHP > 9000&&frameCount>5000)//道中非血量9200
+					if (bossHP > 9000 && frameCount > 5000)//道中非血量9200
 					{
 						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
 							sectionChanged = true;
@@ -307,7 +308,7 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 
 			if (bossHP <= 0)//击破
 			{
-				if (frameCount == 0 || (localFrame > 200 && localFrame < 300))//结算后localframe才重新计数，延迟一段时间用来吃消弹
+				if (localFrame > 100/*(currentStage == 6 ? 200 : 100)*/ && localFrame < 300)//结算后localframe才重新计数，延迟一段时间用来吃消弹
 				{
 					if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
 						sectionChanged = true;
