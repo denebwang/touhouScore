@@ -195,6 +195,7 @@ void MainWindow::InitChart()
 	ui.tableWidget->setColumnCount(columnCount);
 	ui.tableWidget->setRowCount(rowCount);
 	ui.tableWidget->setHorizontalHeaderLabels(gameInfo->GetColumnHeader());
+	ui.tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
 	this->adjustSize();
 	//填充初始数据
 	int rowOffset = 0;

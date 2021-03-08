@@ -58,14 +58,22 @@ public:
 	int GetShotType()override;
 	int GetDiff()override;
 	std::vector<int> GetSpecials()override;
+	int GetBossHP() override;
+	int GetStageFrame() override;
+	int GetLocalFrame() override;
+
 private:
 	const static DWORD ScoreAddr = 0x004A56E4;
-	const static DWORD StageAddr = 0x004A572C;
+	const static DWORD StageAddr = 0x004A5728;
 	const static DWORD DifficultyAddr = 0x004A5720;
 	const static DWORD ShotTypeAddr1 = 0x004A5710;
 	const static DWORD ShotTypeAddr2 = 0x004C3260;
 	const static DWORD FaithAddr = 0x004A56F0;
 	const static DWORD GrazeAddr = 0x004A5754;
+	const static DWORD FrameCountAddr = 0x004A5734;
+	const static DWORD LocalFrameAddr = 0x004A5738;
+	const static DWORD BossHPptr = 0x004A8D84;
+	const static DWORD BossHPOffset = 0x43F8;
 
 };
 

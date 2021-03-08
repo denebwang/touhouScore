@@ -94,8 +94,6 @@ EditorWindow::EditorWindow(QWidget* parent)
 					ui.ShotCombo->addItem(str);
 				}
 			}
-
-
 		});
 	connect(ui.DiffCombo, &QComboBox::currentTextChanged, [=](const QString& diffName)
 		{
@@ -112,7 +110,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 				try
 				{
 					gameInfo->SetInfo(diff, shot);
-					UpdatePattern();
+
 				}
 				catch (std::out_of_range& e)
 				{
@@ -121,6 +119,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 						.arg(gameInfo->Difficulty())
 						.arg(gameInfo->ShotType()));
 				}
+				UpdatePattern();
 			}
 		});
 	connect(ui.ShotCombo, &QComboBox::currentTextChanged, [=](const QString& shotName)
@@ -142,7 +141,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 				try
 				{
 					gameInfo->SetInfo(diff, shot);
-					UpdatePattern();
+
 				}
 				catch (std::out_of_range& e)
 				{
@@ -151,6 +150,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 						.arg(gameInfo->Difficulty())
 						.arg(gameInfo->ShotType()));
 				}
+				UpdatePattern();
 			}
 
 		});
@@ -484,7 +484,7 @@ void EditorWindow::SaveCSV()
 		}
 	}
 	delete writer;
-
+	QMessageBox::information(this, "Save Success!", "Pattern file saved");
 }
 
 const int EditorWindow::GetGameIndex(const QString& gameName)

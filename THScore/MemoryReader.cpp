@@ -197,3 +197,18 @@ std::vector<int> TH11Reader::GetSpecials()
 	int graze = ReadInt(GrazeAddr);
 	return { faith, graze };
 }
+
+int TH11Reader::GetBossHP()
+{
+	return ReadIntFromPointer(BossHPptr, BossHPOffset);
+}
+
+int TH11Reader::GetStageFrame()
+{
+	return ReadInt(FrameCountAddr);
+}
+
+int TH11Reader::GetLocalFrame()
+{
+	return ReadInt(LocalFrameAddr);
+}

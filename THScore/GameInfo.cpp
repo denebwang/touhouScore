@@ -45,7 +45,7 @@ bool GameInfo::SetPattern(patternHeader header)
 	{
 		logger->error("can't find csv file");
 		//生成默认路线
-		for (auto& stage:stageInfo)
+		for (auto& stage : stageInfo)
 		{
 			stage.SetDeault(specialNames.size());
 		}
@@ -95,26 +95,22 @@ GameInfo::GameInfo(Game game)
 		{
 			1,2,3,4,5,6
 		};
-		//for (size_t i = 0; i < 6; i++)
-		//{
-		//	stageInfo[i].reset(new TH10Info(i+1));
-		//}
 		specialNames = { "Faith" };
 		break;
 	case Game::th11:
 		this->game = game;
 		shotTypeList = shotTypeMap.at(11);
-		//for (size_t i = 0; i < 6; i++)
-		//{
-		//	stageInfo[i].reset(new TH11Info(i + 1));
-		//}
+		stageInfo =
+		{
+			1,2,3,4,5,6
+		};
 		specialNames = { "Faith" , "Graze" };
 		break;
 	default:
 		logger->warn("{0} is not supported yet!", game);
 		specialNames = {};
 		this->game = Game::invalid;
-		throw std::runtime_error(" Game::invalid");
+		throw std::runtime_error(" Game invalid");
 		break;
 	}
 }
@@ -234,8 +230,8 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 			}
 			break;
 		case Section::Boss:
-			
-			if (bossHP < 0)//击破
+
+			if (bossHP <= 0)//击破
 			{
 				if (localFrame > 200 && localFrame < 300)//结算后localframe才重新计数，延迟一段时间用来吃消弹
 				{
@@ -251,7 +247,79 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 		}
 		break;
 	case Game::th11:
-		//todo: th11的代码
+		switch (current)
+		{
+		case Section::All:
+			break;
+		case Section::Mid:
+			if (bossHP > 100 && bossHP != 10000)//有时道中击破后血量保持为10000,有时为一个小正数
+			{
+				switch (currentStage)
+				{
+				case 1:
+					if (bossHP > 9000&&frameCount>5000)//道中非血量9200
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 2:
+					if (bossHP > 9000)//道中符血量7200
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 3:
+					if (bossHP > 8000 && frameCount > 5500)//道中血量13000+
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 4:
+					if (bossHP > 8500 && frameCount > 8200)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 5:
+					if (bossHP > 12000 && frameCount > 10000 && localFrame < 100)//道中血量15000;关底血量12000+
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 6:
+					if (bossHP > 13000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				default:
+					logger->error("Current stage error: {0}", currentStage);
+				}
+			}
+			break;
+		case Section::Boss:
+
+			if (bossHP <= 0)//击破
+			{
+				if (frameCount == 0 || (localFrame > 200 && localFrame < 300))//结算后localframe才重新计数，延迟一段时间用来吃消弹
+				{
+					if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
+						sectionChanged = true;
+				}
+			}
+			break;
+		case Section::Bonus:
+			break;
+		default:
+			break;
+		}
+		break;
 		break;
 	default:
 		break;
@@ -294,8 +362,8 @@ GameInfo* GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*&
 	}
 	else if (gameName == "th11")
 	{
-		//mr = new TH11Reader(processID);
-		//return new GameInfo(GameInfo::Game::th11);
+		mr = new TH11Reader(processID);
+		return new GameInfo(Game::th11);
 	}
 	else {
 		logger->error("Game Not supported: {0}", gameName);
@@ -440,7 +508,7 @@ int GameInfo::GetCurrenSectionRowIndex() const
 		sectionCount += GetStageSectionCount(index);
 	}
 	sectionCount += stageInfo[currentStage - 1].GetCurrentSectionIndex() + 1;
-	return (sectionCount - 1) * 3;
+	return sectionCount > 0 ? (sectionCount - 1) * 3 : 0;
 }
 
 QStringList GameInfo::GetSectionNames(int index) const

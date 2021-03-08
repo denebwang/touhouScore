@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'mainwindowjEwmJs.ui'
+** Form generated from reading UI file 'mainwindowMPsvkq.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef MAINWINDOWJEWMJS_H
-#define MAINWINDOWJEWMJS_H
+#ifndef MAINWINDOWMPSVKQ_H
+#define MAINWINDOWMPSVKQ_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
@@ -50,7 +50,7 @@ public:
     {
         if (MainWindowClass->objectName().isEmpty())
             MainWindowClass->setObjectName(QString::fromUtf8("MainWindowClass"));
-        MainWindowClass->resize(500, 400);
+        MainWindowClass->resize(600, 400);
         MainWindowClass->setMinimumSize(QSize(0, 0));
         MainWindowClass->setMaximumSize(QSize(16777215, 16777215));
         QIcon icon;
@@ -169,7 +169,7 @@ public:
         MainWindowClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindowClass);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 500, 22));
+        menuBar->setGeometry(QRect(0, 0, 600, 22));
         MainWindowClass->setMenuBar(menuBar);
         toolBar = new QToolBar(MainWindowClass);
         toolBar->setObjectName(QString::fromUtf8("toolBar"));
@@ -208,4 +208,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // MAINWINDOWJEWMJS_H
+#endif // MAINWINDOWMPSVKQ_H
