@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui.setupUi(this);
 	//工具栏
-	QAction* patternEditAction = ui.toolBar->addAction("Pattern Edit");
+	QAction* patternEditAction = ui.toolBar->addAction(tr("Pattern Edit"));
 	connect(patternEditAction, &QAction::triggered, []()
 		{
 			EditorWindow* editer = new EditorWindow();
@@ -99,6 +99,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowScore);
 	connect(this, &MainWindow::NewSection, this, &MainWindow::ShowDelta);
 	connect(this, &MainWindow::NewSection, this, &MainWindow::UpdateBackground);
+	connect(this, &MainWindow::NewStage, this, &MainWindow::UpdateLastBonus);
 	//connect(this, &MainWindow::NewShottype, this, &MainWindow::UpdatePattern);
 
 	//指针初始置为null
@@ -147,7 +148,7 @@ void MainWindow::ScanGame()
 		}
 		catch (std::runtime_error& e)
 		{
-			QMessageBox::warning(this, "Game not Supported", QString("%1 is not supported yet!").arg(QString::fromStdString(gameName)));
+			QMessageBox::warning(this, tr("Game not Supported"), QString(tr("%1 is not supported yet!")).arg(QString::fromStdString(gameName)));
 		}
 	}
 }
@@ -195,6 +196,7 @@ void MainWindow::InitChart()
 	ui.tableWidget->setColumnCount(columnCount);
 	ui.tableWidget->setRowCount(rowCount);
 	ui.tableWidget->setHorizontalHeaderLabels(gameInfo->GetColumnHeader());
+	ui.tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
 	this->adjustSize();
 	//填充初始数据
 	int rowOffset = 0;
@@ -219,9 +221,9 @@ void MainWindow::InitChart()
 		//类别
 		for (int row = 0; row < rowCount; row += 3)
 		{
-			ui.tableWidget->setItem(row, 2, new QTableWidgetItem("Game"));
-			ui.tableWidget->setItem(row + 1, 2, new QTableWidgetItem("Pattern"));
-			ui.tableWidget->setItem(row + 2, 2, new QTableWidgetItem("Delta"));
+			ui.tableWidget->setItem(row, 2, new QTableWidgetItem(tr("Game")));
+			ui.tableWidget->setItem(row + 1, 2, new QTableWidgetItem(tr("Pattern")));
+			ui.tableWidget->setItem(row + 2, 2, new QTableWidgetItem(tr("Delta")));
 		}
 		rowOffset += stageSectionCount * 3;
 
@@ -249,7 +251,6 @@ void MainWindow::InitChart()
 
 void MainWindow::ShowScore()
 {
-
 	static QLocale loc = QLocale::English;
 	int currentStage = gameInfo->GetCurrentStage();
 	int row = gameInfo->GetCurrenSectionRowIndex();
@@ -348,26 +349,25 @@ void MainWindow::ReadInfo()
 	}
 	try
 	{
-		try
-		{
-			if (gameInfo->SetInfo(diff, shotType))
-				emit NewShottype();
-		}
-		catch (std::out_of_range& e)
-		{
+		if (gameInfo->SetInfo(diff, shotType))
 			emit NewShottype();
-		}
-
 	}
+	catch (std::out_of_range& e)
+	{
+		emit NewShottype();
+	}/*
 	catch (std::runtime_error& e)
 	{
-		QMessageBox::warning(this, "Pattern invalid", QString("Pattern for %1 %2 %3 is not a valid pattern file")
+		QMessageBox::warning(this, tr("Pattern invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file"))
 			.arg(gameInfo->GameName())
 			.arg(gameInfo->Difficulty())
 			.arg(gameInfo->ShotType()));
-	}
+	}*/
 	if (gameInfo->SetData(stage, score, specials))
+	{
 		emit NewSection();
+		emit NewStage(stage);
+	}
 	gameInfo->UpdateDelta(stage);
 	if (gameInfo->TestSection(bossHP, NULL, frameCount, localFrame))
 	{
@@ -402,6 +402,28 @@ void MainWindow::UpdateBackground()
 		ui.tableWidget->item(row - 3, col)->setBackground(prevBackground);
 	}
 
+}
+
+void MainWindow::UpdateLastBonus()
+{
+	if (gameInfo->GetCurrentStage()<2)
+	{
+		return;
+	}
+	//与showscore代码相同
+	static QLocale loc = QLocale::English;
+	int stage = gameInfo->GetCurrentStage()-1;
+	int row = gameInfo->GetCurrenSectionRowIndex()-3;
+	SectionInfo current = gameInfo->GetCurrentSectionInfo(stage - 1);
+	//游戏内信息显示
+	//分数 col=3
+	ui.tableWidget->item(row, 3)->setData(Qt::DisplayRole, loc.toString(current.GetScore(0)));
+	//其他 col=3+index
+	std::vector<int> specials = current.GetSpecials(0);
+	for (int i = 0; i < specials.size(); i++)
+	{
+		ui.tableWidget->item(row, 3 + 1 + i)->setData(Qt::DisplayRole, loc.toString(specials[i]));
+	}
 }
 
 void MainWindow::SetDeltaColor(long long score, QTableWidgetItem* item)

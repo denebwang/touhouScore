@@ -204,6 +204,8 @@ const SectionInfo& StageInfo::GetPrevSectionInfo() const
 			}
 		}
 	}
+	logger->error("StageInfo::GetPrevSectionInfo() doesn't return a section with a current section: {0}, section size {1}", static_cast<int>(currentSection), sections.size());
+	throw std::logic_error("StageInfo::GetPrevSectionInfo() doesn't return a section");
 }
 
 //Section StageInfo::GetPrevSection(bool& previousStage)

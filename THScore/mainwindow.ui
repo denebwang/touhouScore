@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>600</width>
     <height>400</height>
    </rect>
   </property>
@@ -76,7 +76,7 @@
           <enum>QFrame::Raised</enum>
          </property>
          <property name="text">
-          <string>游戏</string>
+          <string>Game</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -92,7 +92,7 @@
           <enum>QFrame::Raised</enum>
          </property>
          <property name="text">
-          <string>难度</string>
+          <string>Difficulty</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -102,7 +102,7 @@
        <item>
         <widget class="QLabel" name="ShottypeLabel">
          <property name="text">
-          <string>机体</string>
+          <string>Shottype</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -218,7 +218,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>500</width>
+     <width>600</width>
      <height>22</height>
     </rect>
    </property>

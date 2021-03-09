@@ -78,6 +78,7 @@ int TH10Reader::GetShotType()
 			break;
 		default:
 			logger->error("Wrong sub shottype num {0}", ReadInt(ShotTypeAddr2));
+			throw std::logic_error("Wrong sub shot type num");
 			break;
 		}
 		break;
@@ -95,11 +96,13 @@ int TH10Reader::GetShotType()
 			break;
 		default:
 			logger->error("Wrong sub shottype num { 0 }", ReadInt(ShotTypeAddr2));
+			throw std::logic_error("Wrong sub shot type num");
 			break;
 		}
 		break;
 	default:
 		logger->error("Wrong shottype num{ 0 }", ReadInt(ShotTypeAddr1));
+		throw std::logic_error("Wrong shot type num");
 		break;
 	}
 }
@@ -160,6 +163,7 @@ int TH11Reader::GetShotType()
 			break;
 		default:
 			logger->error("Wrong sub shottype num {0}", ReadInt(ShotTypeAddr2));
+			throw std::logic_error("Wrong sub shot type num");
 			break;
 		}
 		break;
@@ -177,11 +181,13 @@ int TH11Reader::GetShotType()
 			break;
 		default:
 			logger->error("Wrong sub shottype num { 0 }", ReadInt(ShotTypeAddr2));
+			throw std::logic_error("Wrong sub shot type num");
 			break;
 		}
 		break;
 	default:
 		logger->error("Wrong shottype num{ 0 }", ReadInt(ShotTypeAddr1));
+		throw std::logic_error("Wrong shottype num");
 		break;
 	}
 }
@@ -196,4 +202,19 @@ std::vector<int> TH11Reader::GetSpecials()
 	int faith = ReadInt(FaithAddr) / 100;
 	int graze = ReadInt(GrazeAddr);
 	return { faith, graze };
+}
+
+int TH11Reader::GetBossHP()
+{
+	return ReadIntFromPointer(BossHPptr, BossHPOffset);
+}
+
+int TH11Reader::GetStageFrame()
+{
+	return ReadInt(FrameCountAddr);
+}
+
+int TH11Reader::GetLocalFrame()
+{
+	return ReadInt(LocalFrameAddr);
 }

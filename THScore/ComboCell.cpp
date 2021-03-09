@@ -12,7 +12,7 @@ QWidget* ComboCell::createEditor(QWidget* parent, const QStyleOptionViewItem& op
 {
 	QComboBox* cb = new QComboBox(parent);
 	QStringList str;
-	str << "All" << "Mid+Boss" << "Mid+Boss+Bonus";
+	str << tr("All") << tr("Mid+Boss") << tr("Mid+Boss+Bonus");
 	cb->addItems(str);
 	return cb;
 }

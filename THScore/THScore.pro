@@ -4,12 +4,14 @@
 
 TEMPLATE = app
 TARGET = THScore
-DESTDIR = ../x64/Debug
-CONFIG += debug
+DESTDIR = ../x64/Release
+CONFIG += release
 LIBS += -L"."
 DEPENDPATH += .
 MOC_DIR += .
-OBJECTS_DIR += debug
+OBJECTS_DIR += release
 UI_DIR += .
 RCC_DIR += .
 include(THScore.pri)
+TRANSLATIONS += thscore_zh.ts
+win32:RC_FILE = THScore.rc

@@ -23,6 +23,7 @@ public:
 	void ReadInfo();
 	void RestoreChart();
 	void UpdateBackground();
+	void UpdateLastBonus();
 private:
 	Ui::MainWindowClass ui;
 	QTimer* GameScanTimer;
@@ -37,5 +38,6 @@ signals:
 	void ReadSuccees();
 	void NewShottype();
 	void NewSection();
+	void NewStage(int newStage);
 	void Retry();
 };
