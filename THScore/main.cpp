@@ -2,8 +2,13 @@
 #include <windows.h>
 #include "GameInfo.h"
 #include "logger.h"
+#include "Spdlog/Spdlog.h"
 #include <QtWidgets/QApplication>
+#include <QCoreApplication>
 #include <QMessageBox>
+#include <QTranslator>
+#include <QLocale>
+
 
 BOOL SetPrivilage();
 
@@ -13,9 +18,11 @@ int main(int argc, char* argv[])
 	GameInfo::Init();
 	GameInfo::ScanCSV();
 	SetPrivilage();
-
 	
 	QApplication a(argc, argv);
+	QTranslator translator;
+	if (translator.load(QLocale::system(), "thscore", "_", "translations"))
+		QCoreApplication::installTranslator(&translator);
 	MainWindow w;
 	w.show();
 	try
@@ -24,14 +31,13 @@ int main(int argc, char* argv[])
 	}
 	catch (...)
 	{
-		auto exptr = std::current_exception();
 		try {
-			rethrow_exception(exptr);
+			rethrow_exception(std::current_exception());
 		}
 		catch (std::exception& e)
 		{
 			logger->error("Caught an exception: {0}", e.what());
-			QMessageBox::critical(&w, "Critial error!", QString("Caught an unexpected exception: %1").arg(e.what()));
+			QMessageBox::critical(&w, MainWindow::tr("Critical error!"), QString(MainWindow::tr("Caught an unexpected exception: %1")).arg(e.what()));
 			return 1;
 		}
 	}

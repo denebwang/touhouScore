@@ -32,12 +32,12 @@ EditorWindow::EditorWindow(QWidget* parent)
 	diff = -1;
 	shot = -1;
 	game = 0;
-	SectionTypeList << "All" << "Mid+Boss" << "Mid+Boss+Bonus";
+	SectionTypeList << tr("All") << tr("Mid+Boss") << tr("Mid+Boss+Bonus");
 	ui.formWidget->setCurrentIndex(0);
 	UpdatePatternList();
 	ui.saveButton->setEnabled(false);
 	loc = QLocale::English;
-	QString unselected("Unselected");
+	QString unselected(tr("Unselected"));
 	QStringList gameList;
 	//空白即缺省
 	gameList << unselected << "東方紅魔郷" << "東方妖々夢" << "東方永夜抄"
@@ -54,7 +54,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 
 	connect(ui.GameCombo, &QComboBox::currentTextChanged, [=](const QString& gameName)
 		{
-			if (gameName == "Unselected")
+			if (gameName == unselected)
 			{
 				game = 0;
 				delete gameInfo;
@@ -80,7 +80,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 				catch (std::exception& e)
 				{
 					logger->warn("{0} not supported yet!", gameName.toUtf8().data());
-					QMessageBox::warning(this, "Game not supported", QString("%1 is not supported yet").arg(gameName));
+					QMessageBox::warning(this, tr("Game not supported"), QString(tr("%1 is not supported yet")).arg(gameName));
 					ui.GameCombo->setCurrentIndex(0);
 					game = 0;
 					UpdatePatternList();
@@ -98,7 +98,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 	connect(ui.DiffCombo, &QComboBox::currentTextChanged, [=](const QString& diffName)
 		{
 			diff = GetDiffIndex(diffName);
-			if (diffName == "Unselected" || shot == -1)
+			if (diffName == unselected || shot == -1)
 			{
 				UpdatePatternList();
 				ui.formWidget->setCurrentIndex(0);
@@ -114,7 +114,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 				}
 				catch (std::out_of_range& e)
 				{
-					QMessageBox::warning(this, "Pattern invalid", QString("Pattern for %1 %2 %3 is not a valid pattern file")
+					QMessageBox::warning(this, tr("Pattern not Found or Invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file."))
 						.arg(gameInfo->GameName())
 						.arg(gameInfo->Difficulty())
 						.arg(gameInfo->ShotType()));
@@ -129,7 +129,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 				return;
 			}
 			shot = GetShotIndex(shotName);
-			if (diff == -1 || shotName == "Unselected")
+			if (diff == -1 || shotName == unselected)
 			{
 				UpdatePatternList();
 				ui.formWidget->setCurrentIndex(0);
@@ -145,7 +145,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 				}
 				catch (std::out_of_range& e)
 				{
-					QMessageBox::warning(this, "Pattern invalid", QString("Pattern for %1 %2 %3 is not a valid pattern file")
+					QMessageBox::warning(this, tr("Pattern not Found or Invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file."))
 						.arg(gameInfo->GameName())
 						.arg(gameInfo->Difficulty())
 						.arg(gameInfo->ShotType()));
@@ -182,11 +182,11 @@ void EditorWindow::UpdatePattern()
 	ui.tableWidget->clear();
 	ui.tableWidget->setColumnCount(gameInfo->ColumnCount() * 2 - 3);//每列增加一列用于放增量,并增加一列用于放置选择section组合的下拉框
 	QStringList header, specials;
-	header << "Stage" << "" << "Section" << "Score" << "Delta";
+	header << tr("Stage") << "" << tr("Section") << tr("Score") << tr("Delta");
 	specials = gameInfo->GetSpecialNames();
 	for (auto& str : specials)
 	{
-		header << str << "Delta";
+		header << str << tr("Delta");
 	}
 	ui.tableWidget->setHorizontalHeaderLabels(header);
 	ui.tableWidget->setRowCount(gameInfo->SectionCount());
@@ -456,7 +456,7 @@ void EditorWindow::SaveCSV()
 	catch (std::runtime_error& e)
 	{
 		logger->error(e.what());
-		QMessageBox::warning(this, "Save CSV failed", "Please close any program that is used the file");
+		QMessageBox::warning(this, tr("Save CSV Failed"), tr("Please close any program that is used the file."));
 		return;
 	}
 	QStringList line;
@@ -484,7 +484,7 @@ void EditorWindow::SaveCSV()
 		}
 	}
 	delete writer;
-	QMessageBox::information(this, "Save Success!", "Pattern file saved");
+	QMessageBox::information(this, tr("Save Success!"), tr("Pattern file saved"));
 }
 
 const int EditorWindow::GetGameIndex(const QString& gameName)
@@ -598,6 +598,7 @@ const Section EditorWindow::GetSection(const QString& secName)
 	{
 		return Section::Bonus;
 	}
+	else throw std::logic_error("Wrong section name in EditorWindow::GetSection");
 }
 
 void EditorWindow::SetPatternList()

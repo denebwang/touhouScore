@@ -22,6 +22,11 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="Translation Files">
+      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
+      <Extensions>ts</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="mainwindow.qrc">
@@ -95,11 +100,6 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="editorwindow.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="THScore.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
@@ -108,8 +108,15 @@
     <Image Include="icon\thscore.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="icon1.ico">
+  </ItemGroup>
+  <ItemGroup>
+    <QtTranslation Include="thscore_zh.ts">
+      <Filter>Translation Files</Filter>
+    </QtTranslation>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="editorwindow.ui">
       <Filter>Resource Files</Filter>
-    </Image>
+    </QtUic>
   </ItemGroup>
 </Project>

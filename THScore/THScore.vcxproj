@@ -131,8 +131,10 @@
     <ResourceCompile Include="THScore.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon1.ico" />
     <Image Include="icon\thscore.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtTranslation Include="thscore_zh.ts" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

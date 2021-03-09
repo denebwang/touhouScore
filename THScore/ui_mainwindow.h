@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'mainwindowMPsvkq.ui'
+** Form generated from reading UI file 'mainwindowVsJlyi.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef MAINWINDOWMPSVKQ_H
-#define MAINWINDOWMPSVKQ_H
+#ifndef MAINWINDOWVSJLYI_H
+#define MAINWINDOWVSJLYI_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
@@ -188,9 +188,9 @@ public:
     void retranslateUi(QMainWindow *MainWindowClass)
     {
         MainWindowClass->setWindowTitle(QCoreApplication::translate("MainWindowClass", "THScore", nullptr));
-        gameNameLabel->setText(QCoreApplication::translate("MainWindowClass", "\346\270\270\346\210\217", nullptr));
-        DiffLabel->setText(QCoreApplication::translate("MainWindowClass", "\351\232\276\345\272\246", nullptr));
-        ShottypeLabel->setText(QCoreApplication::translate("MainWindowClass", "\346\234\272\344\275\223", nullptr));
+        gameNameLabel->setText(QCoreApplication::translate("MainWindowClass", "Game", nullptr));
+        DiffLabel->setText(QCoreApplication::translate("MainWindowClass", "Difficulty", nullptr));
+        ShottypeLabel->setText(QCoreApplication::translate("MainWindowClass", "Shottype", nullptr));
         label->setText(QCoreApplication::translate("MainWindowClass", "Serching for games...", nullptr));
 
         const bool __sortingEnabled = tableWidget->isSortingEnabled();
@@ -208,4 +208,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // MAINWINDOWMPSVKQ_H
+#endif // MAINWINDOWVSJLYI_H

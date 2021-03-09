@@ -6,7 +6,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
-
+#include <QCoreApplication>
 #include "logger.h"
 #include "Enums.h"
 //#include "spdlog/sinks/rotating_file_sink.h"
@@ -95,7 +95,7 @@ GameInfo::GameInfo(Game game)
 		{
 			1,2,3,4,5,6
 		};
-		specialNames = { "Faith" };
+		specialNames = { QCoreApplication::translate("MainWindow","Faith") };
 		break;
 	case Game::th11:
 		this->game = game;
@@ -104,7 +104,7 @@ GameInfo::GameInfo(Game game)
 		{
 			1,2,3,4,5,6
 		};
-		specialNames = { "Faith" , "Graze" };
+		specialNames = { QCoreApplication::translate("MainWindow","Faith") , QCoreApplication::translate("MainWindow","Graze") };
 		break;
 	default:
 		logger->warn("{0} is not supported yet!", game);
@@ -368,6 +368,7 @@ GameInfo* GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*&
 	}
 	else {
 		logger->error("Game Not supported: {0}", gameName);
+		throw std::runtime_error("Not a supported game");
 	}
 }
 
@@ -468,7 +469,9 @@ int GameInfo::SectionCount()
 QStringList GameInfo::GetColumnHeader() const
 {
 	QStringList list;
-	list << "Stage" << "Section" << "" << "Score";
+	list << QCoreApplication::translate("MainWindow", "Stage")
+		<< QCoreApplication::translate("MainWindow", "Section") << ""
+		<< QCoreApplication::translate("MainWindow", "Score");
 	list += GetSpecialNames();
 	return list;
 }
@@ -579,8 +582,24 @@ const std::unordered_map< GameInfo::patternHeader, std::filesystem::path >& Game
 void GameInfo::Init()
 {
 	//机体列表
-	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(10, { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" }));
-	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(11, { "Reimu A","Reimu B","Reimu C","Marisa A","Marisa B","Marisa C" }));
+	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(10,
+		{
+			QCoreApplication::translate("MainWindow","Reimu A"),
+			QCoreApplication::translate("MainWindow","Reimu B"),
+			QCoreApplication::translate("MainWindow","Reimu C"),
+			QCoreApplication::translate("MainWindow","Marisa A"),
+			QCoreApplication::translate("MainWindow","Marisa B"),
+			QCoreApplication::translate("MainWindow","Marisa C")
+		}));
+	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(11, 
+		{
+			QCoreApplication::translate("MainWindow","Reimu A"),
+			QCoreApplication::translate("MainWindow","Reimu B"),
+			QCoreApplication::translate("MainWindow","Reimu C"),
+			QCoreApplication::translate("MainWindow","Marisa A"),
+			QCoreApplication::translate("MainWindow","Marisa B"),
+			QCoreApplication::translate("MainWindow","Marisa C")
+		}));
 
 	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th10", { L"th10.exe",L"th10chs.exe",L"th10cht.exe" }));
 	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th11", { L"th11.exe",L"th11c" }));

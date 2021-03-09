@@ -1,5 +1,7 @@
 ﻿#include <vector>
 #include <exception>
+#include <QString>
+#include <QCoreApplication>
 #include "logger.h"
 #include "SectionInfo.h"
 #include "Enums.h"
@@ -68,19 +70,19 @@ QString SectionInfo::GetSectionName() const
 	switch (section)
 	{
 	default:
-		logger->error("SectionInfo::GetSectionName() error");
+		logger->error("SectionInfo::GetSectionName() error: section=={0}",static_cast<int>(section));
+		throw std::logic_error("Wrong section enum value");
 		break;
 	case Section::All:
-		return "All";
+		return QCoreApplication::translate("MainWindow","All");
 		break;
 	case Section::Mid:
-		return "Mid";
-		break;
+		return QCoreApplication::translate("MainWindow", "Mid");
 	case Section::Boss:
-		return "Boss";
+		return QCoreApplication::translate("MainWindow", "Boss");
 		break;
 	case Section::Bonus:
-		return "Bonus";
+		return QCoreApplication::translate("MainWindow", "Bonus");
 		break;
 	}
 }

@@ -1,15 +1,16 @@
 /********************************************************************************
-** Form generated from reading UI file 'editorwindowqIwfiL.ui'
+** Form generated from reading UI file 'editorwindowlgIdif.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef EDITORWINDOWQIWFIL_H
-#define EDITORWINDOWQIWFIL_H
+#ifndef EDITORWINDOWLGIDIF_H
+#define EDITORWINDOWLGIDIF_H
 
 #include <QtCore/QVariant>
+#include <QtGui/QIcon>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QHBoxLayout>
@@ -66,6 +67,9 @@ public:
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(EditorWindow->sizePolicy().hasHeightForWidth());
         EditorWindow->setSizePolicy(sizePolicy);
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/icon/main.png"), QSize(), QIcon::Normal, QIcon::Off);
+        EditorWindow->setWindowIcon(icon);
         verticalLayout = new QVBoxLayout(EditorWindow);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
@@ -257,4 +261,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // EDITORWINDOWQIWFIL_H
+#endif // EDITORWINDOWLGIDIF_H
