@@ -10,5 +10,6 @@ enum class Game :int
 {
 	invalid = 0,
 	th10 = 10,
-	th11 = 11
+	th11 = 11,
+	th12 = 12
 };

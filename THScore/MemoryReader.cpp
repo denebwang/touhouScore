@@ -218,3 +218,58 @@ int TH11Reader::GetLocalFrame()
 {
 	return ReadInt(LocalFrameAddr);
 }
+
+TH12Reader::TH12Reader(DWORD processID) :MemoryReader(processID)
+{
+
+}
+
+TH12Reader::~TH12Reader()
+{
+
+}
+
+long long TH12Reader::GetScore()
+{
+	return ((long long)(ReadInt(ScoreAddr))) * 10;
+}
+
+int TH12Reader::GetStage()
+{
+	return ReadInt(StageAddr);
+}
+
+std::vector<int> TH12Reader::GetSpecials()
+{
+	std::vector<int> specials;
+	specials.push_back(ReadInt(PIVAddr));
+	specials.push_back(ReadInt(GrazeAddr));
+	return specials;
+}
+
+int TH12Reader::GetShotType()
+{
+	int character = ReadInt(ShotTypeAddr1);
+	int shot = ReadInt(ShotTypeAddr2);
+	return 2 * character + shot;
+}
+
+int TH12Reader::GetDiff()
+{
+	return ReadInt(DifficultyAddr);
+}
+
+int TH12Reader::GetBossHP()
+{
+	return ReadIntFromPointer(BossHPptr, BossHPOffset);
+}
+
+int TH12Reader::GetStageFrame()
+{
+	return ReadInt(FrameCountAddr);
+}
+
+int TH12Reader::GetLocalFrame()
+{
+	return 0;
+}

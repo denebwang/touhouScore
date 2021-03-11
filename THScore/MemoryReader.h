@@ -77,3 +77,39 @@ private:
 
 };
 
+class TH12Reader:public MemoryReader
+{
+public:
+	TH12Reader(DWORD processID);
+	~TH12Reader();
+
+	long long GetScore() override;
+	int GetStage() override;
+	std::vector<int> GetSpecials() override;
+	int GetShotType() override;
+	int GetDiff() override;
+	int GetBossHP() override;
+	int GetStageFrame() override;
+	int GetLocalFrame() override;
+
+private:
+	const static DWORD ScoreAddr = 0x004B0C44;
+	const static DWORD StageAddr = 0x004B0CB0;
+	const static DWORD DifficultyAddr = 0x004AEBD0;
+	const static DWORD ShotTypeAddr1 = 0x004B0C90;
+	const static DWORD ShotTypeAddr2 = 0x004B0C94;
+	const static DWORD PIVAddr = 0x004B0C78;
+	const static DWORD GrazeAddr = 0x004B0CDC;
+	const static DWORD FrameCountAddr = 0x004B0CBC;
+	//const static DWORD LocalFrameAddr = 0x004A5738;
+	const static DWORD BossHPptr = 0x004B43E4;
+	const static DWORD BossHPOffset = 0x6CF0;
+	const static DWORD UFOptr = 0x004B4534;
+	const static DWORD PowerItemOffset = 0x48;
+	const static DWORD PointItemOffset = 0x4C;
+	const static DWORD UFO1Addr = 0x004B0C4C;
+	const static DWORD UFO2Addr = 0x004B0C50;
+	const static DWORD UFO2Addr = 0x004B0C54;
+	const static DWORD UFONumAddr = 0x004B0C58;
+
+};

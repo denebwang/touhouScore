@@ -86,25 +86,32 @@ GameInfo::GameInfo(Game game)
 	difficulty = -1;
 	shotType = -1;
 	currentStage = 1;
+	stageInfo = { 1,2,3,4,5,6 };
+	this->game = game;
 	switch (game)
 	{
 	case Game::th10:
-		this->game = game;
 		shotTypeList = shotTypeMap.at(10);
-		stageInfo =
+		specialNames =
 		{
-			1,2,3,4,5,6
+			QCoreApplication::translate("MainWindow","Faith")
 		};
-		specialNames = { QCoreApplication::translate("MainWindow","Faith") };
 		break;
 	case Game::th11:
-		this->game = game;
 		shotTypeList = shotTypeMap.at(11);
-		stageInfo =
+		specialNames =
 		{
-			1,2,3,4,5,6
+			QCoreApplication::translate("MainWindow","Faith") ,
+			QCoreApplication::translate("MainWindow","Graze")
 		};
-		specialNames = { QCoreApplication::translate("MainWindow","Faith") , QCoreApplication::translate("MainWindow","Graze") };
+		break;
+	case Game::th12:
+		shotTypeList = shotTypeMap.at(12);
+		specialNames =
+		{
+			QCoreApplication::translate("MainWindow","Point Item Value") ,
+			QCoreApplication::translate("MainWindow","Graze")
+		};
 		break;
 	default:
 		logger->warn("{0} is not supported yet!", game);
@@ -165,13 +172,14 @@ bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 
 bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFrame)
 {
+	static int lastHP = 0;
 	bool sectionChanged = false;
 	if (currentStage < 1)
 	{
 		return sectionChanged;
 	}
 	Section current = stageInfo[currentStage - 1].GetCurrentSection();
-	static int hp = 0, time = 0;
+	static int time = 0;
 	switch (game)
 	{
 	case Game::invalid:
@@ -321,11 +329,46 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 			break;
 		}
 		break;
-		break;
+	case Game::th12:
+		switch (current)
+		{
+		case Section::All:
+			break;
+		case Section::Mid:
+			switch (currentStage)
+			{
+				//todo: 星的道中切换
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 6:
+			default:
+				break;
+			}
+			break;
+		case Section::Boss:
+			if (bossHP <= 0)//击破
+			{
+				//TBD
+				if (bossHP == lastHP)
+				{
+					if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
+						sectionChanged = true;
+				}
+			}
+			break;
+		case Section::Bonus:
+			break;
+		default:
+			break;
+		}
 	default:
+		logger->error("Incorrect Game {0} in TestSection", static_cast<int>(game));
 		break;
 	}
-	hp = bossHP;
+	lastHP = bossHP;
 	time = timeLeft;
 	return sectionChanged;
 }
@@ -365,6 +408,11 @@ GameInfo* GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*&
 	{
 		mr = new TH11Reader(processID);
 		return new GameInfo(Game::th11);
+	}
+	else if (gameName == "th12")
+	{
+		mr = new TH12Reader(processID);
+		return new GameInfo(Game::th12);
 	}
 	else {
 		logger->error("Game Not supported: {0}", gameName);
@@ -427,6 +475,9 @@ QString GameInfo::GameName(Game game)
 		break;
 	case Game::th11:
 		return "東方地霊殿";
+		break;
+	case Game::th12:
+		return "東方星蓮船";
 		break;
 	default:
 		break;
@@ -591,7 +642,7 @@ void GameInfo::Init()
 			QCoreApplication::translate("MainWindow","Marisa B"),
 			QCoreApplication::translate("MainWindow","Marisa C")
 		}));
-	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(11, 
+	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(11,
 		{
 			QCoreApplication::translate("MainWindow","Reimu A"),
 			QCoreApplication::translate("MainWindow","Reimu B"),
@@ -600,9 +651,19 @@ void GameInfo::Init()
 			QCoreApplication::translate("MainWindow","Marisa B"),
 			QCoreApplication::translate("MainWindow","Marisa C")
 		}));
+	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(12,
+		{
+			QCoreApplication::translate("MainWindow","Reimu A"),
+			QCoreApplication::translate("MainWindow","Reimu B"),
+			QCoreApplication::translate("MainWindow","Marisa A"),
+			QCoreApplication::translate("MainWindow","Marisa B"),
+			QCoreApplication::translate("MainWindow","Sanae B"),
+			QCoreApplication::translate("MainWindow","Sanae B")
+		}));
 
 	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th10", { L"th10.exe",L"th10chs.exe",L"th10cht.exe" }));
-	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th11", { L"th11.exe",L"th11c" }));
+	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th11", { L"th11.exe",L"th11c.exe" }));
+	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th12", { L"th12.exe",L"th12c.exe" }));
 }
 
 std::unordered_map<int, std::vector<QString>> GameInfo::shotTypeMap;
