@@ -109,7 +109,7 @@ private:
 	const static DWORD PointItemOffset = 0x4C;
 	const static DWORD UFO1Addr = 0x004B0C4C;
 	const static DWORD UFO2Addr = 0x004B0C50;
-	const static DWORD UFO2Addr = 0x004B0C54;
+	const static DWORD UFO3Addr = 0x004B0C54;
 	const static DWORD UFONumAddr = 0x004B0C58;
 
 };

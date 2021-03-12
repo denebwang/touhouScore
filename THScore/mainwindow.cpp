@@ -365,8 +365,9 @@ void MainWindow::ReadInfo()
 	}*/
 	if (gameInfo->SetData(stage, score, specials))
 	{
-		emit NewSection();
 		emit NewStage(stage);
+		emit NewSection();
+		
 	}
 	gameInfo->UpdateDelta(stage);
 	if (gameInfo->TestSection(bossHP, NULL, frameCount, localFrame))

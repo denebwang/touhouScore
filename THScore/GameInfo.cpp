@@ -159,13 +159,18 @@ bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 	stageInfo[stage - 1].SetData(0, score, speical);
 	if (currentStage != stage)
 	{
+		if (currentStage > stage)
+		{//推把清空
+			Clear();
+			currentStage = stage;
+			return true;
+		}
 		//避免由于换面导致结算加不到
 		stageInfo[currentStage - 1].SetData(0, score, speical);
 		currentStage = stage;
 		return true;
 	}
 	return false;
-	//UpdateDelta(stage);
 
 
 }
@@ -179,7 +184,7 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 		return sectionChanged;
 	}
 	Section current = stageInfo[currentStage - 1].GetCurrentSection();
-	static int time = 0;
+	static int lastframe = 0;
 	switch (game)
 	{
 	case Game::invalid:
@@ -250,6 +255,11 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 			}
 			break;
 		case Section::Bonus:
+			//防止推把不回退
+			if (frameCount < 60)
+			{
+				stageInfo[currentStage - 1].SetInitSection();
+			}
 			break;
 		default:
 			break;
@@ -324,6 +334,10 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 			}
 			break;
 		case Section::Bonus:
+			if (frameCount < 60)
+			{
+				stageInfo[currentStage - 1].SetInitSection();
+			}
 			break;
 		default:
 			break;
@@ -335,41 +349,94 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 		case Section::All:
 			break;
 		case Section::Mid:
-			switch (currentStage)
+			if (bossHP > 100)
 			{
-				//todo: 星的道中切换
-			case 1:
-			case 2:
-			case 3:
-			case 4:
-			case 5:
-			case 6:
-			default:
-				break;
+				switch (currentStage)
+				{
+				case 1:
+					if (bossHP > 10000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 2:
+					if (bossHP > 9000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 3:
+					if (bossHP > 10000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 4:
+					if (bossHP > 8000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 5:
+					if (bossHP > 11000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 6:
+					if (bossHP > 10000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				default:
+					logger->error("Current stage error: {0}", currentStage);
+				}
 			}
+
 			break;
 		case Section::Boss:
 			if (bossHP <= 0)//击破
 			{
-				//TBD
-				if (bossHP == lastHP)
+				//自己做一个计时
+				static int frame = 0;
+				if (frame>0)
 				{
-					if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
-						sectionChanged = true;
+					if (frameCount>frame+180)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
+							sectionChanged = true;
+						frame = 0;
+					}
+				}
+				else
+				{
+					frame = frameCount;
 				}
 			}
 			break;
 		case Section::Bonus:
+			if (frameCount < 60)
+			{
+				stageInfo[currentStage - 1].SetInitSection();
+				sectionChanged = true;
+			}
 			break;
 		default:
 			break;
 		}
+		break;
 	default:
 		logger->error("Incorrect Game {0} in TestSection", static_cast<int>(game));
 		break;
 	}
 	lastHP = bossHP;
-	time = timeLeft;
 	return sectionChanged;
 }
 
@@ -390,6 +457,16 @@ void GameInfo::UpdateDelta(int stage)
 		dSpecial.push_back(*iter1 - *iter2);
 	}
 	stageInfo[index].SetData(2, dScore, dSpecial);
+}
+
+void GameInfo::Clear()
+{
+	for (auto& stage : stageInfo)
+	{
+		stage.SetInitSection();
+		stage.ResetAll(0);
+		stage.ResetAll(2);
+	}
 }
 
 GameInfo::patternHeader GameInfo::GetHeader()

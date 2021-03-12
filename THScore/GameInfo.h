@@ -70,6 +70,7 @@ public:
 	void SetPattern(int stage, Section section, long long score, std::vector<int>& speical);
 	bool TestSection(int bossHP, int timeLeft, int frameCount, int localFrame);
 	void UpdateDelta(int stage);
+	void Clear();
 	patternHeader GetHeader();
 	static GameInfo* Create(std::string gameName, DWORD processID, MemoryReader*& mr);
 	static void ScanCSV();
