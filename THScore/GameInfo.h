@@ -53,7 +53,6 @@ private:
 
 	std::array<StageInfo, 6> stageInfo;
 
-
 	int difficulty;
 	int shotType;
 
@@ -84,7 +83,7 @@ public:
 	static const std::vector<QString>& GetShotTypeList(int gameNum);
 	const std::vector<QString>& GetShotTypeList()const;
 
-	//用于和表格交互	
+	//用于和表格交互
 	std::vector<QString> specialNames;
 	const static QString DiffList[4];
 
@@ -107,7 +106,6 @@ public:
 
 	Game game;
 	static std::unordered_map<std::string, std::vector<std::wstring>> exeMap;//游戏文件名
-
 };
 
 namespace std {

@@ -13,10 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Form Files">
-      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
-      <Extensions>ui</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
       <Extensions>qrc;*</Extensions>
@@ -67,6 +63,12 @@
     <ClCompile Include="ComboCell.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UFOWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UFOInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameInfo.h">
@@ -90,12 +92,18 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UFOInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="editorwindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="ComboCell.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="UFOWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -116,6 +124,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="editorwindow.ui">
+      <Filter>Resource Files</Filter>
+    </QtUic>
+    <QtUic Include="UFOWindow.ui">
       <Filter>Resource Files</Filter>
     </QtUic>
   </ItemGroup>

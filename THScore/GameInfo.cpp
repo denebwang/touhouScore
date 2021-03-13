@@ -126,7 +126,6 @@ GameInfo::~GameInfo()
 {
 }
 
-
 bool GameInfo::CheckRetry(int stage)
 {
 	if (stage < currentStage)//推把了
@@ -171,8 +170,6 @@ bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 		return true;
 	}
 	return false;
-
-
 }
 
 bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFrame)
@@ -406,9 +403,9 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 			{
 				//自己做一个计时
 				static int frame = 0;
-				if (frame>0)
+				if (frame > 0)
 				{
-					if (frameCount>frame+180)
+					if (frameCount > frame + 180)//多等一会儿，不然掉的道具吃不到
 					{
 						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
 							sectionChanged = true;
@@ -525,7 +522,6 @@ void GameInfo::ScanCSV()
 	}
 }
 
-
 QString GameInfo::ShotType()
 {
 	return shotTypeList[shotType];
@@ -540,8 +536,6 @@ QString GameInfo::GameName()
 {
 	return GameName(game);
 }
-
-
 
 QString GameInfo::GameName(Game game)
 {
@@ -747,9 +741,6 @@ std::unordered_map<int, std::vector<QString>> GameInfo::shotTypeMap;
 const QString GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
 std::unordered_map<GameInfo::patternHeader, std::filesystem::path> GameInfo::patternFileMap;
 std::unordered_map<std::string, std::vector<std::wstring>> GameInfo::exeMap;
-
-
-
 
 GameInfo::CSVReader::CSVReader(const std::filesystem::path& name)
 {

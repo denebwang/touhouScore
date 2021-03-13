@@ -6,7 +6,6 @@
 #include "SectionInfo.h"
 #include "Enums.h"
 
-
 SectionInfo::SectionInfo(Section section, long long patternScore, std::vector<int> patternSpecials)
 {
 	this->section = section;
@@ -70,11 +69,11 @@ QString SectionInfo::GetSectionName() const
 	switch (section)
 	{
 	default:
-		logger->error("SectionInfo::GetSectionName() error: section=={0}",static_cast<int>(section));
+		logger->error("SectionInfo::GetSectionName() error: section=={0}", static_cast<int>(section));
 		throw std::logic_error("Wrong section enum value");
 		break;
 	case Section::All:
-		return QCoreApplication::translate("MainWindow","All");
+		return QCoreApplication::translate("MainWindow", "All");
 		break;
 	case Section::Mid:
 		return QCoreApplication::translate("MainWindow", "Mid");

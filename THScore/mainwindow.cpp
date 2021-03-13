@@ -4,6 +4,7 @@
 #include "MemoryReader.h"
 #include "logger.h"
 #include "editorwindow.h"
+#include "UFOWindow.h"
 #include <string>
 #include <vector>
 #include <exception>
@@ -123,7 +124,6 @@ void MainWindow::ScanGame()
 	bool isFound = false;
 	for (auto iter = GameInfo::exeMap.begin(); iter != GameInfo::exeMap.end(); iter++)
 	{
-
 		for (auto stringIter = iter->second.begin(); stringIter != iter->second.end(); stringIter++)
 		{
 			if (GetProcessIDByName(stringIter->c_str(), procId))
@@ -142,6 +142,12 @@ void MainWindow::ScanGame()
 		try
 		{
 			gameInfo = GameInfo::Create(gameName, procId, mr);
+			if (gameName == "th12")
+			{
+				UFOWindow* ufowin = new UFOWindow(mr, this);
+				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ReadUFO);
+				ufowin->show();
+			}
 			ui.stackedWidget->setCurrentIndex(1);
 			GameScanTimer->stop();
 			emit FoundGame(isFound);
@@ -226,7 +232,6 @@ void MainWindow::InitChart()
 			ui.tableWidget->setItem(row + 2, 2, new QTableWidgetItem(tr("Delta")));
 		}
 		rowOffset += stageSectionCount * 3;
-
 	}
 	//其他数据：仅初始化
 	for (int col = 3; col < columnCount; col++)
@@ -246,7 +251,6 @@ void MainWindow::InitChart()
 	//更新路线
 	UpdatePattern();
 	UpdateBackground();
-
 }
 
 void MainWindow::ShowScore()
@@ -271,7 +275,6 @@ void MainWindow::ShowScore()
 
 void MainWindow::ShowDelta()
 {
-
 	static QLocale loc = QLocale::English;
 	int currentStage = gameInfo->GetCurrentStage();
 	int row = gameInfo->GetCurrenSectionRowIndex();
@@ -329,7 +332,6 @@ void MainWindow::UpdatePattern()
 			ui.tableWidget->setRowHidden(sectionCount * 3 + rowBias, false);//初始显示所有路线
 			sectionCount++;
 		}
-
 	}
 }
 
@@ -367,7 +369,6 @@ void MainWindow::ReadInfo()
 	{
 		emit NewStage(stage);
 		emit NewSection();
-		
 	}
 	gameInfo->UpdateDelta(stage);
 	if (gameInfo->TestSection(bossHP, NULL, frameCount, localFrame))
@@ -402,19 +403,18 @@ void MainWindow::UpdateBackground()
 		}
 		ui.tableWidget->item(row - 3, col)->setBackground(prevBackground);
 	}
-
 }
 
 void MainWindow::UpdateLastBonus()
 {
-	if (gameInfo->GetCurrentStage()<2)
+	if (gameInfo->GetCurrentStage() < 2)
 	{
 		return;
 	}
 	//与showscore代码相同
 	static QLocale loc = QLocale::English;
-	int stage = gameInfo->GetCurrentStage()-1;
-	int row = gameInfo->GetCurrenSectionRowIndex()-3;
+	int stage = gameInfo->GetCurrentStage() - 1;
+	int row = gameInfo->GetCurrenSectionRowIndex() - 3;
 	SectionInfo current = gameInfo->GetCurrentSectionInfo(stage - 1);
 	//游戏内信息显示
 	//分数 col=3

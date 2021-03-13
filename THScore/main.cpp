@@ -9,7 +9,6 @@
 #include <QTranslator>
 #include <QLocale>
 
-
 BOOL SetPrivilage();
 
 int main(int argc, char* argv[])
@@ -18,7 +17,7 @@ int main(int argc, char* argv[])
 	GameInfo::Init();
 	GameInfo::ScanCSV();
 	SetPrivilage();
-	
+
 	QApplication a(argc, argv);
 	QTranslator translator;
 	if (translator.load(QLocale::system(), "thscore", "_", "translations"))

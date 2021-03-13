@@ -13,3 +13,10 @@ enum class Game :int
 	th11 = 11,
 	th12 = 12
 };
+enum class UFO :int
+{
+	red = 0,
+	blue = 1,
+	green = 2,
+	multicolored = 3
+};

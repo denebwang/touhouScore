@@ -110,7 +110,6 @@ EditorWindow::EditorWindow(QWidget* parent)
 				try
 				{
 					gameInfo->SetInfo(diff, shot);
-
 				}
 				catch (std::out_of_range& e)
 				{
@@ -141,7 +140,6 @@ EditorWindow::EditorWindow(QWidget* parent)
 				try
 				{
 					gameInfo->SetInfo(diff, shot);
-
 				}
 				catch (std::out_of_range& e)
 				{
@@ -152,7 +150,6 @@ EditorWindow::EditorWindow(QWidget* parent)
 				}
 				UpdatePattern();
 			}
-
 		});
 	//选择对应路线自动设置
 	connect(ui.listWidget, &QListWidget::itemDoubleClicked, [=](QListWidgetItem* item)
@@ -197,7 +194,6 @@ void EditorWindow::UpdatePattern()
 	//设置面数单元格合并
 	int row = 0;
 
-
 	for (int i = 0; i < 6; i++)
 	{
 		int sectionCount = gameInfo->GetStageSectionCount(i);
@@ -238,8 +234,6 @@ void EditorWindow::UpdatePattern()
 		row += sectionCount;
 	}
 	//填充数据
-
-
 
 	ui.tableWidget->adjustSize();
 	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
@@ -360,7 +354,6 @@ void EditorWindow::UpdateSectionType(int row, int col)
 		break;
 	}
 	UpdatePattern();
-
 }
 
 void EditorWindow::UpdateTable(int row, int col)
@@ -441,8 +434,6 @@ void EditorWindow::UpdateTable(int row, int col)
 			}
 		}
 	}
-
-
 }
 
 void EditorWindow::SaveCSV()
@@ -582,19 +573,19 @@ const int EditorWindow::GetShotIndex(const QString& shotName)
 
 const Section EditorWindow::GetSection(const QString& secName)
 {
-	if (secName.toLower() == "all")
+	if (secName == tr("All"))
 	{
 		return Section::All;
 	}
-	if (secName.toLower() == "mid")
+	if (secName == tr("Mid"))
 	{
 		return Section::Mid;
 	}
-	if (secName.toLower() == "boss")
+	if (secName == tr("Boss"))
 	{
 		return Section::Boss;
 	}
-	if (secName.toLower() == "bonus")
+	if (secName == tr("Bonus"))
 	{
 		return Section::Bonus;
 	}
