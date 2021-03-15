@@ -1,12 +1,15 @@
-#include "UFOWindow.h"
+﻿#include "UFOWindow.h"
 #include "MemoryReader.h"
 #include "logger.h"
 #include <exception>
 #include <QTimer>
 #include <QHeaderView>
 #include <QTableWidget>
+#include <QScrollBar>
 #include <QTableWidgetItem>
 #include <QString>
+#include <QFont>
+#include <QAbstractSlider>
 UFOWindow::UFOWindow(MemoryReader* mr, QWidget* parent)
 	: QWidget(parent)
 {
@@ -22,9 +25,17 @@ UFOWindow::UFOWindow(MemoryReader* mr, QWidget* parent)
 	updateTimer->setInterval(100);
 	updateTimer->start();
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	//ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-	connect(updateTimer, &QTimer::timeout, this, &ShowInfo);
+	connect(updateTimer, &QTimer::timeout, this, &UFOWindow::ShowInfo);
+
+	//滚动条拉到最低
+	auto* scrollBar = ui.tableWidget->verticalScrollBar();
+	connect(scrollBar, &QAbstractSlider::rangeChanged, [=](int min, int max)
+		{
+			Q_UNUSED(min);
+			scrollBar->setValue(max);
+		});
 }
 
 UFOWindow::~UFOWindow()
@@ -37,6 +48,11 @@ void UFOWindow::ReadUFO()
 	{
 		if (UFOactive)
 		{
+			if (mr->GetUFOCount() == 0)
+			{
+				UFOactive = false;
+				return;
+			}
 			int powerItem = mr->GetPowerCount();
 			int pointItem = mr->GetPointCount();
 			int PIV = mr->GetSpecials()[0];
@@ -45,8 +61,6 @@ void UFOWindow::ReadUFO()
 			ufos.back().SetPowerItemCount(powerItem);
 			ufos.back().SetPIV(PIV);
 			ufos.back().SetPower(power);
-			if (mr->GetUFOCount() == 0)
-				UFOactive = false;
 		}
 		else
 		{
@@ -59,22 +73,65 @@ void UFOWindow::ReadUFO()
 				ufo.SetStage(mr->GetStage());
 				ufos.push_back(ufo);
 				UFOactive = true;
-				//��������
-				int row = 3 * (ufos.size() - 1);
+				//增加4行
+				//飞碟计数
+				int row = 4 * (ufos.size() - 1);
+				QTableWidgetItem* newItem;
 				ui.tableWidget->insertRow(row);
-				ui.tableWidget->setItem(row, 0, new QTableWidgetItem(tr("Stage")));
-				ui.tableWidget->setItem(row, 1, new QTableWidgetItem());
-				ui.tableWidget->setItem(row, 2, new QTableWidgetItem(tr("UFO Type")));
-				ui.tableWidget->setItem(row, 3, new QTableWidgetItem());
+				newItem = new QTableWidgetItem(tr("UFO %1").arg(ufos.size()));
+				newItem->setTextAlignment(Qt::AlignCenter);
+				QFont font = newItem->font();
+				font.setBold(true);
+				newItem->setFont(font);
+				ui.tableWidget->setItem(row, 0, newItem);
+				ui.tableWidget->setSpan(row, 0, 1, 4);
+				//第2行
 				ui.tableWidget->insertRow(++row);
-				ui.tableWidget->setItem(row, 0, new QTableWidgetItem(tr("Power Item")));
-				ui.tableWidget->setItem(row, 1, new QTableWidgetItem());
-				ui.tableWidget->setItem(row, 2, new QTableWidgetItem(tr("Point Item")));
-				ui.tableWidget->setItem(row, 3, new QTableWidgetItem());
+				//第一个
+				newItem = new QTableWidgetItem(tr("Stage"));
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 0, newItem);
+				//第二个
+				newItem = new QTableWidgetItem();
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 1, newItem);
+				//第三个
+				newItem = new QTableWidgetItem(tr("UFO Type"));
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 2, newItem);
+				//第四个
+				newItem = new QTableWidgetItem();
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 3, newItem);
+				//第3行
 				ui.tableWidget->insertRow(++row);
-				ui.tableWidget->setItem(row, 0, new QTableWidgetItem(tr("Score")));
-				ui.tableWidget->setItem(row, 1, new QTableWidgetItem());
+				//第一个
+				newItem = new QTableWidgetItem(tr("Power Item"));
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 0, newItem);
+				//第二个
+				newItem = new QTableWidgetItem();
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 1, newItem);
+				//第三个
+				newItem = new QTableWidgetItem(tr("Point Item"));
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 2, newItem);
+				//第四个
+				newItem = new QTableWidgetItem();
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 3, newItem);
+				//第4行
+				ui.tableWidget->insertRow(++row);
+				newItem = new QTableWidgetItem(tr("Score"));
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 0, newItem);
+
+				newItem = new QTableWidgetItem();
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 1, newItem);
 				ui.tableWidget->setSpan(row, 1, 1, 3);
+
 			}
 		}
 	}
@@ -85,18 +142,28 @@ void UFOWindow::ReadUFO()
 
 void UFOWindow::ShowInfo()
 {
-	int row = 3 * (ufos.size() - 1);
+	int row = 4 * (ufos.size() - 1);
 	if (row < 0 || !UFOactive)
 	{
 		return;
 	}
 	UFOInfo* ufo = &ufos.back();
-	//��һ��
+	row++;
+	//第2行
 	ui.tableWidget->item(row, 1)->setText(QString::number(ufo->GetStage()));
 	ui.tableWidget->item(row, 3)->setText(ufo->GetUFOTypeName());
-	//�ڶ���
+	row++;
+	//第3行
 	ui.tableWidget->item(row, 1)->setText(QString::number(ufo->GetPowerItemCount()));
 	ui.tableWidget->item(row, 3)->setText(QString::number(ufo->GetPointItemCount()));
-	//������
+	row++;
+	//第4行
 	ui.tableWidget->item(row, 1)->setText(QString::number(ufo->GetBonusScore()));
+}
+
+void UFOWindow::OnRetry()
+{
+	ui.tableWidget->setRowCount(0);
+	ufos.clear();
+	UFOactive = false;
 }

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Enums.h"
 #include <QString>
 class UFOInfo
@@ -23,10 +23,10 @@ public:
 	void SetPIV(int value);
 	void SetPower(int value);
 private:
-	UFO ufo;//·ÉµûÀàĞÍ
+	UFO ufo;//é£è¶ç±»å‹
 	int powerItemCount;
 	int pointItemCount;
 	int stage;
-	int PIV;//×î´óµÃµã
-	int power;//ÓÃÓÚ¼ÆËãÊÇ·ñÂúp
+	int PIV;//æœ€å¤§å¾—ç‚¹
+	int power;//ç”¨äºè®¡ç®—æ˜¯å¦æ»¡p
 };

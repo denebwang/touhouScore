@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "MemoryReader.h"
 #include "UFOInfo.h"
 #include <vector>
@@ -17,6 +17,7 @@ public:
 	//slot
 	void ReadUFO();
 	void ShowInfo();
+	void OnRetry();
 private:
 	Ui::UFOWindow ui;
 	TH12Reader* mr;

@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget* parent)
 	GameScanTimer->start();
 	//更新游戏信息
 	InfoUpdateTimer = new QTimer(this);
-	InfoUpdateTimer->setInterval(100);
+	InfoUpdateTimer->setInterval(16);
 	connect(InfoUpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateInfo);
 	void (QTimer:: * timerStart)() = &QTimer::start;
 	connect(this, &MainWindow::FoundGame, this, &MainWindow::ReadInfo);
@@ -144,8 +144,9 @@ void MainWindow::ScanGame()
 			gameInfo = GameInfo::Create(gameName, procId, mr);
 			if (gameName == "th12")
 			{
-				UFOWindow* ufowin = new UFOWindow(mr, this);
+				UFOWindow* ufowin = new UFOWindow(mr);
 				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ReadUFO);
+				connect(this, &MainWindow::Retry, ufowin, &UFOWindow::OnRetry);
 				ufowin->show();
 			}
 			ui.stackedWidget->setCurrentIndex(1);

@@ -168,9 +168,11 @@ int TH12Reader::GetStage()
 
 std::vector<int> TH12Reader::GetSpecials()
 {
+	int PIV = (ReadInt(PIVAddr) / 1000) * 10;
+	int graze = ReadInt(GrazeAddr);
 	std::vector<int> specials;
-	specials.push_back(ReadInt(PIVAddr));
-	specials.push_back(ReadInt(GrazeAddr));
+	specials.push_back(PIV);
+	specials.push_back(graze);
 	return specials;
 }
 

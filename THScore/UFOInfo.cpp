@@ -1,4 +1,4 @@
-#include "UFOInfo.h"
+ï»¿#include "UFOInfo.h"
 #include "Enums.h"
 #include "logger.h"
 #include <QCoreApplication>
@@ -51,7 +51,7 @@ int UFOInfo::GetPointItemCount()
 }
 
 int UFOInfo::GetBonusScore()
-{//todo: ·Éµú½±Àø·ÖËã·¨
+{//todo: é£ç¢Ÿå¥–åŠ±åˆ†ç®—æ³•
 	int bonus, score;
 	switch (ufo)
 	{
@@ -69,7 +69,7 @@ int UFOInfo::GetBonusScore()
 		break;
 	case UFO::multicolored:
 		bonus = 4;
-		score = bonus * powerItemCount * PIV;
+		score = bonus * pointItemCount * PIV;
 		break;
 	default:
 		score = 0;
@@ -96,8 +96,8 @@ int UFOInfo::GetPower()
 
 void UFOInfo::SetUFOType(int ufo1, int ufo2, int ufo3)
 {
-	//0 == ÎŞ, 1 == ºì, 2 == À¶, 3 == ÂÌ
-	if (ufo1 == ufo2)//Ö»ÒªÅĞ¶ÏÇ°Á½¸öµú¾ÍĞĞÁË
+	//0 == æ— , 1 == çº¢, 2 == è“, 3 == ç»¿
+	if (ufo1 == ufo2)//åªè¦åˆ¤æ–­å‰ä¸¤ä¸ªç¢Ÿå°±è¡Œäº†
 	{
 		switch (ufo1)
 		{
