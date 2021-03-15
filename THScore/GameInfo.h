@@ -63,7 +63,7 @@ public:
 	//GameInfo(std::string gameName);
 	GameInfo(Game game);
 	~GameInfo();
-	bool CheckRetry(int stage);
+	bool CheckRetry(int stage, int frame);
 	bool SetInfo(int diff, int shot);//需要更新路线信息时返回true
 	bool SetData(int stage, long long score, std::vector<int>& speical);
 	void SetPattern(int stage, Section section, long long score, std::vector<int>& speical);

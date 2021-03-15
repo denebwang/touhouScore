@@ -346,7 +346,7 @@ void MainWindow::ReadInfo()
 	int frameCount = mr->GetStageFrame();
 	int localFrame = mr->GetLocalFrame();
 	std::vector<int> specials = mr->GetSpecials();
-	if (gameInfo->CheckRetry(stage))
+	if (gameInfo->CheckRetry(stage, frameCount))
 	{
 		emit Retry();
 	}

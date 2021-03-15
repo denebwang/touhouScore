@@ -126,13 +126,21 @@ GameInfo::~GameInfo()
 {
 }
 
-bool GameInfo::CheckRetry(int stage)
+bool GameInfo::CheckRetry(int stage, int frame)
 {
 	if (stage < currentStage)//推把了
 	{
 		for (auto& si : stageInfo)
 		{
 			si.ResetAll();
+			return true;
+		}
+	}
+	else if (stage==1)
+	{
+		if (frame<60)
+		{
+			stageInfo[0].ResetAll();
 			return true;
 		}
 	}
