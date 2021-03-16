@@ -13,26 +13,25 @@
 #include <QFile>
 #include <QTextStream>
 
+//用于查找路线
+struct PatternHeader
+{
+	int game;
+	int difficulty;
+	int shotType;
+	bool operator==(const PatternHeader& other)const;
+	//QString ToQString();
+};
+
 class GameInfo
 {
-public:
-	//用于查找路线
-	struct patternHeader
-	{
-		int game;
-		int difficulty;
-		int shotType;
-		bool operator==(const patternHeader& other)const;
-		//QString ToQString();
-	};
-
 private:
 	class CSVReader
 	{
 	public:
 		CSVReader(const std::filesystem::path& name);
 		~CSVReader();
-		patternHeader GetHeader();
+		PatternHeader GetHeader();
 		std::vector<QString> ReadRow();
 		std::vector<long long> ReadLongLongRow();
 		bool AtEnd();
@@ -42,7 +41,7 @@ private:
 		QTextStream* ts;
 	};
 
-	static std::unordered_map<patternHeader, std::filesystem::path> patternFileMap;
+	static std::unordered_map<PatternHeader, std::filesystem::path> patternFileMap;
 
 	static std::unordered_map<int, std::vector<QString>> shotTypeMap;
 
@@ -58,7 +57,7 @@ private:
 
 	int currentStage;
 
-	bool SetPattern(patternHeader header);
+	bool SetPattern(PatternHeader header);
 public:
 	//GameInfo(std::string gameName);
 	GameInfo(Game game);
@@ -70,7 +69,7 @@ public:
 	bool TestSection(int bossHP, int timeLeft, int frameCount, int localFrame);
 	void UpdateDelta(int stage);
 	void Clear();
-	patternHeader GetHeader();
+	PatternHeader GetHeader();
 	static GameInfo* Create(std::string gameName, DWORD processID, MemoryReader*& mr);
 	static void ScanCSV();
 	static void Init();
@@ -102,7 +101,7 @@ public:
 	int GetCurrentSectionIndex(int index)const;
 	const std::vector<SectionInfo>& GetSectionInfos(int index)const;
 	StageInfo* GetStageInfo(int index);
-	static const std::unordered_map< patternHeader, std::filesystem::path >& GetPatternFileMap();
+	static const std::unordered_map< PatternHeader, std::filesystem::path >& GetPatternFileMap();
 
 	Game game;
 	static std::unordered_map<std::string, std::vector<std::wstring>> exeMap;//游戏文件名
@@ -110,8 +109,8 @@ public:
 
 namespace std {
 	template <>
-	struct hash<GameInfo::patternHeader> {
-		std::size_t operator()(const GameInfo::patternHeader& header) const {
+	struct hash<PatternHeader> {
+		std::size_t operator()(const PatternHeader& header) const {
 			using std::size_t;
 			using std::hash;
 			using std::string;

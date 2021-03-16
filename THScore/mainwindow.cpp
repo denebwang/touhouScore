@@ -146,6 +146,7 @@ void MainWindow::ScanGame()
 			{
 				UFOWindow* ufowin = new UFOWindow(mr);
 				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ReadUFO);
+				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ShowInfo);
 				connect(this, &MainWindow::Retry, ufowin, &UFOWindow::OnRetry);
 				ufowin->show();
 			}

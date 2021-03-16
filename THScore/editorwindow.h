@@ -41,8 +41,8 @@ private:
 	const Section GetSection(const QString& secName);
 	void SetPatternList();
 	GameInfo* gameInfo;
-	QLocale loc;
-	std::vector<GameInfo::patternHeader> patterns;
+	//QLocale loc;
+	std::vector<PatternHeader> patterns;
 	int game;
 	int shot;
 	int diff;

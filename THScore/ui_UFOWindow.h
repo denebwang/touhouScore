@@ -1,15 +1,16 @@
 /********************************************************************************
-** Form generated from reading UI file 'UFOWindowlvhwEK.ui'
+** Form generated from reading UI file 'UFOWindowRAKzVI.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef UFOWINDOWLVHWEK_H
-#define UFOWINDOWLVHWEK_H
+#ifndef UFOWINDOWRAKZVI_H
+#define UFOWINDOWRAKZVI_H
 
 #include <QtCore/QVariant>
+#include <QtGui/QIcon>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
@@ -34,6 +35,9 @@ public:
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(UFOWindow->sizePolicy().hasHeightForWidth());
         UFOWindow->setSizePolicy(sizePolicy);
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/icon/main.png"), QSize(), QIcon::Normal, QIcon::Off);
+        UFOWindow->setWindowIcon(icon);
         horizontalLayout = new QHBoxLayout(UFOWindow);
         horizontalLayout->setSpacing(6);
         horizontalLayout->setContentsMargins(11, 11, 11, 11);
@@ -77,4 +81,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // UFOWINDOWLVHWEK_H
+#endif // UFOWINDOWRAKZVI_H

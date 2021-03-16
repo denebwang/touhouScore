@@ -7,7 +7,8 @@
 message("You are running qmake on a generated .pro file. This may not work!")
 
 
-HEADERS += ./Enums.h \
+HEADERS += ./UFOInfo.h \
+    ./Enums.h \
     ./GameInfo.h \
     ./logger.h \
     ./MemoryReader.h \
@@ -15,6 +16,7 @@ HEADERS += ./Enums.h \
     ./SectionInfo.h \
     ./StageInfo.h \
     ./mainwindow.h \
+    ./UFOWindow.h \
     ./editorwindow.h \
     ./ComboCell.h
 SOURCES += ./ComboCell.cpp \
@@ -22,11 +24,14 @@ SOURCES += ./ComboCell.cpp \
     ./MemoryReader.cpp \
     ./SectionInfo.cpp \
     ./StageInfo.cpp \
+    ./UFOInfo.cpp \
+    ./UFOWindow.cpp \
     ./GameInfo.cpp \
     ./logger.cpp \
     ./mainwindow.cpp \
     ./main.cpp
 FORMS += ./editorwindow.ui \
-    ./mainwindow.ui
+    ./mainwindow.ui \
+    ./UFOWindow.ui
 TRANSLATIONS += ./thscore_zh.ts
 RESOURCES += mainwindow.qrc

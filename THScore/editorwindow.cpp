@@ -36,7 +36,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 	ui.formWidget->setCurrentIndex(0);
 	UpdatePatternList();
 	ui.saveButton->setEnabled(false);
-	loc = QLocale::English;
+	//loc = QLocale::English;
 	QString unselected(tr("Unselected"));
 	QStringList gameList;
 	//空白即缺省
@@ -189,52 +189,69 @@ void EditorWindow::UpdatePattern()
 	ui.tableWidget->setRowCount(gameInfo->SectionCount());
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+	//节点下拉框
 	ComboCell* cbc = new ComboCell(ui.tableWidget);
 	ui.tableWidget->setItemDelegateForColumn(1, cbc);
-	//设置面数单元格合并
-	int row = 0;
 
+	int row = 0;
 	for (int i = 0; i < 6; i++)
 	{
 		int sectionCount = gameInfo->GetStageSectionCount(i);
+		QTableWidgetItem* newItem;
+		//面数栏
 		ui.tableWidget->setSpan(row, 0, sectionCount, 1);
-		QTableWidgetItem* newStage = new QTableWidgetItem(QString::number(i + 1));
-		newStage->setFlags(newStage->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
-		newStage->setTextAlignment(Qt::AlignCenter);
-		ui.tableWidget->setItem(row, 0, newStage);
-
-		//todo: 下拉框改变section
-		QTableWidgetItem* newSection = new QTableWidgetItem(SectionTypeList[sectionCount - 1]);
-		newStage->setTextAlignment(Qt::AlignCenter);
-		ui.tableWidget->setItem(row, 1, newSection);
+		newItem = new QTableWidgetItem(QString::number(i + 1));
+		newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);//不可选中
+		newItem->setTextAlignment(Qt::AlignCenter);
+		ui.tableWidget->setItem(row, 0, newItem);
+		//下拉框栏
+		newItem = new QTableWidgetItem();
+		newItem->setTextAlignment(Qt::AlignCenter);
+		ui.tableWidget->setItem(row, 1, newItem);
+		ui.tableWidget->item(row, 1)->setData(Qt::DisplayRole, SectionTypeList.at(sectionCount - 1));//设置初始
 		ui.tableWidget->setSpan(row, 1, sectionCount, 1);
-
+		//数据栏
 		std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
 		for (int index = 0; index < sections.size(); index++)
 		{
 			int rowIndex = row + index;
-			QTableWidgetItem* sectionNameItem = new QTableWidgetItem(sections[index].GetSectionName());
-			sectionNameItem->setFlags(sectionNameItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
-			ui.tableWidget->setItem(rowIndex, 2, sectionNameItem);
+			//节点名称
+			newItem = new QTableWidgetItem(sections[index].GetSectionName());
+			newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
+			ui.tableWidget->setItem(rowIndex, 2, newItem);
+			//分数
+			newItem = new QTableWidgetItem();
 			long long score = sections[index].GetScore(1);
-			ui.tableWidget->setItem(rowIndex, 3, new QTableWidgetItem(loc.toString(score)));
+			newItem->setText(QString::number(score));
+			newItem->setTextAlignment(Qt::AlignRight);
+			ui.tableWidget->setItem(rowIndex, 3, newItem);
+			//分数的增量
+			newItem = new QTableWidgetItem();
 			long long dScore = rowIndex == 0 ? score :
-				score - loc.toLongLong(ui.tableWidget->item(rowIndex - 1, 3)->text());
-			ui.tableWidget->setItem(rowIndex, 4, new QTableWidgetItem(loc.toString(dScore)));//分数差值
+				score - (ui.tableWidget->item(rowIndex - 1, 3)->text().toLongLong());
+			newItem->setText(QString::number(dScore));
+			newItem->setTextAlignment(Qt::AlignRight);
+			ui.tableWidget->setItem(rowIndex, 4, newItem);
+			//其他信息
 			auto specials = sections[index].GetSpecials(1);
 			for (int j = 0; j < specials.size(); j++)
 			{
 				int colIndex = 5 + j * 2;
-				ui.tableWidget->setItem(rowIndex, colIndex, new QTableWidgetItem(loc.toString(specials[j])));
+				newItem = new QTableWidgetItem();
+				newItem->setText(QString::number(specials[j]));
+				newItem->setTextAlignment(Qt::AlignRight);
+				ui.tableWidget->setItem(rowIndex, colIndex, newItem);
+				//增量
+				newItem = new QTableWidgetItem();
 				int dSpecial = rowIndex == 0 ? specials[j] :
-					specials[j] - loc.toInt(ui.tableWidget->item(rowIndex - 1, colIndex)->text());
-				ui.tableWidget->setItem(rowIndex, colIndex + 1, new QTableWidgetItem(loc.toString(dSpecial)));
+					specials[j] - (ui.tableWidget->item(rowIndex - 1, colIndex)->text().toLongLong());
+				newItem->setText(QString::number(dSpecial));
+				newItem->setTextAlignment(Qt::AlignRight);
+				ui.tableWidget->setItem(rowIndex, colIndex + 1, newItem);
 			}
 		}
 		row += sectionCount;
 	}
-	//填充数据
-
 	ui.tableWidget->adjustSize();
 	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
 }
@@ -362,10 +379,10 @@ void EditorWindow::UpdateTable(int row, int col)
 		UpdateSectionType(row, col);
 	if (col > 2)
 	{
-		long long data = loc.toLongLong(ui.tableWidget->item(row, col)->text());
+		long long data = ui.tableWidget->item(row, col)->text().toLongLong();
 		if (((col - 3) % 2) == 1)//处于delta位置上
 		{
-			long long score = loc.toLongLong(ui.tableWidget->item(row, col - 1)->text());
+			long long score = ui.tableWidget->item(row, col - 1)->text().toLongLong();
 			long long newScore = 0;
 			if (row == 0)
 			{
@@ -373,11 +390,11 @@ void EditorWindow::UpdateTable(int row, int col)
 			}
 			else
 			{
-				long long last = loc.toLongLong(ui.tableWidget->item(row - 1, col - 1)->text());
+				long long last = ui.tableWidget->item(row - 1, col - 1)->text().toLongLong();
 				newScore = data + last;
 			}
 			if (newScore != score)
-				ui.tableWidget->item(row, col - 1)->setData(Qt::DisplayRole, loc.toString(newScore));
+				ui.tableWidget->item(row, col - 1)->setData(Qt::DisplayRole, QString::number(newScore));
 		}
 		else//直接编辑分数
 		{
@@ -398,15 +415,15 @@ void EditorWindow::UpdateTable(int row, int col)
 				throw std::runtime_error("EditorWindow::UpdateTable");
 			}
 			Section section = GetSection(ui.tableWidget->item(row, 2)->text());
-			long long score = loc.toLongLong(ui.tableWidget->item(row, 3)->text());
+			long long score = ui.tableWidget->item(row, 3)->text().toLongLong();
 			std::vector<int>specials;
 			for (int column = 5; column < ui.tableWidget->columnCount(); column += 2)
 			{
-				specials.push_back(loc.toInt(ui.tableWidget->item(row, column)->text()));
+				specials.push_back(ui.tableWidget->item(row, column)->text().toInt());
 			}
 			gameInfo->SetPattern(stage, section, score, specials);
 			//更新delta
-			long long delta = loc.toLongLong(ui.tableWidget->item(row, col + 1)->text());
+			long long delta = ui.tableWidget->item(row, col + 1)->text().toLongLong();
 			long long newDelta;
 			if (row == 0)
 			{
@@ -414,22 +431,22 @@ void EditorWindow::UpdateTable(int row, int col)
 			}
 			else
 			{
-				long long last = loc.toLongLong(ui.tableWidget->item(row - 1, col)->text());
+				long long last = ui.tableWidget->item(row - 1, col)->text().toLongLong();
 				newDelta = data - last;
 			}
 			if (newDelta != delta)
 			{
-				ui.tableWidget->item(row, col + 1)->setData(Qt::DisplayRole, loc.toString(newDelta));
+				ui.tableWidget->item(row, col + 1)->setData(Qt::DisplayRole, QString::number(newDelta));
 			}
 			//更新下一行
 			if (row + 1 < ui.tableWidget->rowCount())
 			{
-				long long next = loc.toLongLong(ui.tableWidget->item(row + 1, col)->text());
-				long long nextDelta = loc.toLongLong(ui.tableWidget->item(row + 1, col + 1)->text());
+				long long next = ui.tableWidget->item(row + 1, col)->text().toLongLong();
+				long long nextDelta = ui.tableWidget->item(row + 1, col + 1)->text().toLongLong();
 				long long newNextDelta = next - data;
 				if (newNextDelta != nextDelta)
 				{
-					ui.tableWidget->item(row + 1, col + 1)->setData(Qt::DisplayRole, loc.toString(newNextDelta));
+					ui.tableWidget->item(row + 1, col + 1)->setData(Qt::DisplayRole, QString::number(newNextDelta));
 				}
 			}
 		}

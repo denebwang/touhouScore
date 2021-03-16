@@ -11,7 +11,7 @@
 #include "Enums.h"
 //#include "spdlog/sinks/rotating_file_sink.h"
 
-bool GameInfo::SetPattern(patternHeader header)
+bool GameInfo::SetPattern(PatternHeader header)
 {
 	using namespace std;
 	//先将原有的清空
@@ -474,9 +474,9 @@ void GameInfo::Clear()
 	}
 }
 
-GameInfo::patternHeader GameInfo::GetHeader()
+PatternHeader GameInfo::GetHeader()
 {
-	return patternHeader{ static_cast<int>(game),difficulty,shotType };
+	return PatternHeader{ static_cast<int>(game),difficulty,shotType };
 }
 
 GameInfo* GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*& mr)
@@ -516,14 +516,14 @@ void GameInfo::ScanCSV()
 	{
 		logger->error("ScanCSV error: {0}", e.what());
 	}
-	for (auto file : files)
+	for (auto& file : files)
 	{
 		QFileInfo fileInfo(file);
 		if (fileInfo.suffix() == "csv")
 		{
 			logger->info("Found a csv file {0}", fileInfo.fileName().toUtf8().data());
 			CSVReader reader(file);
-			patternHeader header = reader.GetHeader();
+			PatternHeader header = reader.GetHeader();
 
 			patternFileMap.insert(std::make_pair(header, file));
 		}
@@ -704,7 +704,7 @@ StageInfo* GameInfo::GetStageInfo(int index)
 	return &stageInfo[index];
 }
 
-const std::unordered_map< GameInfo::patternHeader, std::filesystem::path >& GameInfo::GetPatternFileMap()
+const std::unordered_map< PatternHeader, std::filesystem::path >& GameInfo::GetPatternFileMap()
 {
 	return patternFileMap;
 }
@@ -736,7 +736,7 @@ void GameInfo::Init()
 			QCoreApplication::translate("MainWindow","Reimu B"),
 			QCoreApplication::translate("MainWindow","Marisa A"),
 			QCoreApplication::translate("MainWindow","Marisa B"),
-			QCoreApplication::translate("MainWindow","Sanae B"),
+			QCoreApplication::translate("MainWindow","Sanae A"),
 			QCoreApplication::translate("MainWindow","Sanae B")
 		}));
 
@@ -747,7 +747,7 @@ void GameInfo::Init()
 
 std::unordered_map<int, std::vector<QString>> GameInfo::shotTypeMap;
 const QString GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
-std::unordered_map<GameInfo::patternHeader, std::filesystem::path> GameInfo::patternFileMap;
+std::unordered_map<PatternHeader, std::filesystem::path> GameInfo::patternFileMap;
 std::unordered_map<std::string, std::vector<std::wstring>> GameInfo::exeMap;
 
 GameInfo::CSVReader::CSVReader(const std::filesystem::path& name)
@@ -767,11 +767,11 @@ GameInfo::CSVReader::~CSVReader()
 	delete file;
 }
 
-GameInfo::patternHeader GameInfo::CSVReader::GetHeader()
+PatternHeader GameInfo::CSVReader::GetHeader()
 {
 	using namespace std;
 	vector<long long> headerData = ReadLongLongRow();
-	patternHeader header =
+	PatternHeader header =
 	{
 		headerData[0],
 		headerData[1],
@@ -783,8 +783,6 @@ GameInfo::patternHeader GameInfo::CSVReader::GetHeader()
 std::vector<QString> GameInfo::CSVReader::ReadRow()
 {
 	using namespace std;
-
-	//QTextStream textStream(file);
 	QString line;
 	line = ts->readLine();
 	QStringList strList = line.split(",", Qt::SkipEmptyParts);
@@ -818,7 +816,7 @@ void GameInfo::CSVReader::DiscardRow()
 	ts->readLine();
 }
 
-bool GameInfo::patternHeader::operator==(const patternHeader& other)const
+bool PatternHeader::operator==(const PatternHeader& other)const
 {
 	if (this->game == other.game && this->difficulty == other.difficulty && this->shotType == other.shotType)
 		return true;

@@ -2,6 +2,7 @@
 #include "MemoryReader.h"
 #include "logger.h"
 #include <exception>
+#include <filesystem>
 #include <QTimer>
 #include <QHeaderView>
 #include <QTableWidget>
@@ -10,6 +11,7 @@
 #include <QString>
 #include <QFont>
 #include <QAbstractSlider>
+#include <QFileInfo>
 UFOWindow::UFOWindow(MemoryReader* mr, QWidget* parent)
 	: QWidget(parent)
 {
@@ -21,13 +23,10 @@ UFOWindow::UFOWindow(MemoryReader* mr, QWidget* parent)
 	this->mr = dynamic_cast<TH12Reader*>(mr);
 	UFOactive = false;
 	ui.setupUi(this);
-	updateTimer = new QTimer(this);
-	updateTimer->setInterval(100);
-	updateTimer->start();
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	//ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-	connect(updateTimer, &QTimer::timeout, this, &UFOWindow::ShowInfo);
+	
 
 	//滚动条拉到最低
 	auto* scrollBar = ui.tableWidget->verticalScrollBar();
@@ -166,4 +165,50 @@ void UFOWindow::OnRetry()
 	ui.tableWidget->setRowCount(0);
 	ufos.clear();
 	UFOactive = false;
+}
+
+
+
+UFOWindow::CSVReader::CSVReader(const std::filesystem::path& name)
+{
+	file = new QFile(name);
+	if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		throw std::runtime_error("Open csv file failed!");
+	}
+	ts = new QTextStream(file);
+}
+
+UFOWindow::CSVReader::~CSVReader()
+{
+	delete ts;
+	file->close();
+	delete file;
+}
+
+void UFOWindow::CSVReader::ScanCSV()
+{
+	using namespace std;
+	namespace fs = filesystem;
+	vector<fs::path> files;
+	try
+	{
+		for (auto& p : fs::directory_iterator("csv/ufo"))
+			files.push_back(p.path());
+	}
+	catch (fs::filesystem_error e)
+	{
+		logger->error("ScanCSV error: {0}", e.what());
+	}
+	for (auto& file : files)
+	{
+		QFileInfo fileInfo(file);
+		if (fileInfo.suffix() == "csv")
+		{
+			logger->info("Found a csv file {0}", fileInfo.fileName().toUtf8().data());
+			CSVReader reader(file);
+
+			//patternFileMap.insert(std::make_pair(header, file));
+		}
+	}
 }
