@@ -103,6 +103,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ComboCell.cpp" />
+    <ClCompile Include="csvIO.cpp" />
     <ClCompile Include="editorwindow.cpp" />
     <ClCompile Include="MemoryReader.cpp" />
     <ClCompile Include="SectionInfo.cpp" />
@@ -120,6 +121,7 @@
     <QtUic Include="UFOWindow.ui" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="csvIO.h" />
     <ClInclude Include="UFOInfo.h" />
     <QtMoc Include="UFOWindow.h" />
     <QtMoc Include="editorwindow.h" />

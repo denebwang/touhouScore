@@ -5,6 +5,7 @@ class UFOInfo
 {
 public:
 	UFOInfo(int ufo1, int ufo2, int ufo3);
+	UFOInfo(UFO ufo);
 	~UFOInfo();
 	//getters
 	UFO GetUFOType();

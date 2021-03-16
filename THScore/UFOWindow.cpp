@@ -1,5 +1,6 @@
 ﻿#include "UFOWindow.h"
 #include "MemoryReader.h"
+#include "csvIO.h"
 #include "logger.h"
 #include <exception>
 #include <filesystem>
@@ -22,11 +23,13 @@ UFOWindow::UFOWindow(MemoryReader* mr, QWidget* parent)
 	}
 	this->mr = dynamic_cast<TH12Reader*>(mr);
 	UFOactive = false;
+	ScanCSV();
+
 	ui.setupUi(this);
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	//ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-	
+
 
 	//滚动条拉到最低
 	auto* scrollBar = ui.tableWidget->verticalScrollBar();
@@ -39,6 +42,38 @@ UFOWindow::UFOWindow(MemoryReader* mr, QWidget* parent)
 
 UFOWindow::~UFOWindow()
 {
+}
+
+void UFOWindow::ScanCSV()
+{
+	using namespace std;
+	namespace fs = filesystem;
+	vector<fs::path> files;
+	try
+	{
+		for (auto& p : fs::directory_iterator("csv/ufo"))
+			files.push_back(p.path());
+	}
+	catch (fs::filesystem_error e)
+	{
+		logger->error("ScanCSV error: {0}", e.what());
+	}
+	for (auto& file : files)
+	{
+		QFileInfo fileInfo(file);
+		if (fileInfo.suffix() == "csv")
+		{
+			logger->info("Found a csv file {0}", fileInfo.fileName().toUtf8().data());
+			CSVReader reader(file);
+			QStringList strList = reader.ReadRow();
+			int game = 12;
+			int diff = strList[0].toInt();
+			int shot = strList[1].toInt();
+			PatternHeader header{ game,diff,shot };
+
+			UFOPatternFileMap.insert(std::make_pair(header, file));
+		}
+	}
 }
 
 void UFOWindow::ReadUFO()
@@ -167,48 +202,39 @@ void UFOWindow::OnRetry()
 	UFOactive = false;
 }
 
-
-
-UFOWindow::CSVReader::CSVReader(const std::filesystem::path& name)
+void UFOWindow::OnShottypeChanged(int diff, int shot)
 {
-	file = new QFile(name);
-	if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		throw std::runtime_error("Open csv file failed!");
-	}
-	ts = new QTextStream(file);
-}
-
-UFOWindow::CSVReader::~CSVReader()
-{
-	delete ts;
-	file->close();
-	delete file;
-}
-
-void UFOWindow::CSVReader::ScanCSV()
-{
-	using namespace std;
-	namespace fs = filesystem;
-	vector<fs::path> files;
+	patternUFO.clear();
+	PatternHeader header{ 12,diff,shot };
+	std::filesystem::path file;
 	try
 	{
-		for (auto& p : fs::directory_iterator("csv/ufo"))
-			files.push_back(p.path());
+		file = UFOPatternFileMap.at(header);
 	}
-	catch (fs::filesystem_error e)
+	catch (std::out_of_range& e)
 	{
-		logger->error("ScanCSV error: {0}", e.what());
+		return;
 	}
-	for (auto& file : files)
+	//读取飞碟数据
+	CSVReader reader(file);
+	int ufoCount = 0;
+	//跳过表头
+	while (!reader.AtEnd())
 	{
-		QFileInfo fileInfo(file);
-		if (fileInfo.suffix() == "csv")
+		while (reader.ReadRow()[0] != QString::number(ufoCount + 1))
 		{
-			logger->info("Found a csv file {0}", fileInfo.fileName().toUtf8().data());
-			CSVReader reader(file);
-
-			//patternFileMap.insert(std::make_pair(header, file));
+			continue;
 		}
+		auto data = reader.ReadIntRow();
+		int stage = data[0];
+		int ufoType = data[1];
+		int pointItemCount = data[2];
+		UFOInfo newUfo(static_cast<UFO>(ufoType));
+		newUfo.SetStage(stage);
+		newUfo.SetPointItemCount(pointItemCount);
+		patternUFO.push_back(newUfo);
+		ufoCount++;
 	}
 }
+
+std::unordered_map<PatternHeader, std::filesystem::path> UFOWindow::UFOPatternFileMap;

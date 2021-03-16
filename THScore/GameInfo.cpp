@@ -9,6 +9,7 @@
 #include <QCoreApplication>
 #include "logger.h"
 #include "Enums.h"
+#include "csvIO.h"
 //#include "spdlog/sinks/rotating_file_sink.h"
 
 bool GameInfo::SetPattern(PatternHeader header)
@@ -523,7 +524,11 @@ void GameInfo::ScanCSV()
 		{
 			logger->info("Found a csv file {0}", fileInfo.fileName().toUtf8().data());
 			CSVReader reader(file);
-			PatternHeader header = reader.GetHeader();
+			QStringList strList = reader.ReadRow();
+			int game = strList[0].toInt();
+			int diff = strList[1].toInt();
+			int shot = strList[2].toInt();
+			PatternHeader header{ game,diff,shot };
 
 			patternFileMap.insert(std::make_pair(header, file));
 		}
@@ -750,71 +755,6 @@ const QString GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
 std::unordered_map<PatternHeader, std::filesystem::path> GameInfo::patternFileMap;
 std::unordered_map<std::string, std::vector<std::wstring>> GameInfo::exeMap;
 
-GameInfo::CSVReader::CSVReader(const std::filesystem::path& name)
-{
-	file = new QFile(name);
-	if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		throw std::runtime_error("Open csv file failed!");
-	}
-	ts = new QTextStream(file);
-}
-
-GameInfo::CSVReader::~CSVReader()
-{
-	delete ts;
-	file->close();
-	delete file;
-}
-
-PatternHeader GameInfo::CSVReader::GetHeader()
-{
-	using namespace std;
-	vector<long long> headerData = ReadLongLongRow();
-	PatternHeader header =
-	{
-		headerData[0],
-		headerData[1],
-		headerData[2],
-	};
-	return header;
-}
-
-std::vector<QString> GameInfo::CSVReader::ReadRow()
-{
-	using namespace std;
-	QString line;
-	line = ts->readLine();
-	QStringList strList = line.split(",", Qt::SkipEmptyParts);
-	vector<QString> strings;
-	for (auto& str : strList)
-	{
-		strings.push_back(str);
-	}
-	return strings;
-}
-
-std::vector<long long> GameInfo::CSVReader::ReadLongLongRow()
-{
-	using namespace std;
-	vector<QString> strings = ReadRow();
-	vector<long long> ints;
-	for (auto& str : strings)
-	{
-		ints.push_back(str.toLongLong());
-	}
-	return ints;
-}
-
-bool GameInfo::CSVReader::AtEnd()
-{
-	return ts->atEnd();
-}
-
-void GameInfo::CSVReader::DiscardRow()
-{
-	ts->readLine();
-}
 
 bool PatternHeader::operator==(const PatternHeader& other)const
 {

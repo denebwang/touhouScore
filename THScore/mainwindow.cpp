@@ -148,6 +148,7 @@ void MainWindow::ScanGame()
 				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ReadUFO);
 				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ShowInfo);
 				connect(this, &MainWindow::Retry, ufowin, &UFOWindow::OnRetry);
+				connect(this, &MainWindow::NewShottype, ufowin, &UFOWindow::OnShottypeChanged);
 				ufowin->show();
 			}
 			ui.stackedWidget->setCurrentIndex(1);
@@ -354,11 +355,11 @@ void MainWindow::ReadInfo()
 	try
 	{
 		if (gameInfo->SetInfo(diff, shotType))
-			emit NewShottype();
+			emit NewShottype(diff, shotType);
 	}
 	catch (std::out_of_range& e)
 	{
-		emit NewShottype();
+		emit NewShottype(diff, shotType);
 	}/*
 	catch (std::runtime_error& e)
 	{

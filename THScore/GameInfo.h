@@ -10,8 +10,6 @@
 #include "Enums.h"
 #include <QString>
 #include <QStringList>
-#include <QFile>
-#include <QTextStream>
 
 //用于查找路线
 struct PatternHeader
@@ -26,30 +24,9 @@ struct PatternHeader
 class GameInfo
 {
 private:
-	class CSVReader
-	{
-	public:
-		CSVReader(const std::filesystem::path& name);
-		~CSVReader();
-		PatternHeader GetHeader();
-		std::vector<QString> ReadRow();
-		std::vector<long long> ReadLongLongRow();
-		bool AtEnd();
-		void DiscardRow();
-	private:
-		QFile* file;
-		QTextStream* ts;
-	};
-
 	static std::unordered_map<PatternHeader, std::filesystem::path> patternFileMap;
-
 	static std::unordered_map<int, std::vector<QString>> shotTypeMap;
-
 	std::vector<QString> shotTypeList;
-	//StageInfo stageInfo[6];
-	//StageInfo PatternInfo[6];//路线
-	//StageInfo delta[6];//和路线的差值
-
 	std::array<StageInfo, 6> stageInfo;
 
 	int difficulty;

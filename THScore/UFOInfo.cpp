@@ -12,6 +12,16 @@ UFOInfo::UFOInfo(int ufo1, int ufo2, int ufo3)
 	power = 0;
 }
 
+UFOInfo::UFOInfo(UFO ufo)
+{
+	this->ufo = ufo;
+	powerItemCount = 0;
+	pointItemCount = 0;
+	stage = 0;
+	PIV = 0;
+	power = 0;
+}
+
 UFOInfo::~UFOInfo()
 {
 }
@@ -51,7 +61,7 @@ int UFOInfo::GetPointItemCount()
 }
 
 int UFOInfo::GetBonusScore()
-{//todo: 飞碟奖励分算法
+{
 	int bonus, score;
 	switch (ufo)
 	{

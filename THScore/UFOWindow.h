@@ -21,10 +21,12 @@ public:
 	UFOWindow(MemoryReader* mr, QWidget* parent = Q_NULLPTR);
 	~UFOWindow();
 
+	static void ScanCSV();
 	//slot
 	void ReadUFO();
 	void ShowInfo();
 	void OnRetry();
+	void OnShottypeChanged(int diff, int shot);
 private:
 	Ui::UFOWindow ui;
 	TH12Reader* mr;
@@ -32,20 +34,5 @@ private:
 	std::vector<UFOInfo> patternUFO;
 	//QTimer* updateTimer;
 	bool UFOactive;
-	class CSVReader
-	{
-	public:
-		CSVReader(const std::filesystem::path& name);
-		~CSVReader();
-		QStringList ReadRow();
-		std::vector<long long> ReadLongLongRow();
-		bool AtEnd();
-		void DiscardRow();
-		static void ScanCSV();
-	private:
-		static std::unordered_map<PatternHeader, std::filesystem::path> UFOPatternFileMap;
-		QFile* file;
-		QTextStream* ts;
-	};
-
+	static std::unordered_map<PatternHeader, std::filesystem::path> UFOPatternFileMap;
 };
