@@ -107,9 +107,9 @@ void UFOWindow::ReadUFO()
 				ufo.SetStage(mr->GetStage());
 				ufos.push_back(ufo);
 				UFOactive = true;
-				//增加4行
+				//增加5行
 				//飞碟计数
-				int row = 4 * (ufos.size() - 1);
+				int row = 5 * (ufos.size() - 1);
 				QTableWidgetItem* newItem;
 				ui.tableWidget->insertRow(row);
 				newItem = new QTableWidgetItem(tr("UFO %1").arg(ufos.size()));
@@ -157,6 +157,24 @@ void UFOWindow::ReadUFO()
 				ui.tableWidget->setItem(row, 3, newItem);
 				//第4行
 				ui.tableWidget->insertRow(++row);
+				//第一个
+				newItem = new QTableWidgetItem(tr("est. Point Item"));
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 0, newItem);
+				//第二个
+				newItem = new QTableWidgetItem();
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 1, newItem);
+				//第三个
+				newItem = new QTableWidgetItem(tr("Delta"));
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 2, newItem);
+				//第四个
+				newItem = new QTableWidgetItem();
+				newItem->setTextAlignment(Qt::AlignCenter);
+				ui.tableWidget->setItem(row, 3, newItem);
+				//第5行
+				ui.tableWidget->insertRow(++row);
 				newItem = new QTableWidgetItem(tr("Score"));
 				newItem->setTextAlignment(Qt::AlignCenter);
 				ui.tableWidget->setItem(row, 0, newItem);
@@ -176,22 +194,31 @@ void UFOWindow::ReadUFO()
 
 void UFOWindow::ShowInfo()
 {
-	int row = 4 * (ufos.size() - 1);
+	int row = 5 * (ufos.size() - 1);
 	if (row < 0 || !UFOactive)
 	{
 		return;
 	}
 	UFOInfo* ufo = &ufos.back();
-	row++;
 	//第2行
+	row++;
 	ui.tableWidget->item(row, 1)->setText(QString::number(ufo->GetStage()));
 	ui.tableWidget->item(row, 3)->setText(ufo->GetUFOTypeName());
-	row++;
 	//第3行
+	row++;
 	ui.tableWidget->item(row, 1)->setText(QString::number(ufo->GetPowerItemCount()));
 	ui.tableWidget->item(row, 3)->setText(QString::number(ufo->GetPointItemCount()));
-	row++;
 	//第4行
+	row++;
+	if (ufos.size() < patternUFO.size())
+	{
+		int patternPoint = patternUFO.at(ufos.size()-1).GetPointItemCount();
+		ui.tableWidget->item(row, 1)->setText(QString::number(patternPoint));
+		int delta = ui.tableWidget->item(row - 1, 3)->text().toInt()  - patternPoint;
+		ui.tableWidget->item(row, 3)->setText(QString::number(delta));
+	}
+	//第5行
+	row++;
 	ui.tableWidget->item(row, 1)->setText(QString::number(ufo->GetBonusScore()));
 }
 
