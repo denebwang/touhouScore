@@ -17,22 +17,17 @@ class EditorWindow : public QWidget
 public:
 	EditorWindow(QWidget* parent = Q_NULLPTR);
 	~EditorWindow();
+	//slot
 	void UpdatePattern();
 	void UpdatePatternList();
 	void UpdateSectionType(int row, int col);
 	void UpdateTable(int row, int col);
 	void SaveCSV();
+	void SetPattern(int diff, int shot);
+	void SetShotList(int game);
+	void SetGameinfo(int game);
 private:
-	class CSVWriter
-	{
-	public:
-		CSVWriter(int game, int diff, int shot);
-		~CSVWriter();
-		void WriteLine(const QString& str);
-	private:
-		QFile* file;
-		QTextStream* ts;
-	};
+	QString unselected;
 	QStringList SectionTypeList;
 	Ui::EditorWindow ui;
 	const int GetGameIndex(const QString& gameName);
@@ -46,4 +41,7 @@ private:
 	int game;
 	int shot;
 	int diff;
+signals:
+	void GameSelected(int game);
+	void NewShotAndDiffSelected(int diff, int shot);
 };

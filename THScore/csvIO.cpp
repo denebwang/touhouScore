@@ -1,4 +1,5 @@
 ﻿#include "csvIO.h"
+#include <qdebug.h>
 
 CSVReader::CSVReader(const std::filesystem::path& name)
 {
@@ -16,19 +17,6 @@ CSVReader::~CSVReader()
 	file->close();
 	delete file;
 }
-
-//PatternHeader GameInfo::CSVReader::GetHeader()
-//{
-//	using namespace std;
-//	vector<long long> headerData = ReadLongLongRow();
-//	PatternHeader header =
-//	{
-//		headerData[0],
-//		headerData[1],
-//		headerData[2],
-//	};
-//	return header;
-//}
 
 QStringList CSVReader::ReadRow()
 {
@@ -68,4 +56,35 @@ bool CSVReader::AtEnd()
 void CSVReader::DiscardRow()
 {
 	ts->readLine();
+}
+
+
+CSVWriter::CSVWriter(const std::filesystem::path& path, const QString& filename)
+{
+	std::filesystem::path newFile=path;
+	newFile /= filename.toStdWString();
+	file = new QFile(newFile);
+	if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
+	{
+		throw std::runtime_error("Open csv file failed!");
+	}
+	ts = new QTextStream(file);
+}
+
+CSVWriter::~CSVWriter()
+{
+	delete ts;
+	file->close();
+	delete file;
+}
+
+void CSVWriter::WriteLine(const QString& str)
+{
+	*ts << str << Qt::endl;
+}
+
+void CSVWriter::WriteLine(const QStringList& strList)
+{
+	static QString delimiter(",");
+	WriteLine(strList.join(delimiter));
 }

@@ -18,6 +18,7 @@ public:
 	int GetPower();
 	//setters
 	void SetUFOType(int ufo1, int ufo2, int ufo3);
+	void SetUFOType(QString& type);
 	void SetPowerItemCount(int value);
 	void SetPointItemCount(int value);
 	void SetStage(int stage);

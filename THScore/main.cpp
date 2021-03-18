@@ -2,6 +2,7 @@
 #include <windows.h>
 #include "GameInfo.h"
 #include "logger.h"
+#include "UFOWindow.h"
 #include "Spdlog/Spdlog.h"
 #include <QtWidgets/QApplication>
 #include <QCoreApplication>
@@ -16,6 +17,7 @@ int main(int argc, char* argv[])
 	logger->flush_on(spdlog::level::info);
 	GameInfo::Init();
 	GameInfo::ScanCSV();
+	UFOWindow::ScanCSV();
 	SetPrivilage();
 
 	QApplication a(argc, argv);

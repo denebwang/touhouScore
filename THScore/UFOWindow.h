@@ -22,6 +22,8 @@ public:
 	~UFOWindow();
 
 	static void ScanCSV();
+	static const std::unordered_map<PatternHeader, std::filesystem::path>& GetPatternFileMap();
+	static std::filesystem::path& GetPatternFilePath(int diff,int shot);
 	//slot
 	void ReadUFO();
 	void ShowInfo();

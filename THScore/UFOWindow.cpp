@@ -76,6 +76,17 @@ void UFOWindow::ScanCSV()
 	}
 }
 
+const std::unordered_map < PatternHeader, std::filesystem::path>& UFOWindow::GetPatternFileMap()
+{
+	return UFOPatternFileMap;
+}
+
+std::filesystem::path& UFOWindow::GetPatternFilePath(int diff, int shot)
+{
+	PatternHeader header{ 12,diff,shot };
+	return UFOPatternFileMap.at(header);
+}
+
 void UFOWindow::ReadUFO()
 {
 	try
@@ -212,9 +223,9 @@ void UFOWindow::ShowInfo()
 	row++;
 	if (ufos.size() < patternUFO.size())
 	{
-		int patternPoint = patternUFO.at(ufos.size()-1).GetPointItemCount();
+		int patternPoint = patternUFO.at(ufos.size() - 1).GetPointItemCount();
 		ui.tableWidget->item(row, 1)->setText(QString::number(patternPoint));
-		int delta = ui.tableWidget->item(row - 1, 3)->text().toInt()  - patternPoint;
+		int delta = ui.tableWidget->item(row - 1, 3)->text().toInt() - patternPoint;
 		ui.tableWidget->item(row, 3)->setText(QString::number(delta));
 	}
 	//第5行

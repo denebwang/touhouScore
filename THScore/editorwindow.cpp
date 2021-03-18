@@ -20,6 +20,8 @@
 #include "GameInfo.h"
 #include "SectionInfo.h"
 #include "ComboCell.h"
+#include "csvIO.h"
+#include "ufoeditwin.h"
 
 EditorWindow::EditorWindow(QWidget* parent)
 	: QWidget(parent)
@@ -37,13 +39,13 @@ EditorWindow::EditorWindow(QWidget* parent)
 	UpdatePatternList();
 	ui.saveButton->setEnabled(false);
 	//loc = QLocale::English;
-	QString unselected(tr("Unselected"));
+	unselected = (tr("Unselected"));
 	QStringList gameList;
-	//空白即缺省
-	gameList << unselected << "東方紅魔郷" << "東方妖々夢" << "東方永夜抄"
-		<< "東方風神録" << "東方地霊殿" << "東方星蓮船" << "妖精大戦争"
-		<< "東方神霊廟" << "東方輝針城" << "東方紺珠伝"
-		<< "東方天空璋" << "東方鬼形獣" << "東方虹龍洞";
+	gameList << unselected
+		<< "東方紅魔郷" << "東方妖々夢" << "東方永夜抄" << "東方風神録"
+		<< "東方地霊殿" << "東方星蓮船" << "妖精大戦争" << "東方神霊廟"
+		<< "東方輝針城" << "東方紺珠伝" << "東方天空璋" << "東方鬼形獣"
+		<< "東方虹龍洞";
 	ui.GameCombo->addItems(gameList);
 	ui.DiffCombo->addItem(unselected);
 	ui.ShotCombo->addItem(unselected);
@@ -71,11 +73,6 @@ EditorWindow::EditorWindow(QWidget* parent)
 				try
 				{
 					game = GetGameIndex(gameName);
-					if (gameInfo != nullptr)
-					{
-						delete gameInfo;
-					}
-					gameInfo = new GameInfo(static_cast<Game>(game));
 				}
 				catch (std::exception& e)
 				{
@@ -86,13 +83,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 					UpdatePatternList();
 					return;
 				}
-				ui.ShotCombo->clear();
-				ui.ShotCombo->addItem(unselected);
-				std::vector<QString> shottypeList = gameInfo->GetShotTypeList();
-				for (auto& str : shottypeList)
-				{
-					ui.ShotCombo->addItem(str);
-				}
+				emit GameSelected(game);	
 			}
 		});
 	connect(ui.DiffCombo, &QComboBox::currentTextChanged, [=](const QString& diffName)
@@ -107,22 +98,11 @@ EditorWindow::EditorWindow(QWidget* parent)
 			}
 			else
 			{
-				try
-				{
-					gameInfo->SetInfo(diff, shot);
-				}
-				catch (std::out_of_range& e)
-				{
-					QMessageBox::warning(this, tr("Pattern not Found or Invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file."))
-						.arg(gameInfo->GameName())
-						.arg(gameInfo->Difficulty())
-						.arg(gameInfo->ShotType()));
-				}
-				UpdatePattern();
+				emit NewShotAndDiffSelected(diff, shot);
 			}
 		});
 	connect(ui.ShotCombo, &QComboBox::currentTextChanged, [=](const QString& shotName)
-		{//todo: 筛选对应机体的路线
+		{
 			if (gameInfo == nullptr)
 			{
 				return;
@@ -137,18 +117,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 			}
 			else
 			{
-				try
-				{
-					gameInfo->SetInfo(diff, shot);
-				}
-				catch (std::out_of_range& e)
-				{
-					QMessageBox::warning(this, tr("Pattern not Found or Invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file."))
-						.arg(gameInfo->GameName())
-						.arg(gameInfo->Difficulty())
-						.arg(gameInfo->ShotType()));
-				}
-				UpdatePattern();
+				emit NewShotAndDiffSelected(diff, shot);
 			}
 		});
 	//选择对应路线自动设置
@@ -161,6 +130,11 @@ EditorWindow::EditorWindow(QWidget* parent)
 		});
 	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
 	connect(ui.saveButton, &QPushButton::pressed, this, &EditorWindow::SaveCSV);
+	connect(this, &EditorWindow::NewShotAndDiffSelected, this, &EditorWindow::SetPattern);
+	connect(this, &EditorWindow::NewShotAndDiffSelected, this, &EditorWindow::UpdatePattern);
+	connect(this, &EditorWindow::GameSelected, this, &EditorWindow::SetGameinfo);
+	connect(this, &EditorWindow::GameSelected, this, &EditorWindow::SetShotList);
+
 }
 
 EditorWindow::~EditorWindow()
@@ -190,8 +164,10 @@ void EditorWindow::UpdatePattern()
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 	//节点下拉框
-	ComboCell* cbc = new ComboCell(ui.tableWidget);
-	ui.tableWidget->setItemDelegateForColumn(1, cbc);
+	QStringList str;
+	str << tr("All") << tr("Mid+Boss") << tr("Mid+Boss+Bonus");
+	ComboCell* scc = new ComboCell(str, ui.tableWidget);
+	ui.tableWidget->setItemDelegateForColumn(1, scc);
 
 	int row = 0;
 	for (int i = 0; i < 6; i++)
@@ -459,7 +435,12 @@ void EditorWindow::SaveCSV()
 	CSVWriter* writer = nullptr;
 	try
 	{
-		writer = new CSVWriter(game, diff, shot);
+		QStringList patternName;
+		patternName << GameInfo::GameName(static_cast<Game>(game));
+		patternName << GameInfo::DiffList[diff];
+		patternName << GameInfo::GetShotTypeList(game)[shot];
+		auto filename = patternName.join("-").append(".csv");
+		writer = new CSVWriter(std::filesystem::path(L"csv"), filename);
 	}
 	catch (std::runtime_error& e)
 	{
@@ -493,6 +474,49 @@ void EditorWindow::SaveCSV()
 	}
 	delete writer;
 	QMessageBox::information(this, tr("Save Success!"), tr("Pattern file saved"));
+}
+
+void EditorWindow::SetPattern(int diff, int shot)
+{
+	try
+	{
+		gameInfo->SetInfo(diff, shot);
+	}
+	catch (std::out_of_range& e)
+	{
+		QMessageBox::warning(this, tr("Pattern not Found or Invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file."))
+			.arg(gameInfo->GameName())
+			.arg(gameInfo->Difficulty())
+			.arg(gameInfo->ShotType()));
+	}
+}
+
+void EditorWindow::SetShotList(int game)
+{
+	ui.ShotCombo->clear();
+	ui.ShotCombo->addItem(unselected);
+	std::vector<QString> shottypeList = gameInfo->GetShotTypeList();
+	for (auto& str : shottypeList)
+	{
+		ui.ShotCombo->addItem(str);
+	}
+
+}
+
+void EditorWindow::SetGameinfo(int game)
+{
+	if (gameInfo != nullptr)
+	{
+		delete gameInfo;
+	}
+	gameInfo = new GameInfo(static_cast<Game>(game));
+	if (game==12)
+	{
+		UFOeditWin* ufoedit = new UFOeditWin(diff, shot);
+		connect(this, &EditorWindow::NewShotAndDiffSelected, ufoedit, &UFOeditWin::setPattern);
+		connect(this, &EditorWindow::NewShotAndDiffSelected, ufoedit, &UFOeditWin::showChart);
+		ufoedit->show();
+	}
 }
 
 const int EditorWindow::GetGameIndex(const QString& gameName)
@@ -619,33 +643,4 @@ void EditorWindow::SetPatternList()
 		patternName << GameInfo::GetShotTypeList(pattern.game)[pattern.shotType];
 		ui.listWidget->addItem(patternName.join("-"));
 	}
-}
-
-EditorWindow::CSVWriter::CSVWriter(int game, int diff, int shot)
-{
-	QStringList patternName;
-	patternName << GameInfo::GameName(static_cast<Game>(game));
-	patternName << GameInfo::DiffList[diff];
-	patternName << GameInfo::GetShotTypeList(game)[shot];
-	auto filename = patternName.join("-").append(".csv").toStdWString();
-	std::filesystem::path newFile(L"./csv");
-	newFile /= filename;
-	file = new QFile(newFile);
-	if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
-	{
-		throw std::runtime_error("Open csv file failed!");
-	}
-	ts = new QTextStream(file);
-}
-
-EditorWindow::CSVWriter::~CSVWriter()
-{
-	delete ts;
-	file->close();
-	delete file;
-}
-
-void EditorWindow::CSVWriter::WriteLine(const QString& str)
-{
-	*ts << str << Qt::endl;
 }

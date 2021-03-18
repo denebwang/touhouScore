@@ -1,7 +1,8 @@
 ﻿#include "ComboCell.h"
 #include <QComboBox>
-ComboCell::ComboCell(QObject* parent) :QStyledItemDelegate(parent)
+ComboCell::ComboCell(QStringList optionStrings, QObject* parent) :QStyledItemDelegate(parent)
 {
+	str = optionStrings;
 }
 
 ComboCell::~ComboCell()
@@ -11,8 +12,6 @@ ComboCell::~ComboCell()
 QWidget* ComboCell::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	QComboBox* cb = new QComboBox(parent);
-	QStringList str;
-	str << tr("All") << tr("Mid+Boss") << tr("Mid+Boss+Bonus");
 	cb->addItems(str);
 	return cb;
 }

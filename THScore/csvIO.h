@@ -20,3 +20,15 @@ private:
 	QFile* file;
 	QTextStream* ts;
 };
+
+class CSVWriter
+{
+public:
+	CSVWriter(const std::filesystem::path& path, const QString& filename);
+	~CSVWriter();
+	void WriteLine(const QString& str);
+	void WriteLine(const QStringList& strList);
+private:
+	QFile* file;
+	QTextStream* ts;
+};

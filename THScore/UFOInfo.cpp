@@ -128,6 +128,19 @@ void UFOInfo::SetUFOType(int ufo1, int ufo2, int ufo3)
 	else ufo = UFO::multicolored;
 }
 
+void UFOInfo::SetUFOType(QString& type)
+{
+	if (type == QCoreApplication::translate("UFOWindow", "Red"))
+		ufo = UFO::red;
+	if (type == QCoreApplication::translate("UFOWindow", "Blue"))
+		ufo = UFO::blue;
+	if (type == QCoreApplication::translate("UFOWindow", "Green"))
+		ufo = UFO::green;
+	if (type == QCoreApplication::translate("UFOWindow", "Multicolored"))
+		ufo = UFO::multicolored;
+	logger->error("UFO type string error, string: {0}", type.toStdString());
+}
+
 void UFOInfo::SetPowerItemCount(int value)
 {
 	powerItemCount = value;

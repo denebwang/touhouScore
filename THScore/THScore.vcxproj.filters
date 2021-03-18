@@ -23,6 +23,11 @@
       <Extensions>ts</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="mainwindow.qrc">
@@ -72,6 +77,9 @@
     <ClCompile Include="csvIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ufoeditwin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameInfo.h">
@@ -112,6 +120,9 @@
     <QtMoc Include="UFOWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="ufoeditwin.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="THScore.rc">
@@ -133,6 +144,9 @@
       <Filter>Resource Files</Filter>
     </QtUic>
     <QtUic Include="UFOWindow.ui">
+      <Filter>Resource Files</Filter>
+    </QtUic>
+    <QtUic Include="ufoeditwin.ui">
       <Filter>Resource Files</Filter>
     </QtUic>
   </ItemGroup>
