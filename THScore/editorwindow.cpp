@@ -378,6 +378,7 @@ void EditorWindow::UpdateTable(int row, int col)
 		else//直接编辑分数
 		{
 			int stage = 0;
+			//防止直接访问stage得到nullptr
 			for (int i = row; i > -1; i--)
 			{
 				auto* item = ui.tableWidget->item(i, 0);
@@ -417,15 +418,15 @@ void EditorWindow::UpdateTable(int row, int col)
 			{
 				ui.tableWidget->item(row, col + 1)->setData(Qt::DisplayRole, QString::number(newDelta));
 			}
-			//更新下一行
+			//更新下一行,保持delta不变
 			if (row + 1 < ui.tableWidget->rowCount())
 			{
 				long long next = ui.tableWidget->item(row + 1, col)->text().toLongLong();
-				long long nextDelta = ui.tableWidget->item(row + 1, col + 1)->text().toLongLong();
-				long long newNextDelta = next - data;
-				if (newNextDelta != nextDelta)
+				long long nextDelta = ui.tableWidget->item(row + 1, col+1)->text().toLongLong();
+				long long newNextScore = data+nextDelta;
+				if (newNextScore != next)
 				{
-					ui.tableWidget->item(row + 1, col + 1)->setData(Qt::DisplayRole, QString::number(newNextDelta));
+					ui.tableWidget->item(row + 1, col)->setData(Qt::DisplayRole, QString::number(newNextScore));
 				}
 			}
 		}
