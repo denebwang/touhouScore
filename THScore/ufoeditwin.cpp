@@ -15,7 +15,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-UFOeditWin::UFOeditWin(int diff, int shot, QWidget *parent)
+UFOeditWin::UFOeditWin(int diff, int shot, QWidget* parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
@@ -118,7 +118,7 @@ void UFOeditWin::showChart()
 
 void UFOeditWin::insertRow()
 {
-	if (menuRow<0)
+	if (menuRow < 0)
 	{
 		menuRow = ui.tableWidget->rowCount() - 1;
 	}
@@ -130,7 +130,7 @@ void UFOeditWin::removeRow()
 {
 	if (menuRow < 0)
 	{
-		menuRow = ui.tableWidget->rowCount()-1;
+		menuRow = ui.tableWidget->rowCount() - 1;
 	}
 	patterns.erase(patterns.begin() + menuRow);
 	ui.tableWidget->removeRow(menuRow);
@@ -145,6 +145,19 @@ void UFOeditWin::onCustomContextMenuRequested(const QPoint& pos)
 
 void UFOeditWin::save()
 {
+	//检测有效性
+	int prevStage = 1;
+	for (auto& ufo : patterns)
+	{
+		int currStage = ufo.GetStage();
+		if (currStage<prevStage || currStage>prevStage + 1)
+		{
+			QMessageBox::warning(this, tr("UFO stage incorrect"),
+				tr("The order of stage is not correct, with stage %1 after stage %2").arg(ufo.GetStage()).arg(prevStage));
+			return;
+		}
+		prevStage = currStage;
+	}
 	CSVWriter* writer = nullptr;
 	try
 	{
