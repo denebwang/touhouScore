@@ -56,14 +56,16 @@ EditorWindow::EditorWindow(QWidget* parent)
 
 	connect(ui.GameCombo, &QComboBox::currentTextChanged, [=](const QString& gameName)
 		{
+
 			if (gameName == unselected)
 			{
 				game = 0;
+				shot = -1;
 				delete gameInfo;
 				gameInfo = nullptr;
 				ui.ShotCombo->clear();
 				ui.ShotCombo->addItem(unselected);
-				ui.DiffCombo->setCurrentIndex(0);
+				//ui.DiffCombo->setCurrentIndex(0);
 				ui.ShotCombo->setCurrentIndex(0);
 				ui.formWidget->setCurrentIndex(0);
 			}
@@ -89,7 +91,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 	connect(ui.DiffCombo, &QComboBox::currentTextChanged, [=](const QString& diffName)
 		{
 			diff = GetDiffIndex(diffName);
-			if (diffName == unselected || shot == -1)
+			if (diff == -1 || shot == -1)
 			{
 				UpdatePatternList();
 				ui.formWidget->setCurrentIndex(0);
@@ -108,7 +110,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 				return;
 			}
 			shot = GetShotIndex(shotName);
-			if (diff == -1 || shotName == unselected)
+			if (diff == -1 || shot == -1)
 			{
 				UpdatePatternList();
 				ui.formWidget->setCurrentIndex(0);
@@ -117,6 +119,7 @@ EditorWindow::EditorWindow(QWidget* parent)
 			}
 			else
 			{
+				qDebug() << shotName;
 				emit NewShotAndDiffSelected(diff, shot);
 			}
 		});
@@ -513,8 +516,10 @@ void EditorWindow::SetGameinfo(int game)
 	if (game==12)
 	{
 		UFOeditWin* ufoedit = new UFOeditWin(diff, shot);
+		ufoedit->setAttribute(Qt::WA_DeleteOnClose);
 		connect(this, &EditorWindow::NewShotAndDiffSelected, ufoedit, &UFOeditWin::setPattern);
 		connect(this, &EditorWindow::NewShotAndDiffSelected, ufoedit, &UFOeditWin::showChart);
+		connect(this, &EditorWindow::GameSelected, ufoedit, &QWidget::close);
 		ufoedit->show();
 	}
 }

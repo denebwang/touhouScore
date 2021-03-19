@@ -118,18 +118,28 @@ void UFOeditWin::showChart()
 
 void UFOeditWin::insertRow()
 {
-	int row = ui.tableWidget->currentRow();
-	ui.tableWidget->insertRow(row);
+	if (menuRow<0)
+	{
+		menuRow = ui.tableWidget->rowCount() - 1;
+	}
+	patterns.insert(patterns.begin() + menuRow + 1, UFOInfo());
+	ui.tableWidget->insertRow(menuRow + 1);
 }
 
 void UFOeditWin::removeRow()
 {
-	int row = ui.tableWidget->currentRow();
-	ui.tableWidget->removeRow(row);
+	if (menuRow < 0)
+	{
+		menuRow = ui.tableWidget->rowCount()-1;
+	}
+	patterns.erase(patterns.begin() + menuRow);
+	ui.tableWidget->removeRow(menuRow);
 }
 
 void UFOeditWin::onCustomContextMenuRequested(const QPoint& pos)
 {
+	auto index = ui.tableWidget->indexAt(pos);
+	menuRow = index.row();
 	tableRightClickMenu->exec(QCursor::pos());
 }
 

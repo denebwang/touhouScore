@@ -29,4 +29,5 @@ private:
 	QAction* removeRowAction;
 	int diff;
 	int shot;
+	int menuRow;//用于右键菜单
 };
