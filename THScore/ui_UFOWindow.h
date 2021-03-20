@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'UFOWindowRAKzVI.ui'
+** Form generated from reading UI file 'UFOWindowmPEWqm.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.0.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef UFOWINDOWRAKZVI_H
-#define UFOWINDOWRAKZVI_H
+#ifndef UFOWINDOWMPEWQM_H
+#define UFOWINDOWMPEWQM_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
@@ -58,6 +58,7 @@ public:
         tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
         tableWidget->setRowCount(0);
         tableWidget->setColumnCount(4);
+        tableWidget->horizontalHeader()->setVisible(false);
         tableWidget->verticalHeader()->setVisible(false);
 
         horizontalLayout->addWidget(tableWidget);
@@ -81,4 +82,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // UFOWINDOWRAKZVI_H
+#endif // UFOWINDOWMPEWQM_H

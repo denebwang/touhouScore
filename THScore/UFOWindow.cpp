@@ -71,7 +71,11 @@ void UFOWindow::ScanCSV()
 			int shot = strList[1].toInt();
 			PatternHeader header{ game,diff,shot };
 
-			UFOPatternFileMap.insert(std::make_pair(header, file));
+			auto inserted = UFOPatternFileMap.insert(std::make_pair(header, file)).second;
+			if (!inserted)
+				logger->error("{0} is not recorded because another file({1}) for same shot already exists.", 
+					file.string(), UFOPatternFileMap.at(header).string());
+
 		}
 	}
 }

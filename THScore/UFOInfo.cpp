@@ -132,13 +132,13 @@ void UFOInfo::SetUFOType(QString& type)
 {
 	if (type == QCoreApplication::translate("UFOWindow", "Red"))
 		ufo = UFO::red;
-	if (type == QCoreApplication::translate("UFOWindow", "Blue"))
+	else if (type == QCoreApplication::translate("UFOWindow", "Blue"))
 		ufo = UFO::blue;
-	if (type == QCoreApplication::translate("UFOWindow", "Green"))
+	else  if (type == QCoreApplication::translate("UFOWindow", "Green"))
 		ufo = UFO::green;
-	if (type == QCoreApplication::translate("UFOWindow", "Multicolored"))
+	else if (type == QCoreApplication::translate("UFOWindow", "Multicolored"))
 		ufo = UFO::multicolored;
-	logger->error("UFO type string error, string: {0}", type.toStdString());
+	else logger->error("UFO type string error, string: {0}", type.toStdString());
 }
 
 void UFOInfo::SetPowerItemCount(int value)

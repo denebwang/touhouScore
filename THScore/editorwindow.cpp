@@ -119,7 +119,6 @@ EditorWindow::EditorWindow(QWidget* parent)
 			}
 			else
 			{
-				qDebug() << shotName;
 				emit NewShotAndDiffSelected(diff, shot);
 			}
 		});
@@ -488,7 +487,8 @@ void EditorWindow::SetPattern(int diff, int shot)
 	}
 	catch (std::out_of_range& e)
 	{
-		QMessageBox::warning(this, tr("Pattern not Found or Invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file."))
+		QMessageBox::warning(this, tr("Pattern not Found or Invalid"),
+			QString(tr("Can't find  pattern file for %1 %2 %3,or it is not a valid file.\nCreated an empty pattern."))
 			.arg(gameInfo->GameName())
 			.arg(gameInfo->Difficulty())
 			.arg(gameInfo->ShotType()));

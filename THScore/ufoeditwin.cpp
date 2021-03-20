@@ -14,6 +14,7 @@
 #include <QAction>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QDebug>
 
 UFOeditWin::UFOeditWin(int diff, int shot, QWidget* parent)
 	: QWidget(parent)
@@ -43,6 +44,8 @@ UFOeditWin::~UFOeditWin()
 
 void UFOeditWin::setPattern(int diff, int shot)
 {
+	this->diff = diff;
+	this->shot = shot;
 	patterns.clear();
 	std::filesystem::path filepath;
 	try
@@ -54,15 +57,15 @@ void UFOeditWin::setPattern(int diff, int shot)
 		logger->warn("UFO pattern file for {0} {1} is not found", diff, shot);
 		return;
 	}
-	this->diff = diff;
-	this->shot = shot;
 	CSVReader reader(filepath);
 	int ufoCount = 0;
 	//跳过表头
+	reader.DiscardRow();
 	while (!reader.AtEnd())
 	{
-		while (reader.ReadRow()[0] != QString::number(ufoCount + 1))
+		while (*reader.ReadRow().begin() != QString::number(ufoCount + 1))
 		{
+			
 			continue;
 		}
 		auto data = reader.ReadIntRow();
@@ -120,10 +123,21 @@ void UFOeditWin::insertRow()
 {
 	if (menuRow < 0)
 	{
-		menuRow = ui.tableWidget->rowCount() - 1;
+		patterns.insert(patterns.end(), UFOInfo());
+		ui.tableWidget->insertRow(ui.tableWidget->rowCount());
+		return;
 	}
-	patterns.insert(patterns.begin() + menuRow + 1, UFOInfo());
-	ui.tableWidget->insertRow(menuRow + 1);
+	if (patterns.size() == 0)
+	{
+		patterns.push_back(UFOInfo());
+		ui.tableWidget->insertRow(0);
+		return;
+	}
+	else
+	{
+		patterns.insert(patterns.begin() + menuRow + 1, UFOInfo());
+		ui.tableWidget->insertRow(menuRow + 1);
+	}
 }
 
 void UFOeditWin::removeRow()

@@ -65,6 +65,9 @@
      <property name="columnCount">
       <number>4</number>
      </property>
+     <attribute name="horizontalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>

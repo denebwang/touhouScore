@@ -137,9 +137,9 @@ bool GameInfo::CheckRetry(int stage, int frame)
 			return true;
 		}
 	}
-	else if (stage==1)
+	else if (stage == 1)
 	{
-		if (frame<60)
+		if (frame < 60)
 		{
 			stageInfo[0].ResetAll();
 			return true;
@@ -530,7 +530,10 @@ void GameInfo::ScanCSV()
 			int shot = strList[2].toInt();
 			PatternHeader header{ game,diff,shot };
 
-			patternFileMap.insert(std::make_pair(header, file));
+			auto inserted = patternFileMap.insert(std::make_pair(header, file)).second;
+			if (!inserted)
+				logger->error("{0} is not recorded because another file({1}) for same shot already exists.", 
+					file.string(), patternFileMap.at(header).string());
 		}
 	}
 }

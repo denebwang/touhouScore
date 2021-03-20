@@ -45,20 +45,20 @@
     </message>
     <message>
         <location filename="editorwindow.cpp" line="37"/>
-        <location filename="editorwindow.cpp" line="168"/>
-        <location filename="editorwindow.cpp" line="617"/>
+        <location filename="editorwindow.cpp" line="170"/>
+        <location filename="editorwindow.cpp" line="623"/>
         <source>All</source>
         <translation>全程</translation>
     </message>
     <message>
         <location filename="editorwindow.cpp" line="37"/>
-        <location filename="editorwindow.cpp" line="168"/>
+        <location filename="editorwindow.cpp" line="170"/>
         <source>Mid+Boss</source>
         <translation>道中+关底</translation>
     </message>
     <message>
         <location filename="editorwindow.cpp" line="37"/>
-        <location filename="editorwindow.cpp" line="168"/>
+        <location filename="editorwindow.cpp" line="170"/>
         <source>Mid+Boss+Bonus</source>
         <translation>道中+关底+结算</translation>
     </message>
@@ -68,78 +68,84 @@
         <translation>未选中</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="80"/>
+        <location filename="editorwindow.cpp" line="82"/>
         <source>Game not supported</source>
         <translation>不支持的游戏</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="80"/>
+        <location filename="editorwindow.cpp" line="82"/>
         <source>%1 is not supported yet</source>
         <translation>%1尚未添加支持</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="487"/>
+        <location filename="editorwindow.cpp" line="490"/>
         <source>Pattern not Found or Invalid</source>
         <translation>未找到路线或路线不正确</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="487"/>
         <source>Pattern for %1 %2 %3 is not a valid pattern file.</source>
-        <translation>%1 %2 %3的路线文件是无效的</translation>
+        <translation type="vanished">%1 %2 %3的路线文件是无效的</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="156"/>
+        <location filename="editorwindow.cpp" line="158"/>
         <source>Stage</source>
         <translation>关卡</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="156"/>
+        <location filename="editorwindow.cpp" line="158"/>
         <source>Section</source>
         <translation>节点</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="156"/>
+        <location filename="editorwindow.cpp" line="158"/>
         <source>Score</source>
         <translation>分数</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="156"/>
-        <location filename="editorwindow.cpp" line="160"/>
+        <location filename="editorwindow.cpp" line="158"/>
+        <location filename="editorwindow.cpp" line="162"/>
         <source>Delta</source>
         <translation>差值</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="448"/>
+        <location filename="editorwindow.cpp" line="451"/>
         <source>Save CSV Failed</source>
         <translation>保存CSV文件失败</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="448"/>
+        <location filename="editorwindow.cpp" line="451"/>
         <source>Please close any program that is used the file.</source>
         <translation>请尝试关闭所有正在使用该文件的程序。</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="476"/>
+        <location filename="editorwindow.cpp" line="479"/>
         <source>Save Success!</source>
         <translation>保存成功</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="476"/>
+        <location filename="editorwindow.cpp" line="479"/>
         <source>Pattern file saved</source>
         <translation>路线文件已保存</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="621"/>
+        <location filename="editorwindow.cpp" line="491"/>
+        <source>Can&apos;t find  pattern file for %1 %2 %3,or it is not a valid file.
+Created an empty pattern.</source>
+        <translation type="unfinished">找不到%1 %2 %3对应的路线文件，或该文件不是一个有效的路线文件。
+已创建默认路线。</translation>
+    </message>
+    <message>
+        <location filename="editorwindow.cpp" line="627"/>
         <source>Mid</source>
         <translation>道中</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="625"/>
+        <location filename="editorwindow.cpp" line="631"/>
         <source>Boss</source>
         <translation>关底</translation>
     </message>
     <message>
-        <location filename="editorwindow.cpp" line="629"/>
+        <location filename="editorwindow.cpp" line="635"/>
         <source>Bonus</source>
         <translation>结算</translation>
     </message>
@@ -254,27 +260,27 @@
         <translation>路线编辑器</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="160"/>
+        <location filename="mainwindow.cpp" line="161"/>
         <source>Game not Supported</source>
         <translation>不支持的游戏</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="160"/>
+        <location filename="mainwindow.cpp" line="161"/>
         <source>%1 is not supported yet!</source>
         <translation>%1 尚未添加支持！</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="233"/>
+        <location filename="mainwindow.cpp" line="234"/>
         <source>Game</source>
         <translation>实际</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="234"/>
+        <location filename="mainwindow.cpp" line="235"/>
         <source>Pattern</source>
         <translation>路线</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="235"/>
+        <location filename="mainwindow.cpp" line="236"/>
         <source>Delta</source>
         <translation>差值</translation>
     </message>
@@ -434,52 +440,62 @@
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="24"/>
+        <location filename="ufoeditwin.cpp" line="26"/>
         <source>insert</source>
         <translation>插入</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="25"/>
+        <location filename="ufoeditwin.cpp" line="27"/>
         <source>remove</source>
         <translation>移除</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="33"/>
+        <location filename="ufoeditwin.cpp" line="35"/>
         <source>Red</source>
         <translation>红碟</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="33"/>
+        <location filename="ufoeditwin.cpp" line="35"/>
         <source>Blue</source>
         <translation>蓝碟</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="33"/>
+        <location filename="ufoeditwin.cpp" line="35"/>
         <source>Green</source>
         <translation>绿碟</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="33"/>
+        <location filename="ufoeditwin.cpp" line="35"/>
         <source>Multicolored</source>
         <translation>彩碟</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="148"/>
+        <location filename="ufoeditwin.cpp" line="169"/>
+        <source>UFO stage incorrect</source>
+        <translation>飞碟关卡数不正确</translation>
+    </message>
+    <message>
+        <location filename="ufoeditwin.cpp" line="170"/>
+        <source>The order of stage is not correct, with stage %1 after stage %2</source>
+        <translation>飞碟的关卡顺序不正确，%2面后有一个%1面的飞碟</translation>
+    </message>
+    <message>
+        <location filename="ufoeditwin.cpp" line="187"/>
         <source>Save CSV Failed</source>
         <translation>保存CSV文件失败</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="148"/>
+        <location filename="ufoeditwin.cpp" line="187"/>
         <source>Please close any program that is used the file.</source>
         <translation>请尝试关闭所有正在使用该文件的程序。</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="165"/>
+        <location filename="ufoeditwin.cpp" line="204"/>
         <source>Save Success!</source>
         <translation>保存成功!</translation>
     </message>
     <message>
-        <location filename="ufoeditwin.cpp" line="165"/>
+        <location filename="ufoeditwin.cpp" line="204"/>
         <source>Pattern file saved</source>
         <translation>路线文件已保存</translation>
     </message>

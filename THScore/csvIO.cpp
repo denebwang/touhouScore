@@ -24,6 +24,7 @@ QStringList CSVReader::ReadRow()
 	line = ts->readLine();
 	QStringList strList = line.split(",", Qt::SkipEmptyParts);
 	return strList;
+	qDebug() << strList;
 }
 
 std::vector<long long> CSVReader::ReadLongLongRow()
