@@ -20,6 +20,8 @@
 #include "GameInfo.h"
 #include "SectionInfo.h"
 #include "ComboCell.h"
+#include "csvIO.h"
+#include "ufoeditwin.h"
 
 EditorWindow::EditorWindow(QWidget* parent)
 	: QWidget(parent)
@@ -36,14 +38,14 @@ EditorWindow::EditorWindow(QWidget* parent)
 	ui.formWidget->setCurrentIndex(0);
 	UpdatePatternList();
 	ui.saveButton->setEnabled(false);
-	loc = QLocale::English;
-	QString unselected(tr("Unselected"));
+	//loc = QLocale::English;
+	unselected = (tr("Unselected"));
 	QStringList gameList;
-	//空白即缺省
-	gameList << unselected << "東方紅魔郷" << "東方妖々夢" << "東方永夜抄"
-		<< "東方風神録" << "東方地霊殿" << "東方星蓮船" << "妖精大戦争"
-		<< "東方神霊廟" << "東方輝針城" << "東方紺珠伝"
-		<< "東方天空璋" << "東方鬼形獣" << "東方虹龍洞";
+	gameList << unselected
+		<< "東方紅魔郷" << "東方妖々夢" << "東方永夜抄" << "東方風神録"
+		<< "東方地霊殿" << "東方星蓮船" << "妖精大戦争" << "東方神霊廟"
+		<< "東方輝針城" << "東方紺珠伝" << "東方天空璋" << "東方鬼形獣"
+		<< "東方虹龍洞";
 	ui.GameCombo->addItems(gameList);
 	ui.DiffCombo->addItem(unselected);
 	ui.ShotCombo->addItem(unselected);
@@ -54,14 +56,16 @@ EditorWindow::EditorWindow(QWidget* parent)
 
 	connect(ui.GameCombo, &QComboBox::currentTextChanged, [=](const QString& gameName)
 		{
+
 			if (gameName == unselected)
 			{
 				game = 0;
+				shot = -1;
 				delete gameInfo;
 				gameInfo = nullptr;
 				ui.ShotCombo->clear();
 				ui.ShotCombo->addItem(unselected);
-				ui.DiffCombo->setCurrentIndex(0);
+				//ui.DiffCombo->setCurrentIndex(0);
 				ui.ShotCombo->setCurrentIndex(0);
 				ui.formWidget->setCurrentIndex(0);
 			}
@@ -71,11 +75,6 @@ EditorWindow::EditorWindow(QWidget* parent)
 				try
 				{
 					game = GetGameIndex(gameName);
-					if (gameInfo != nullptr)
-					{
-						delete gameInfo;
-					}
-					gameInfo = new GameInfo(static_cast<Game>(game));
 				}
 				catch (std::exception& e)
 				{
@@ -86,19 +85,13 @@ EditorWindow::EditorWindow(QWidget* parent)
 					UpdatePatternList();
 					return;
 				}
-				ui.ShotCombo->clear();
-				ui.ShotCombo->addItem(unselected);
-				std::vector<QString> shottypeList = gameInfo->GetShotTypeList();
-				for (auto& str : shottypeList)
-				{
-					ui.ShotCombo->addItem(str);
-				}
+				emit GameSelected(game);	
 			}
 		});
 	connect(ui.DiffCombo, &QComboBox::currentTextChanged, [=](const QString& diffName)
 		{
 			diff = GetDiffIndex(diffName);
-			if (diffName == unselected || shot == -1)
+			if (diff == -1 || shot == -1)
 			{
 				UpdatePatternList();
 				ui.formWidget->setCurrentIndex(0);
@@ -107,29 +100,17 @@ EditorWindow::EditorWindow(QWidget* parent)
 			}
 			else
 			{
-				try
-				{
-					gameInfo->SetInfo(diff, shot);
-
-				}
-				catch (std::out_of_range& e)
-				{
-					QMessageBox::warning(this, tr("Pattern not Found or Invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file."))
-						.arg(gameInfo->GameName())
-						.arg(gameInfo->Difficulty())
-						.arg(gameInfo->ShotType()));
-				}
-				UpdatePattern();
+				emit NewShotAndDiffSelected(diff, shot);
 			}
 		});
 	connect(ui.ShotCombo, &QComboBox::currentTextChanged, [=](const QString& shotName)
-		{//todo: 筛选对应机体的路线
+		{
 			if (gameInfo == nullptr)
 			{
 				return;
 			}
 			shot = GetShotIndex(shotName);
-			if (diff == -1 || shotName == unselected)
+			if (diff == -1 || shot == -1)
 			{
 				UpdatePatternList();
 				ui.formWidget->setCurrentIndex(0);
@@ -138,21 +119,8 @@ EditorWindow::EditorWindow(QWidget* parent)
 			}
 			else
 			{
-				try
-				{
-					gameInfo->SetInfo(diff, shot);
-
-				}
-				catch (std::out_of_range& e)
-				{
-					QMessageBox::warning(this, tr("Pattern not Found or Invalid"), QString(tr("Pattern for %1 %2 %3 is not a valid pattern file."))
-						.arg(gameInfo->GameName())
-						.arg(gameInfo->Difficulty())
-						.arg(gameInfo->ShotType()));
-				}
-				UpdatePattern();
+				emit NewShotAndDiffSelected(diff, shot);
 			}
-
 		});
 	//选择对应路线自动设置
 	connect(ui.listWidget, &QListWidget::itemDoubleClicked, [=](QListWidgetItem* item)
@@ -164,6 +132,11 @@ EditorWindow::EditorWindow(QWidget* parent)
 		});
 	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
 	connect(ui.saveButton, &QPushButton::pressed, this, &EditorWindow::SaveCSV);
+	connect(this, &EditorWindow::NewShotAndDiffSelected, this, &EditorWindow::SetPattern);
+	connect(this, &EditorWindow::NewShotAndDiffSelected, this, &EditorWindow::UpdatePattern);
+	connect(this, &EditorWindow::GameSelected, this, &EditorWindow::SetGameinfo);
+	connect(this, &EditorWindow::GameSelected, this, &EditorWindow::SetShotList);
+
 }
 
 EditorWindow::~EditorWindow()
@@ -192,55 +165,71 @@ void EditorWindow::UpdatePattern()
 	ui.tableWidget->setRowCount(gameInfo->SectionCount());
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-	ComboCell* cbc = new ComboCell(ui.tableWidget);
-	ui.tableWidget->setItemDelegateForColumn(1, cbc);
-	//设置面数单元格合并
+	//节点下拉框
+	QStringList str;
+	str << tr("All") << tr("Mid+Boss") << tr("Mid+Boss+Bonus");
+	ComboCell* scc = new ComboCell(str, ui.tableWidget);
+	ui.tableWidget->setItemDelegateForColumn(1, scc);
+
 	int row = 0;
-
-
 	for (int i = 0; i < 6; i++)
 	{
 		int sectionCount = gameInfo->GetStageSectionCount(i);
+		QTableWidgetItem* newItem;
+		//面数栏
 		ui.tableWidget->setSpan(row, 0, sectionCount, 1);
-		QTableWidgetItem* newStage = new QTableWidgetItem(QString::number(i + 1));
-		newStage->setFlags(newStage->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
-		newStage->setTextAlignment(Qt::AlignCenter);
-		ui.tableWidget->setItem(row, 0, newStage);
-
-		//todo: 下拉框改变section
-		QTableWidgetItem* newSection = new QTableWidgetItem(SectionTypeList[sectionCount - 1]);
-		newStage->setTextAlignment(Qt::AlignCenter);
-		ui.tableWidget->setItem(row, 1, newSection);
+		newItem = new QTableWidgetItem(QString::number(i + 1));
+		newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);//不可选中
+		newItem->setTextAlignment(Qt::AlignCenter);
+		ui.tableWidget->setItem(row, 0, newItem);
+		//下拉框栏
+		newItem = new QTableWidgetItem();
+		newItem->setTextAlignment(Qt::AlignCenter);
+		ui.tableWidget->setItem(row, 1, newItem);
+		ui.tableWidget->item(row, 1)->setData(Qt::DisplayRole, SectionTypeList.at(sectionCount - 1));//设置初始
 		ui.tableWidget->setSpan(row, 1, sectionCount, 1);
-
+		//数据栏
 		std::vector<SectionInfo> sections = gameInfo->GetSectionInfos(i);
 		for (int index = 0; index < sections.size(); index++)
 		{
 			int rowIndex = row + index;
-			QTableWidgetItem* sectionNameItem = new QTableWidgetItem(sections[index].GetSectionName());
-			sectionNameItem->setFlags(sectionNameItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
-			ui.tableWidget->setItem(rowIndex, 2, sectionNameItem);
+			//节点名称
+			newItem = new QTableWidgetItem(sections[index].GetSectionName());
+			newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
+			ui.tableWidget->setItem(rowIndex, 2, newItem);
+			//分数
+			newItem = new QTableWidgetItem();
 			long long score = sections[index].GetScore(1);
-			ui.tableWidget->setItem(rowIndex, 3, new QTableWidgetItem(loc.toString(score)));
+			newItem->setText(QString::number(score));
+			newItem->setTextAlignment(Qt::AlignRight);
+			ui.tableWidget->setItem(rowIndex, 3, newItem);
+			//分数的增量
+			newItem = new QTableWidgetItem();
 			long long dScore = rowIndex == 0 ? score :
-				score - loc.toLongLong(ui.tableWidget->item(rowIndex - 1, 3)->text());
-			ui.tableWidget->setItem(rowIndex, 4, new QTableWidgetItem(loc.toString(dScore)));//分数差值
+				score - (ui.tableWidget->item(rowIndex - 1, 3)->text().toLongLong());
+			newItem->setText(QString::number(dScore));
+			newItem->setTextAlignment(Qt::AlignRight);
+			ui.tableWidget->setItem(rowIndex, 4, newItem);
+			//其他信息
 			auto specials = sections[index].GetSpecials(1);
 			for (int j = 0; j < specials.size(); j++)
 			{
 				int colIndex = 5 + j * 2;
-				ui.tableWidget->setItem(rowIndex, colIndex, new QTableWidgetItem(loc.toString(specials[j])));
+				newItem = new QTableWidgetItem();
+				newItem->setText(QString::number(specials[j]));
+				newItem->setTextAlignment(Qt::AlignRight);
+				ui.tableWidget->setItem(rowIndex, colIndex, newItem);
+				//增量
+				newItem = new QTableWidgetItem();
 				int dSpecial = rowIndex == 0 ? specials[j] :
-					specials[j] - loc.toInt(ui.tableWidget->item(rowIndex - 1, colIndex)->text());
-				ui.tableWidget->setItem(rowIndex, colIndex + 1, new QTableWidgetItem(loc.toString(dSpecial)));
+					specials[j] - (ui.tableWidget->item(rowIndex - 1, colIndex)->text().toLongLong());
+				newItem->setText(QString::number(dSpecial));
+				newItem->setTextAlignment(Qt::AlignRight);
+				ui.tableWidget->setItem(rowIndex, colIndex + 1, newItem);
 			}
 		}
 		row += sectionCount;
 	}
-	//填充数据
-
-
-
 	ui.tableWidget->adjustSize();
 	connect(ui.tableWidget, &QTableWidget::cellChanged, this, &EditorWindow::UpdateTable);
 }
@@ -360,7 +349,6 @@ void EditorWindow::UpdateSectionType(int row, int col)
 		break;
 	}
 	UpdatePattern();
-
 }
 
 void EditorWindow::UpdateTable(int row, int col)
@@ -369,10 +357,10 @@ void EditorWindow::UpdateTable(int row, int col)
 		UpdateSectionType(row, col);
 	if (col > 2)
 	{
-		long long data = loc.toLongLong(ui.tableWidget->item(row, col)->text());
+		long long data = ui.tableWidget->item(row, col)->text().toLongLong();
 		if (((col - 3) % 2) == 1)//处于delta位置上
 		{
-			long long score = loc.toLongLong(ui.tableWidget->item(row, col - 1)->text());
+			long long score = ui.tableWidget->item(row, col - 1)->text().toLongLong();
 			long long newScore = 0;
 			if (row == 0)
 			{
@@ -380,15 +368,16 @@ void EditorWindow::UpdateTable(int row, int col)
 			}
 			else
 			{
-				long long last = loc.toLongLong(ui.tableWidget->item(row - 1, col - 1)->text());
+				long long last = ui.tableWidget->item(row - 1, col - 1)->text().toLongLong();
 				newScore = data + last;
 			}
 			if (newScore != score)
-				ui.tableWidget->item(row, col - 1)->setData(Qt::DisplayRole, loc.toString(newScore));
+				ui.tableWidget->item(row, col - 1)->setData(Qt::DisplayRole, QString::number(newScore));
 		}
 		else//直接编辑分数
 		{
 			int stage = 0;
+			//防止直接访问stage得到nullptr
 			for (int i = row; i > -1; i--)
 			{
 				auto* item = ui.tableWidget->item(i, 0);
@@ -405,15 +394,15 @@ void EditorWindow::UpdateTable(int row, int col)
 				throw std::runtime_error("EditorWindow::UpdateTable");
 			}
 			Section section = GetSection(ui.tableWidget->item(row, 2)->text());
-			long long score = loc.toLongLong(ui.tableWidget->item(row, 3)->text());
+			long long score = ui.tableWidget->item(row, 3)->text().toLongLong();
 			std::vector<int>specials;
 			for (int column = 5; column < ui.tableWidget->columnCount(); column += 2)
 			{
-				specials.push_back(loc.toInt(ui.tableWidget->item(row, column)->text()));
+				specials.push_back(ui.tableWidget->item(row, column)->text().toInt());
 			}
 			gameInfo->SetPattern(stage, section, score, specials);
 			//更新delta
-			long long delta = loc.toLongLong(ui.tableWidget->item(row, col + 1)->text());
+			long long delta = ui.tableWidget->item(row, col + 1)->text().toLongLong();
 			long long newDelta;
 			if (row == 0)
 			{
@@ -421,28 +410,26 @@ void EditorWindow::UpdateTable(int row, int col)
 			}
 			else
 			{
-				long long last = loc.toLongLong(ui.tableWidget->item(row - 1, col)->text());
+				long long last = ui.tableWidget->item(row - 1, col)->text().toLongLong();
 				newDelta = data - last;
 			}
 			if (newDelta != delta)
 			{
-				ui.tableWidget->item(row, col + 1)->setData(Qt::DisplayRole, loc.toString(newDelta));
+				ui.tableWidget->item(row, col + 1)->setData(Qt::DisplayRole, QString::number(newDelta));
 			}
-			//更新下一行
+			//更新下一行,保持delta不变
 			if (row + 1 < ui.tableWidget->rowCount())
 			{
-				long long next = loc.toLongLong(ui.tableWidget->item(row + 1, col)->text());
-				long long nextDelta = loc.toLongLong(ui.tableWidget->item(row + 1, col + 1)->text());
-				long long newNextDelta = next - data;
-				if (newNextDelta != nextDelta)
+				long long next = ui.tableWidget->item(row + 1, col)->text().toLongLong();
+				long long nextDelta = ui.tableWidget->item(row + 1, col+1)->text().toLongLong();
+				long long newNextScore = data+nextDelta;
+				if (newNextScore != next)
 				{
-					ui.tableWidget->item(row + 1, col + 1)->setData(Qt::DisplayRole, loc.toString(newNextDelta));
+					ui.tableWidget->item(row + 1, col)->setData(Qt::DisplayRole, QString::number(newNextScore));
 				}
 			}
 		}
 	}
-
-
 }
 
 void EditorWindow::SaveCSV()
@@ -451,7 +438,12 @@ void EditorWindow::SaveCSV()
 	CSVWriter* writer = nullptr;
 	try
 	{
-		writer = new CSVWriter(game, diff, shot);
+		QStringList patternName;
+		patternName << GameInfo::GameName(static_cast<Game>(game));
+		patternName << GameInfo::DiffList[diff];
+		patternName << GameInfo::GetShotTypeList(game)[shot];
+		auto filename = patternName.join("-").append(".csv");
+		writer = new CSVWriter(std::filesystem::path(L"csv"), filename);
 	}
 	catch (std::runtime_error& e)
 	{
@@ -485,6 +477,52 @@ void EditorWindow::SaveCSV()
 	}
 	delete writer;
 	QMessageBox::information(this, tr("Save Success!"), tr("Pattern file saved"));
+}
+
+void EditorWindow::SetPattern(int diff, int shot)
+{
+	try
+	{
+		gameInfo->SetInfo(diff, shot);
+	}
+	catch (std::out_of_range& e)
+	{
+		QMessageBox::warning(this, tr("Pattern not Found or Invalid"),
+			QString(tr("Can't find  pattern file for %1 %2 %3,or it is not a valid file.\nCreated an empty pattern."))
+			.arg(gameInfo->GameName())
+			.arg(gameInfo->Difficulty())
+			.arg(gameInfo->ShotType()));
+	}
+}
+
+void EditorWindow::SetShotList(int game)
+{
+	ui.ShotCombo->clear();
+	ui.ShotCombo->addItem(unselected);
+	std::vector<QString> shottypeList = gameInfo->GetShotTypeList();
+	for (auto& str : shottypeList)
+	{
+		ui.ShotCombo->addItem(str);
+	}
+
+}
+
+void EditorWindow::SetGameinfo(int game)
+{
+	if (gameInfo != nullptr)
+	{
+		delete gameInfo;
+	}
+	gameInfo = new GameInfo(static_cast<Game>(game));
+	if (game==12)
+	{
+		UFOeditWin* ufoedit = new UFOeditWin(diff, shot);
+		ufoedit->setAttribute(Qt::WA_DeleteOnClose);
+		connect(this, &EditorWindow::NewShotAndDiffSelected, ufoedit, &UFOeditWin::setPattern);
+		connect(this, &EditorWindow::NewShotAndDiffSelected, ufoedit, &UFOeditWin::showChart);
+		connect(this, &EditorWindow::GameSelected, ufoedit, &QWidget::close);
+		ufoedit->show();
+	}
 }
 
 const int EditorWindow::GetGameIndex(const QString& gameName)
@@ -582,19 +620,19 @@ const int EditorWindow::GetShotIndex(const QString& shotName)
 
 const Section EditorWindow::GetSection(const QString& secName)
 {
-	if (secName.toLower() == "all")
+	if (secName == tr("All"))
 	{
 		return Section::All;
 	}
-	if (secName.toLower() == "mid")
+	if (secName == tr("Mid"))
 	{
 		return Section::Mid;
 	}
-	if (secName.toLower() == "boss")
+	if (secName == tr("Boss"))
 	{
 		return Section::Boss;
 	}
-	if (secName.toLower() == "bonus")
+	if (secName == tr("Bonus"))
 	{
 		return Section::Bonus;
 	}
@@ -611,33 +649,4 @@ void EditorWindow::SetPatternList()
 		patternName << GameInfo::GetShotTypeList(pattern.game)[pattern.shotType];
 		ui.listWidget->addItem(patternName.join("-"));
 	}
-}
-
-EditorWindow::CSVWriter::CSVWriter(int game, int diff, int shot)
-{
-	QStringList patternName;
-	patternName << GameInfo::GameName(static_cast<Game>(game));
-	patternName << GameInfo::DiffList[diff];
-	patternName << GameInfo::GetShotTypeList(game)[shot];
-	auto filename = patternName.join("-").append(".csv").toStdWString();
-	std::filesystem::path newFile(L"./csv");
-	newFile /= filename;
-	file = new QFile(newFile);
-	if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
-	{
-		throw std::runtime_error("Open csv file failed!");
-	}
-	ts = new QTextStream(file);
-}
-
-EditorWindow::CSVWriter::~CSVWriter()
-{
-	delete ts;
-	file->close();
-	delete file;
-}
-
-void EditorWindow::CSVWriter::WriteLine(const QString& str)
-{
-	*ts << str << Qt::endl;
 }

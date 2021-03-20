@@ -103,10 +103,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ComboCell.cpp" />
+    <ClCompile Include="csvIO.cpp" />
     <ClCompile Include="editorwindow.cpp" />
     <ClCompile Include="MemoryReader.cpp" />
     <ClCompile Include="SectionInfo.cpp" />
     <ClCompile Include="StageInfo.cpp" />
+    <ClCompile Include="ufoeditwin.cpp" />
+    <ClCompile Include="UFOInfo.cpp" />
+    <ClCompile Include="UFOWindow.cpp" />
     <QtRcc Include="mainwindow.qrc" />
     <QtUic Include="editorwindow.ui" />
     <QtUic Include="mainwindow.ui" />
@@ -115,8 +119,14 @@
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="ufoeditwin.ui" />
+    <QtUic Include="UFOWindow.ui" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="csvIO.h" />
+    <QtMoc Include="ufoeditwin.h" />
+    <ClInclude Include="UFOInfo.h" />
+    <QtMoc Include="UFOWindow.h" />
     <QtMoc Include="editorwindow.h" />
     <QtMoc Include="ComboCell.h" />
     <ClInclude Include="Enums.h" />

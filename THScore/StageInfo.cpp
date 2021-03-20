@@ -71,7 +71,6 @@ void StageInfo::SetData(Section section, int mode, long long score, const std::v
 		//throw std::out_of_range("Section error in StageInfo::SetData");
 		logger->error("Tring to set data to a stage with no section");
 	}
-
 }
 
 void StageInfo::SetData(int mode, long long score, std::vector<int>& specials)

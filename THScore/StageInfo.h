@@ -9,7 +9,6 @@ class StageInfo
 public:
 	StageInfo(int stage = 0);
 
-
 	//初始化
 	void Init(Game game, int stage);
 	void SetDeault(int specialCount);
@@ -46,4 +45,3 @@ private:
 	int stage;
 	Section currentSection;
 };
-

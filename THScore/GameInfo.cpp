@@ -9,9 +9,10 @@
 #include <QCoreApplication>
 #include "logger.h"
 #include "Enums.h"
+#include "csvIO.h"
 //#include "spdlog/sinks/rotating_file_sink.h"
 
-bool GameInfo::SetPattern(patternHeader header)
+bool GameInfo::SetPattern(PatternHeader header)
 {
 	using namespace std;
 	//先将原有的清空
@@ -86,25 +87,32 @@ GameInfo::GameInfo(Game game)
 	difficulty = -1;
 	shotType = -1;
 	currentStage = 1;
+	stageInfo = { 1,2,3,4,5,6 };
+	this->game = game;
 	switch (game)
 	{
 	case Game::th10:
-		this->game = game;
 		shotTypeList = shotTypeMap.at(10);
-		stageInfo =
+		specialNames =
 		{
-			1,2,3,4,5,6
+			QCoreApplication::translate("MainWindow","Faith")
 		};
-		specialNames = { QCoreApplication::translate("MainWindow","Faith") };
 		break;
 	case Game::th11:
-		this->game = game;
 		shotTypeList = shotTypeMap.at(11);
-		stageInfo =
+		specialNames =
 		{
-			1,2,3,4,5,6
+			QCoreApplication::translate("MainWindow","Faith") ,
+			QCoreApplication::translate("MainWindow","Graze")
 		};
-		specialNames = { QCoreApplication::translate("MainWindow","Faith") , QCoreApplication::translate("MainWindow","Graze") };
+		break;
+	case Game::th12:
+		shotTypeList = shotTypeMap.at(12);
+		specialNames =
+		{
+			QCoreApplication::translate("MainWindow","Point Item Value") ,
+			QCoreApplication::translate("MainWindow","Graze")
+		};
 		break;
 	default:
 		logger->warn("{0} is not supported yet!", game);
@@ -119,14 +127,21 @@ GameInfo::~GameInfo()
 {
 }
 
-
-bool GameInfo::CheckRetry(int stage)
+bool GameInfo::CheckRetry(int stage, int frame)
 {
 	if (stage < currentStage)//推把了
 	{
 		for (auto& si : stageInfo)
 		{
 			si.ResetAll();
+			return true;
+		}
+	}
+	else if (stage == 1)
+	{
+		if (frame < 60)
+		{
+			stageInfo[0].ResetAll();
 			return true;
 		}
 	}
@@ -152,26 +167,30 @@ bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 	stageInfo[stage - 1].SetData(0, score, speical);
 	if (currentStage != stage)
 	{
+		if (currentStage > stage)
+		{//推把清空
+			Clear();
+			currentStage = stage;
+			return true;
+		}
 		//避免由于换面导致结算加不到
 		stageInfo[currentStage - 1].SetData(0, score, speical);
 		currentStage = stage;
 		return true;
 	}
 	return false;
-	//UpdateDelta(stage);
-
-
 }
 
 bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFrame)
 {
+	static int lastHP = 0;
 	bool sectionChanged = false;
 	if (currentStage < 1)
 	{
 		return sectionChanged;
 	}
 	Section current = stageInfo[currentStage - 1].GetCurrentSection();
-	static int hp = 0, time = 0;
+	static int lastframe = 0;
 	switch (game)
 	{
 	case Game::invalid:
@@ -242,6 +261,11 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 			}
 			break;
 		case Section::Bonus:
+			//防止推把不回退
+			if (frameCount < 60)
+			{
+				stageInfo[currentStage - 1].SetInitSection();
+			}
 			break;
 		default:
 			break;
@@ -316,17 +340,109 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 			}
 			break;
 		case Section::Bonus:
+			if (frameCount < 60)
+			{
+				stageInfo[currentStage - 1].SetInitSection();
+			}
 			break;
 		default:
 			break;
 		}
 		break;
+	case Game::th12:
+		switch (current)
+		{
+		case Section::All:
+			break;
+		case Section::Mid:
+			if (bossHP > 100)
+			{
+				switch (currentStage)
+				{
+				case 1:
+					if (bossHP > 10000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 2:
+					if (bossHP > 9000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 3:
+					if (bossHP > 10000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 4:
+					if (bossHP > 8000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 5:
+					if (bossHP > 11000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				case 6:
+					if (bossHP > 10000)
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Boss))
+							sectionChanged = true;
+					}
+					break;
+				default:
+					logger->error("Current stage error: {0}", currentStage);
+				}
+			}
+
+			break;
+		case Section::Boss:
+			if (bossHP <= 0)//击破
+			{
+				//自己做一个计时
+				static int frame = 0;
+				if (frame > 0)
+				{
+					if (frameCount > frame + 180)//多等一会儿，不然掉的道具吃不到
+					{
+						if (stageInfo[currentStage - 1].SetCurrentSection(Section::Bonus))
+							sectionChanged = true;
+						frame = 0;
+					}
+				}
+				else
+				{
+					frame = frameCount;
+				}
+			}
+			break;
+		case Section::Bonus:
+			if (frameCount < 60)
+			{
+				stageInfo[currentStage - 1].SetInitSection();
+				sectionChanged = true;
+			}
+			break;
+		default:
+			break;
+		}
 		break;
 	default:
+		logger->error("Incorrect Game {0} in TestSection", static_cast<int>(game));
 		break;
 	}
-	hp = bossHP;
-	time = timeLeft;
+	lastHP = bossHP;
 	return sectionChanged;
 }
 
@@ -349,9 +465,19 @@ void GameInfo::UpdateDelta(int stage)
 	stageInfo[index].SetData(2, dScore, dSpecial);
 }
 
-GameInfo::patternHeader GameInfo::GetHeader()
+void GameInfo::Clear()
 {
-	return patternHeader{ static_cast<int>(game),difficulty,shotType };
+	for (auto& stage : stageInfo)
+	{
+		stage.SetInitSection();
+		stage.ResetAll(0);
+		stage.ResetAll(2);
+	}
+}
+
+PatternHeader GameInfo::GetHeader()
+{
+	return PatternHeader{ static_cast<int>(game),difficulty,shotType };
 }
 
 GameInfo* GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*& mr)
@@ -365,6 +491,11 @@ GameInfo* GameInfo::Create(std::string gameName, DWORD processID, MemoryReader*&
 	{
 		mr = new TH11Reader(processID);
 		return new GameInfo(Game::th11);
+	}
+	else if (gameName == "th12")
+	{
+		mr = new TH12Reader(processID);
+		return new GameInfo(Game::th12);
 	}
 	else {
 		logger->error("Game Not supported: {0}", gameName);
@@ -386,20 +517,26 @@ void GameInfo::ScanCSV()
 	{
 		logger->error("ScanCSV error: {0}", e.what());
 	}
-	for (auto file : files)
+	for (auto& file : files)
 	{
 		QFileInfo fileInfo(file);
 		if (fileInfo.suffix() == "csv")
 		{
 			logger->info("Found a csv file {0}", fileInfo.fileName().toUtf8().data());
 			CSVReader reader(file);
-			patternHeader header = reader.GetHeader();
+			QStringList strList = reader.ReadRow();
+			int game = strList[0].toInt();
+			int diff = strList[1].toInt();
+			int shot = strList[2].toInt();
+			PatternHeader header{ game,diff,shot };
 
-			patternFileMap.insert(std::make_pair(header, file));
+			auto inserted = patternFileMap.insert(std::make_pair(header, file)).second;
+			if (!inserted)
+				logger->error("{0} is not recorded because another file({1}) for same shot already exists.", 
+					file.string(), patternFileMap.at(header).string());
 		}
 	}
 }
-
 
 QString GameInfo::ShotType()
 {
@@ -416,8 +553,6 @@ QString GameInfo::GameName()
 	return GameName(game);
 }
 
-
-
 QString GameInfo::GameName(Game game)
 {
 	switch (game)
@@ -427,6 +562,9 @@ QString GameInfo::GameName(Game game)
 		break;
 	case Game::th11:
 		return "東方地霊殿";
+		break;
+	case Game::th12:
+		return "東方星蓮船";
 		break;
 	default:
 		break;
@@ -574,7 +712,7 @@ StageInfo* GameInfo::GetStageInfo(int index)
 	return &stageInfo[index];
 }
 
-const std::unordered_map< GameInfo::patternHeader, std::filesystem::path >& GameInfo::GetPatternFileMap()
+const std::unordered_map< PatternHeader, std::filesystem::path >& GameInfo::GetPatternFileMap()
 {
 	return patternFileMap;
 }
@@ -591,7 +729,7 @@ void GameInfo::Init()
 			QCoreApplication::translate("MainWindow","Marisa B"),
 			QCoreApplication::translate("MainWindow","Marisa C")
 		}));
-	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(11, 
+	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(11,
 		{
 			QCoreApplication::translate("MainWindow","Reimu A"),
 			QCoreApplication::translate("MainWindow","Reimu B"),
@@ -600,88 +738,28 @@ void GameInfo::Init()
 			QCoreApplication::translate("MainWindow","Marisa B"),
 			QCoreApplication::translate("MainWindow","Marisa C")
 		}));
+	shotTypeMap.insert(std::make_pair<int, std::vector<QString>>(12,
+		{
+			QCoreApplication::translate("MainWindow","Reimu A"),
+			QCoreApplication::translate("MainWindow","Reimu B"),
+			QCoreApplication::translate("MainWindow","Marisa A"),
+			QCoreApplication::translate("MainWindow","Marisa B"),
+			QCoreApplication::translate("MainWindow","Sanae A"),
+			QCoreApplication::translate("MainWindow","Sanae B")
+		}));
 
 	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th10", { L"th10.exe",L"th10chs.exe",L"th10cht.exe" }));
-	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th11", { L"th11.exe",L"th11c" }));
+	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th11", { L"th11.exe",L"th11c.exe" }));
+	exeMap.insert(std::make_pair< std::string, std::vector<std::wstring>>("th12", { L"th12.exe",L"th12c.exe" }));
 }
 
 std::unordered_map<int, std::vector<QString>> GameInfo::shotTypeMap;
 const QString GameInfo::DiffList[4] = { "Easy","Normal","Hard","Lunatic" };
-std::unordered_map<GameInfo::patternHeader, std::filesystem::path> GameInfo::patternFileMap;
+std::unordered_map<PatternHeader, std::filesystem::path> GameInfo::patternFileMap;
 std::unordered_map<std::string, std::vector<std::wstring>> GameInfo::exeMap;
 
 
-
-
-GameInfo::CSVReader::CSVReader(const std::filesystem::path& name)
-{
-	file = new QFile(name);
-	if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		throw std::runtime_error("Open csv file failed!");
-	}
-	ts = new QTextStream(file);
-}
-
-GameInfo::CSVReader::~CSVReader()
-{
-	delete ts;
-	file->close();
-	delete file;
-}
-
-GameInfo::patternHeader GameInfo::CSVReader::GetHeader()
-{
-	using namespace std;
-	vector<long long> headerData = ReadLongLongRow();
-	patternHeader header =
-	{
-		headerData[0],
-		headerData[1],
-		headerData[2],
-	};
-	return header;
-}
-
-std::vector<QString> GameInfo::CSVReader::ReadRow()
-{
-	using namespace std;
-
-	//QTextStream textStream(file);
-	QString line;
-	line = ts->readLine();
-	QStringList strList = line.split(",", Qt::SkipEmptyParts);
-	vector<QString> strings;
-	for (auto& str : strList)
-	{
-		strings.push_back(str);
-	}
-	return strings;
-}
-
-std::vector<long long> GameInfo::CSVReader::ReadLongLongRow()
-{
-	using namespace std;
-	vector<QString> strings = ReadRow();
-	vector<long long> ints;
-	for (auto& str : strings)
-	{
-		ints.push_back(str.toLongLong());
-	}
-	return ints;
-}
-
-bool GameInfo::CSVReader::AtEnd()
-{
-	return ts->atEnd();
-}
-
-void GameInfo::CSVReader::DiscardRow()
-{
-	ts->readLine();
-}
-
-bool GameInfo::patternHeader::operator==(const patternHeader& other)const
+bool PatternHeader::operator==(const PatternHeader& other)const
 {
 	if (this->game == other.game && this->difficulty == other.difficulty && this->shotType == other.shotType)
 		return true;

@@ -36,7 +36,7 @@ private:
 signals:
 	void FoundGame(bool found);
 	void ReadSuccees();
-	void NewShottype();
+	void NewShottype(int diff, int shot);
 	void NewSection();
 	void NewStage(int newStage);
 	void Retry();

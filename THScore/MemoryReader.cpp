@@ -12,7 +12,6 @@ MemoryReader::~MemoryReader()
 	CloseHandle(gameProcessHandle);
 }
 
-
 int MemoryReader::ReadInt(DWORD address)
 {
 	byte buffer[4];
@@ -62,49 +61,9 @@ std::vector<int> TH10Reader::GetSpecials()
 
 int TH10Reader::GetShotType()
 {
-	switch (ReadInt(ShotTypeAddr1))
-	{
-	case 0://灵梦
-		switch (ReadInt(ShotTypeAddr2))
-		{
-		case 0:
-			return 0;//梦A
-			break;
-		case 1:
-			return 1;//梦B
-			break;
-		case 2:
-			return 2;//梦C
-			break;
-		default:
-			logger->error("Wrong sub shottype num {0}", ReadInt(ShotTypeAddr2));
-			throw std::logic_error("Wrong sub shot type num");
-			break;
-		}
-		break;
-	case 1://马铃薯
-		switch (ReadInt(ShotTypeAddr2))
-		{
-		case 0:
-			return 3;//魔A
-			break;
-		case 1:
-			return 4;//魔B
-			break;
-		case 2:
-			return 5;//魔C
-			break;
-		default:
-			logger->error("Wrong sub shottype num { 0 }", ReadInt(ShotTypeAddr2));
-			throw std::logic_error("Wrong sub shot type num");
-			break;
-		}
-		break;
-	default:
-		logger->error("Wrong shottype num{ 0 }", ReadInt(ShotTypeAddr1));
-		throw std::logic_error("Wrong shot type num");
-		break;
-	}
+	int character = ReadInt(ShotTypeAddr1);
+	int shot = ReadInt(ShotTypeAddr2);
+	return character * 3 + shot;
 }
 
 int TH10Reader::GetDiff()
@@ -127,6 +86,11 @@ int TH10Reader::GetLocalFrame()
 	return ReadInt(LocalFrameAddr);
 }
 
+int TH10Reader::GetPower()
+{
+	return ReadInt(PowerAddr) * 5;
+}
+
 TH11Reader::TH11Reader(DWORD processID) : MemoryReader(processID)
 {
 }
@@ -147,49 +111,9 @@ int TH11Reader::GetStage()
 
 int TH11Reader::GetShotType()
 {
-	switch (ReadInt(ShotTypeAddr1))
-	{
-	case 0://灵梦
-		switch (ReadInt(ShotTypeAddr2))
-		{
-		case 0:
-			return 0;//梦A
-			break;
-		case 1:
-			return 1;//梦B
-			break;
-		case 2:
-			return 2;//梦C
-			break;
-		default:
-			logger->error("Wrong sub shottype num {0}", ReadInt(ShotTypeAddr2));
-			throw std::logic_error("Wrong sub shot type num");
-			break;
-		}
-		break;
-	case 1://马铃薯
-		switch (ReadInt(ShotTypeAddr2))
-		{
-		case 0:
-			return 3;//魔A
-			break;
-		case 1:
-			return 4;//魔B
-			break;
-		case 2:
-			return 5;//魔C
-			break;
-		default:
-			logger->error("Wrong sub shottype num { 0 }", ReadInt(ShotTypeAddr2));
-			throw std::logic_error("Wrong sub shot type num");
-			break;
-		}
-		break;
-	default:
-		logger->error("Wrong shottype num{ 0 }", ReadInt(ShotTypeAddr1));
-		throw std::logic_error("Wrong shottype num");
-		break;
-	}
+	int character = ReadInt(ShotTypeAddr1);
+	int shot = ReadInt(ShotTypeAddr2);
+	return character * 3 + shot;
 }
 
 int TH11Reader::GetDiff()
@@ -217,4 +141,99 @@ int TH11Reader::GetStageFrame()
 int TH11Reader::GetLocalFrame()
 {
 	return ReadInt(LocalFrameAddr);
+}
+
+int TH11Reader::GetPower()
+{
+	return ReadInt(PowerAddr) * 5;
+}
+
+TH12Reader::TH12Reader(DWORD processID) :MemoryReader(processID)
+{
+}
+
+TH12Reader::~TH12Reader()
+{
+}
+
+long long TH12Reader::GetScore()
+{
+	return ((long long)(ReadInt(ScoreAddr))) * 10;
+}
+
+int TH12Reader::GetStage()
+{
+	return ReadInt(StageAddr);
+}
+
+std::vector<int> TH12Reader::GetSpecials()
+{
+	int PIV = (ReadInt(PIVAddr) / 1000) * 10;
+	int graze = ReadInt(GrazeAddr);
+	std::vector<int> specials;
+	specials.push_back(PIV);
+	specials.push_back(graze);
+	return specials;
+}
+
+int TH12Reader::GetShotType()
+{
+	int character = ReadInt(ShotTypeAddr1);
+	int shot = ReadInt(ShotTypeAddr2);
+	return 2 * character + shot;
+}
+
+int TH12Reader::GetDiff()
+{
+	return ReadInt(DifficultyAddr);
+}
+
+int TH12Reader::GetBossHP()
+{
+	return ReadIntFromPointer(BossHPptr, BossHPOffset);
+}
+
+int TH12Reader::GetStageFrame()
+{
+	return ReadInt(FrameCountAddr);
+}
+
+int TH12Reader::GetLocalFrame()
+{
+	return 0;
+}
+
+int TH12Reader::GetPower()
+{
+	return ReadInt(PowerAddr);
+}
+
+int TH12Reader::GetUFOCount()
+{
+	return ReadInt(UFONumAddr);
+}
+
+int TH12Reader::GetUFO1()
+{
+	return ReadInt(UFO1Addr);
+}
+
+int TH12Reader::GetUFO2()
+{
+	return ReadInt(UFO2Addr);
+}
+
+int TH12Reader::GetUFO3()
+{
+	return ReadInt(UFO3Addr);
+}
+
+int TH12Reader::GetPowerCount()
+{
+	return ReadIntFromPointer(UFOptr, PowerItemOffset);
+}
+
+int TH12Reader::GetPointCount()
+{
+	return ReadIntFromPointer(UFOptr, PointItemOffset);
 }

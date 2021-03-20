@@ -4,6 +4,7 @@
 #include "MemoryReader.h"
 #include "logger.h"
 #include "editorwindow.h"
+#include "UFOWindow.h"
 #include <string>
 #include <vector>
 #include <exception>
@@ -88,7 +89,7 @@ MainWindow::MainWindow(QWidget* parent)
 	GameScanTimer->start();
 	//更新游戏信息
 	InfoUpdateTimer = new QTimer(this);
-	InfoUpdateTimer->setInterval(100);
+	InfoUpdateTimer->setInterval(16);
 	connect(InfoUpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateInfo);
 	void (QTimer:: * timerStart)() = &QTimer::start;
 	connect(this, &MainWindow::FoundGame, this, &MainWindow::ReadInfo);
@@ -123,7 +124,6 @@ void MainWindow::ScanGame()
 	bool isFound = false;
 	for (auto iter = GameInfo::exeMap.begin(); iter != GameInfo::exeMap.end(); iter++)
 	{
-
 		for (auto stringIter = iter->second.begin(); stringIter != iter->second.end(); stringIter++)
 		{
 			if (GetProcessIDByName(stringIter->c_str(), procId))
@@ -142,6 +142,16 @@ void MainWindow::ScanGame()
 		try
 		{
 			gameInfo = GameInfo::Create(gameName, procId, mr);
+			if (gameName == "th12")
+			{
+				UFOWindow* ufowin = new UFOWindow(mr);
+				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ReadUFO);
+				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ShowInfo);
+				connect(this, &MainWindow::Retry, ufowin, &UFOWindow::OnRetry);
+				connect(this, &MainWindow::NewShottype, ufowin, &UFOWindow::OnShottypeChanged); 
+				ufowin->setAttribute(Qt::WA_DeleteOnClose);
+				ufowin->show();
+			}
 			ui.stackedWidget->setCurrentIndex(1);
 			GameScanTimer->stop();
 			emit FoundGame(isFound);
@@ -226,7 +236,6 @@ void MainWindow::InitChart()
 			ui.tableWidget->setItem(row + 2, 2, new QTableWidgetItem(tr("Delta")));
 		}
 		rowOffset += stageSectionCount * 3;
-
 	}
 	//其他数据：仅初始化
 	for (int col = 3; col < columnCount; col++)
@@ -246,7 +255,6 @@ void MainWindow::InitChart()
 	//更新路线
 	UpdatePattern();
 	UpdateBackground();
-
 }
 
 void MainWindow::ShowScore()
@@ -271,7 +279,6 @@ void MainWindow::ShowScore()
 
 void MainWindow::ShowDelta()
 {
-
 	static QLocale loc = QLocale::English;
 	int currentStage = gameInfo->GetCurrentStage();
 	int row = gameInfo->GetCurrenSectionRowIndex();
@@ -329,7 +336,6 @@ void MainWindow::UpdatePattern()
 			ui.tableWidget->setRowHidden(sectionCount * 3 + rowBias, false);//初始显示所有路线
 			sectionCount++;
 		}
-
 	}
 }
 
@@ -343,18 +349,18 @@ void MainWindow::ReadInfo()
 	int frameCount = mr->GetStageFrame();
 	int localFrame = mr->GetLocalFrame();
 	std::vector<int> specials = mr->GetSpecials();
-	if (gameInfo->CheckRetry(stage))
+	if (gameInfo->CheckRetry(stage, frameCount))
 	{
 		emit Retry();
 	}
 	try
 	{
 		if (gameInfo->SetInfo(diff, shotType))
-			emit NewShottype();
+			emit NewShottype(diff, shotType);
 	}
 	catch (std::out_of_range& e)
 	{
-		emit NewShottype();
+		emit NewShottype(diff, shotType);
 	}/*
 	catch (std::runtime_error& e)
 	{
@@ -365,8 +371,8 @@ void MainWindow::ReadInfo()
 	}*/
 	if (gameInfo->SetData(stage, score, specials))
 	{
-		emit NewSection();
 		emit NewStage(stage);
+		emit NewSection();
 	}
 	gameInfo->UpdateDelta(stage);
 	if (gameInfo->TestSection(bossHP, NULL, frameCount, localFrame))
@@ -401,19 +407,18 @@ void MainWindow::UpdateBackground()
 		}
 		ui.tableWidget->item(row - 3, col)->setBackground(prevBackground);
 	}
-
 }
 
 void MainWindow::UpdateLastBonus()
 {
-	if (gameInfo->GetCurrentStage()<2)
+	if (gameInfo->GetCurrentStage() < 2)
 	{
 		return;
 	}
 	//与showscore代码相同
 	static QLocale loc = QLocale::English;
-	int stage = gameInfo->GetCurrentStage()-1;
-	int row = gameInfo->GetCurrenSectionRowIndex()-3;
+	int stage = gameInfo->GetCurrentStage() - 1;
+	int row = gameInfo->GetCurrenSectionRowIndex() - 3;
 	SectionInfo current = gameInfo->GetCurrentSectionInfo(stage - 1);
 	//游戏内信息显示
 	//分数 col=3

@@ -15,7 +15,6 @@ public:
 	void SetSection(Section section);
 	void Reset(int mode = 0);
 
-
 	const Section GetSection()const;
 	QString GetSectionName()const;
 	const long long GetScore(int mode)const;
