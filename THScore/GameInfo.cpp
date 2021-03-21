@@ -175,6 +175,7 @@ bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 		}
 		//避免由于换面导致结算加不到
 		stageInfo[currentStage - 1].SetData(0, score, speical);
+		UpdateDelta(currentStage);
 		currentStage = stage;
 		return true;
 	}
