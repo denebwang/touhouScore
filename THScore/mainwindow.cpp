@@ -97,6 +97,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(this, &MainWindow::FoundGame, InfoUpdateTimer, timerStart);
 	connect(this, &MainWindow::NewShottype, this, &MainWindow::InitChart);
 	connect(this, &MainWindow::Retry, this, &MainWindow::RestoreChart);
+	connect(this, &MainWindow::Retry, this, &MainWindow::UpdateBackground);
 	connect(this, &MainWindow::ReadSuccees, this, &MainWindow::ShowScore);
 	connect(this, &MainWindow::NewSection, this, &MainWindow::ShowDelta);
 	connect(this, &MainWindow::NewSection, this, &MainWindow::UpdateBackground);
@@ -148,7 +149,7 @@ void MainWindow::ScanGame()
 				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ReadUFO);
 				connect(InfoUpdateTimer, &QTimer::timeout, ufowin, &UFOWindow::ShowInfo);
 				connect(this, &MainWindow::Retry, ufowin, &UFOWindow::OnRetry);
-				connect(this, &MainWindow::NewShottype, ufowin, &UFOWindow::OnShottypeChanged); 
+				connect(this, &MainWindow::NewShottype, ufowin, &UFOWindow::OnShottypeChanged);
 				ufowin->setAttribute(Qt::WA_DeleteOnClose);
 				ufowin->show();
 			}
@@ -383,29 +384,44 @@ void MainWindow::ReadInfo()
 
 void MainWindow::RestoreChart()
 {
+	static QBrush normal;
 	int rowCount = ui.tableWidget->rowCount();
-	for (int i = 0; i < rowCount; i += 3)
+	int colCount = ui.tableWidget->columnCount();
+	for (int row = 0; row < rowCount; row += 3)
 	{
-		ui.tableWidget->setRowHidden(i, true);
-		ui.tableWidget->setRowHidden(i + 1, false);
-		ui.tableWidget->setRowHidden(i + 2, true);
+		ui.tableWidget->setRowHidden(row, true);
+		ui.tableWidget->setRowHidden(row + 1, false);
+		ui.tableWidget->setRowHidden(row + 2, true);
 	}
 }
 
 void MainWindow::UpdateBackground()
 {
-	static QBrush currentBackground(QColor(204, 229, 255));
-	static QBrush prevBackground;
-	int row = gameInfo->GetCurrenSectionRowIndex();
-	int column = ui.tableWidget->columnCount();
-	for (int col = 2; col < column; col++)
+	static QBrush highlighted(QColor(204, 229, 255));
+	static QBrush normal;
+
+	int currentRow = gameInfo->GetCurrenSectionRowIndex();
+	int rowCount = ui.tableWidget->rowCount();
+	int columnCount = ui.tableWidget->columnCount();
+	for (int row = 0; row < rowCount; row += 3)
 	{
-		ui.tableWidget->item(row, col)->setBackground(currentBackground);
-		if (row < 3)
+		for (int col = 2; col < columnCount; col++)
 		{
-			continue;
+			if (ui.tableWidget->item(row, col) != nullptr)
+			{
+				if (row == currentRow)
+				{
+
+					ui.tableWidget->item(row, col)->setBackground(highlighted);
+				}
+				else
+				{
+					ui.tableWidget->item(row, col)->setBackground(normal);
+				}
+			}
+
 		}
-		ui.tableWidget->item(row - 3, col)->setBackground(prevBackground);
+
 	}
 }
 

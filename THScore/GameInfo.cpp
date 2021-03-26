@@ -129,19 +129,13 @@ GameInfo::~GameInfo()
 
 bool GameInfo::CheckRetry(int stage, int frame)
 {
-	if (stage < currentStage)//推把了
+	if (stage < currentStage || (stage == 1 && frame < 60))//推把了
 	{
 		for (auto& si : stageInfo)
 		{
-			si.ResetAll();
-			return true;
-		}
-	}
-	else if (stage == 1)
-	{
-		if (frame < 60)
-		{
-			stageInfo[0].ResetAll();
+			si.ResetAll(0);
+			si.ResetAll(2);
+			si.SetInitSection();
 			return true;
 		}
 	}
@@ -160,7 +154,7 @@ bool GameInfo::SetInfo(int diff, int shot)
 
 bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 {	//return true if stage changed
-	if (stage < 1)
+	if (stage < 1 || stage>6)
 	{
 		return false;
 	}
@@ -533,7 +527,7 @@ void GameInfo::ScanCSV()
 
 			auto inserted = patternFileMap.insert(std::make_pair(header, file)).second;
 			if (!inserted)
-				logger->error("{0} is not recorded because another file({1}) for same shot already exists.", 
+				logger->error("{0} is not recorded because another file({1}) for same shot already exists.",
 					file.string(), patternFileMap.at(header).string());
 		}
 	}
