@@ -184,6 +184,11 @@ int StageInfo::GetCurrentSectionIndex() const
 			return i;
 		}
 	}
+	if (sections.back().GetSection()==Section::Boss && currentSection == Section::Bonus)
+	{
+		return sections.size() - 1;
+	}
+	logger->error("currentSection not correct: {0}", static_cast<int>(currentSection));
 	return -1;
 }
 

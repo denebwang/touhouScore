@@ -28,7 +28,6 @@ private:
 	static std::unordered_map<int, std::vector<QString>> shotTypeMap;
 	std::vector<QString> shotTypeList;
 	std::array<StageInfo, 6> stageInfo;
-
 	int difficulty;
 	int shotType;
 

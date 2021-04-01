@@ -39,7 +39,15 @@ bool GameInfo::SetPattern(PatternHeader header)
 			{
 				specials.push_back(*iter);
 			}
-			stageInfo[stage - 1].SetData(section, 1, score, specials);
+			try
+			{
+				stageInfo[stage - 1].SetData(section, 1, score, specials);
+			}
+			catch (std::out_of_range& e)
+			{
+				logger->error("Pattern fiel {0} stage out of range: {1}", path.string(), stage);
+			}
+
 		}
 	}
 	catch (std::out_of_range& e)
@@ -78,7 +86,14 @@ bool GameInfo::SetPattern(PatternHeader header)
 
 void GameInfo::SetPattern(int stage, Section section, long  long score, std::vector<int>& speical)
 {
-	stageInfo[stage - 1].SetData(section, 1, score, speical);
+	try
+	{
+		stageInfo[stage - 1].SetData(section, 1, score, speical);
+	}
+	catch (std::out_of_range& e)
+	{
+		logger->error("Stage out of range: {0}", stage);
+	}
 }
 
 GameInfo::GameInfo(Game game)
@@ -129,15 +144,12 @@ GameInfo::~GameInfo()
 
 bool GameInfo::CheckRetry(int stage, int frame)
 {
+	if (stage < 1 || stage > 6)
+		return false;
 	if (stage < currentStage || (stage == 1 && frame < 60))//推把了
 	{
-		for (auto& si : stageInfo)
-		{
-			si.ResetAll(0);
-			si.ResetAll(2);
-			si.SetInitSection();
-			return true;
-		}
+		Clear();
+		return true;
 	}
 	return false;
 }
@@ -154,26 +166,27 @@ bool GameInfo::SetInfo(int diff, int shot)
 
 bool GameInfo::SetData(int stage, long long score, std::vector<int>& speical)
 {	//return true if stage changed
-	if (stage < 1 || stage>6)
+	if (stage < 1 || stage > 6)
 	{
 		return false;
 	}
 	stageInfo[stage - 1].SetData(0, score, speical);
-	if (currentStage != stage)
+	if (currentStage > stage)
 	{
-		if (currentStage > stage)
-		{//推把清空
+		//推把清空
 			Clear();
 			currentStage = stage;
 			return true;
-		}
+	}
+	else if (currentStage < stage)
+	{
 		//避免由于换面导致结算加不到
 		stageInfo[currentStage - 1].SetData(0, score, speical);
 		UpdateDelta(currentStage);
 		currentStage = stage;
 		return true;
 	}
-	return false;
+	else return false;
 }
 
 bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFrame)
@@ -257,10 +270,10 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 			break;
 		case Section::Bonus:
 			//防止推把不回退
-			if (frameCount < 60)
-			{
-				stageInfo[currentStage - 1].SetInitSection();
-			}
+			//if (frameCount < 60)
+			//{
+			//	stageInfo[currentStage - 1].SetInitSection();
+			//}
 			break;
 		default:
 			break;
@@ -443,7 +456,7 @@ bool GameInfo::TestSection(int bossHP, int timeLeft, int frameCount, int localFr
 
 void GameInfo::UpdateDelta(int stage)
 {
-	if (stage < 1)
+	if (stage < 1 || stage > 6)
 	{
 		//logger->error("Stage incorrect in GameInfo::UpdateDelta: {0}", stage);
 		return;
@@ -629,6 +642,12 @@ int GameInfo::GetStageSectionCount(int index) const
 	if (index < 0)
 	{
 		index = 0;
+		logger->info("Index too small, reset to 0.");
+	}
+	else if (index > 5)
+	{
+		index = 5;
+		logger->info("Index too big, reset to 5.");
 	}
 	return stageInfo[index].GetSectionCount();
 }
@@ -653,6 +672,12 @@ QStringList GameInfo::GetSectionNames(int index) const
 	if (index < 0)
 	{
 		index = 0;
+		logger->info("Index too small, reset to 0.");
+	}
+	else if (index > 5)
+	{
+		index = 5;
+		logger->info("Index too big, reset to 5.");
 	}
 	return stageInfo[index].GetSectionNames();
 }
@@ -662,6 +687,12 @@ Section GameInfo::GetCurrentSection(int index) const
 	if (index < 0)
 	{
 		index = 0;
+		logger->info("Index too small, reset to 0.");
+	}
+	else if (index > 5)
+	{
+		index = 5;
+		logger->info("Index too big, reset to 5.");
 	}
 	return stageInfo[index].GetCurrentSection();
 }
@@ -671,6 +702,12 @@ const SectionInfo& GameInfo::GetCurrentSectionInfo(int index) const
 	if (index < 0)
 	{
 		index = 0;
+		logger->info("Index too small, reset to 0.");
+	}
+	else if (index > 5)
+	{
+		index = 5;
+		logger->info("Index too big, reset to 5.");
 	}
 	return stageInfo[index].GetCurrentSectionInfo();
 }
@@ -680,6 +717,12 @@ const SectionInfo& GameInfo::GetPrevSectionInfo(int index) const
 	if (index < 0)
 	{
 		index = 0;
+		logger->info("Index too small, reset to 0.");
+	}
+	else if (index > 5)
+	{
+		index = 5;
+		logger->info("Index too big, reset to 5.");
 	}
 	return stageInfo[index].GetPrevSectionInfo();
 }
@@ -689,6 +732,12 @@ int GameInfo::GetCurrentSectionIndex(int index) const
 	if (index < 0)
 	{
 		index = 0;
+		logger->info("Index too small, reset to 0.");
+	}
+	else if (index > 5)
+	{
+		index = 5;
+		logger->info("Index too big, reset to 5.");
 	}
 	return stageInfo[index].GetCurrentSectionIndex();
 }
@@ -698,12 +747,28 @@ const std::vector<SectionInfo>& GameInfo::GetSectionInfos(int index) const
 	if (index < 0)
 	{
 		index = 0;
+		logger->info("Index too small, reset to 0.");
+	}
+	else if (index > 5)
+	{
+		index = 5;
+		logger->info("Index too big, reset to 5.");
 	}
 	return stageInfo[index].GetSectionInfos();
 }
 
 StageInfo* GameInfo::GetStageInfo(int index)
 {
+	if (index < 0)
+	{
+		index = 0;
+		logger->info("Index too small, reset to 0.");
+	}
+	else if (index > 5)
+	{
+		index = 5;
+		logger->info("Index too big, reset to 5.");
+	}
 	return &stageInfo[index];
 }
 
